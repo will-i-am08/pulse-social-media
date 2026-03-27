@@ -978,6 +978,10 @@ async function sendToBuffer(id){
   const btn=document.querySelector(`[data-buffer-id="${id}"]`);
   if(btn){btn.disabled=true;btn.textContent='⏳ Sending...';}
   try{
+    const bufferChannelDetails=(brand.buffer_channels||[]).map(cid=>{
+      const ch=(DB.settings().bufferChannels||[]).find(c=>c.id===cid);
+      return ch?{id:cid,name:ch.name,service:ch.service,bufferId:ch.bufferId||''}:{id:cid};
+    });
     const payload={
       post_id:p.id,
       caption:p.caption||'',
@@ -987,6 +991,7 @@ async function sendToBuffer(id){
       brand_id:p.brand_profile_id||'',
       image_url:p.image_url||null,
       status:p.status,
+      buffer_channels:bufferChannelDetails,
       source:'CaptionCraft'
     };
     const r=await fetch(webhookUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -1389,6 +1394,7 @@ function saveBrand(id){
     tiktok:document.getElementById('bm-sm-tiktok')?.value.trim().replace(/^@/,'')||null,
     twitter:document.getElementById('bm-sm-twitter')?.value.trim().replace(/^@/,'')||null,
   };
+  const buffer_channels=Array.from(document.querySelectorAll('.bm-buffer-ch:checked')).map(el=>el.value);
   const data={
     name,color:document.getElementById('bm-color').value,
     website:document.getElementById('bm-website').value.trim(),
@@ -1398,6 +1404,7 @@ function saveBrand(id){
     include_hashtags:document.getElementById('bm-hashtags').checked,
     include_emojis:document.getElementById('bm-emojis').checked,
     social_handles,
+    buffer_channels,
   };
   const brands=DB.brands();
   if(id){
