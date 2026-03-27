@@ -137,7 +137,7 @@ const DB = {
   folders:()=>dbGet(KEYS.folders)||[],
   clients:()=>dbGet(KEYS.clients)||[],
   team:()=>dbGet(KEYS.team)||[],
-  settings:()=>dbGet(KEYS.settings)||{timezone:'UTC',defaultPlatforms:['instagram'],emailNotifications:true,workspaceName:'My Agency',makeWebhookUrl:'',autoSendOnApprove:false},
+  settings:()=>dbGet(KEYS.settings)||{timezone:'UTC',defaultPlatforms:['instagram'],emailNotifications:true,workspaceName:'My Agency',makeWebhookUrl:'https://hook.eu1.make.com/rrwvx199r4prra3f8jpblgdc3bp8bp46',autoSendOnApprove:false,bufferChannels:[]},
   profile:()=>dbGet(KEYS.profile)||{name:'Agency User',email:'user@agency.com'},
   save:{
     brands:v=>dbSet(KEYS.brands,v),
@@ -1354,6 +1354,23 @@ function openBrandModal(id){
           <span class="text-sm text-slate-700 dark:text-slate-200">Include emojis</span>
         </label>
       </div>
+      ${(()=>{
+        const channels=DB.settings().bufferChannels||[];
+        const saved=b?.buffer_channels||[];
+        if(channels.length===0) return `<div><label class="lbl">Buffer Channels</label><p class="text-xs text-slate-400">No Buffer channels set up yet — add them in <strong>Settings → Publishing</strong></p></div>`;
+        return `<div>
+          <label class="lbl">Buffer Channels</label>
+          <p class="text-xs text-slate-500 mb-2">Select which Buffer profiles this brand posts to.</p>
+          <div class="space-y-1">
+            ${channels.map(ch=>`
+            <label class="flex items-center gap-2 cursor-pointer py-1 px-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800">
+              <input type="checkbox" class="bm-buffer-ch w-4 h-4 accent-indigo-600" value="${ch.id}" ${saved.includes(ch.id)?'checked':''}>
+              <span class="text-sm">${bufferServiceIcon(ch.service)} ${esc(ch.name)}</span>
+              <span class="text-xs text-slate-400">${esc(ch.service)}</span>
+            </label>`).join('')}
+          </div>
+        </div>`;
+      })()}
       <div class="flex gap-3 justify-end pt-2">
         <button class="btn btn-o" onclick="closeModal()">Cancel</button>
         <button class="btn btn-p" onclick="saveBrand('${id||''}')">Save Brand</button>
@@ -1626,7 +1643,6 @@ async function photoUpload(e){
   const files=Array.from(e.target.files);
   let count=0;
   for(const f of files){
-    if(f.size>3*1024*1024){toast(`${f.name} too large (max 3MB)`,'err');continue}
     const url=await readFileAsDataURL(f);
     const photos=DB.photos();
     photos.unshift({id:uid(),url,name:f.name.replace(/\.[^.]+$/,''),tags:[],folder_id:photoFolderId,created_date:new Date().toISOString()});
@@ -2191,12 +2207,57 @@ function renderSettings(){
               <p class="text-xs text-slate-500">Automatically push posts to Buffer as soon as you click ✓ Approve</p>
             </div>
           </label>
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="lbl mb-0">Buffer Channels</label>
+              <button class="btn btn-o btn-sm" onclick="toggleAddChannelForm()">+ Add Channel</button>
+            </div>
+            <p class="text-xs text-slate-500 mb-2">Add each Buffer social media profile so you can assign them to brands.</p>
+            <div id="s-buffer-channels-list">
+              ${(s.bufferChannels||[]).length===0
+                ? `<p class="text-xs text-slate-400 italic">No channels added yet.</p>`
+                : (s.bufferChannels||[]).map(ch=>`
+                <div class="flex items-center justify-between py-1.5 px-2 rounded bg-slate-50 dark:bg-slate-800 mb-1">
+                  <span class="text-sm">${bufferServiceIcon(ch.service)} <span class="font-medium">${esc(ch.name)}</span> <span class="text-xs text-slate-400">${esc(ch.service)}${ch.bufferId?' · '+esc(ch.bufferId):''}</span></span>
+                  <button class="text-xs text-red-400 hover:text-red-600 ml-2" onclick="removeBufferChannel('${ch.id}')">✕</button>
+                </div>`).join('')}
+            </div>
+            <div id="s-add-channel-form" class="hidden mt-2 p-3 border border-slate-200 dark:border-slate-700 rounded-lg space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="lbl text-xs">Channel Name *</label>
+                  <input class="inp" id="s-ch-name" placeholder="e.g. Brand A Instagram">
+                </div>
+                <div>
+                  <label class="lbl text-xs">Platform *</label>
+                  <select class="sel" id="s-ch-service">
+                    <option value="instagram">Instagram</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="twitter">Twitter / X</option>
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="pinterest">Pinterest</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="lbl text-xs">Buffer Profile ID <span class="text-slate-400">(optional)</span></label>
+                <input class="inp" id="s-ch-bufferid" placeholder="Found in Buffer channel settings">
+              </div>
+              <div class="flex gap-2 justify-end">
+                <button class="btn btn-o btn-sm" onclick="toggleAddChannelForm()">Cancel</button>
+                <button class="btn btn-p btn-sm" onclick="addBufferChannel()">Save Channel</button>
+              </div>
+            </div>
+          </div>
           <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-xs text-amber-800 dark:text-amber-300">
             <p class="font-semibold mb-1">📋 How to set up Make.com (2 mins):</p>
             <p>1. Go to make.com → Create new scenario</p>
             <p>2. Add trigger: <strong>Webhooks → Custom Webhook</strong> → copy the URL above</p>
             <p>3. Add action: <strong>Buffer → Create Update</strong> (or Later → Create Post)</p>
-            <p>4. Map: <code>caption</code> → text, <code>scheduled_at</code> → schedule time, <code>image_url</code> → media</p>
+            <p>4. Map: <code>caption</code> → text, <code>scheduled_at</code> → schedule time, <code>image_url</code> → media, <code>buffer_channels</code> → profile IDs</p>
             <p>5. Activate the scenario → paste the webhook URL above</p>
           </div>
           ${s.makeWebhookUrl?`<button class="btn btn-o w-full" onclick="sendAllApprovedToBuffer()">📤 Send All Approved Posts to Buffer Now</button>`:''}
@@ -2255,6 +2316,39 @@ async function testClaudeConnection(){
     if(res){res.className='text-sm p-3 rounded-lg bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300';res.textContent=`❌ Network error: ${e.message}. Make sure you're opening this page in your own browser at http://localhost:3456 — not in a sandboxed preview.`;}
   }
   if(btn){btn.disabled=false;btn.textContent='🧪 Test Connection';}
+}
+
+function bufferServiceIcon(service){
+  const icons={instagram:'📸',facebook:'📘',twitter:'𝕏',linkedin:'💼',tiktok:'🎵',pinterest:'📌',youtube:'🎬',other:'🔗'};
+  return icons[service]||'🔗';
+}
+
+function toggleAddChannelForm(){
+  const f=document.getElementById('s-add-channel-form');
+  if(!f)return;
+  f.classList.toggle('hidden');
+  if(!f.classList.contains('hidden')){
+    document.getElementById('s-ch-name')?.focus();
+  }
+}
+
+function addBufferChannel(){
+  const name=document.getElementById('s-ch-name')?.value.trim();
+  const service=document.getElementById('s-ch-service')?.value||'instagram';
+  const bufferId=document.getElementById('s-ch-bufferid')?.value.trim()||'';
+  if(!name){toast('Channel name required','err');return;}
+  const s=DB.settings();
+  const channels=[...(s.bufferChannels||[]),{id:uid(),name,service,bufferId}];
+  DB.save.settings({...s,bufferChannels:channels});
+  toast('Buffer channel added!');
+  renderSettings();
+}
+
+function removeBufferChannel(id){
+  const s=DB.settings();
+  DB.save.settings({...s,bufferChannels:(s.bufferChannels||[]).filter(c=>c.id!==id)});
+  toast('Channel removed');
+  renderSettings();
 }
 
 function saveWebhookUrl(){
