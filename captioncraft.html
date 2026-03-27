@@ -1,0 +1,2252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CaptionCraft</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:'class'}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc}
+.dark body,.dark #app{background:#0f172a;color:#e2e8f0}
+.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pulse-anim{animation:pulse 1.5s ease infinite}
+@keyframes slideIn{from{transform:translateX(120px);opacity:0}to{transform:translateX(0);opacity:1}}
+#toast-wrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:12px 16px;border-radius:8px;font-size:14px;font-weight:500;max-width:320px;animation:slideIn .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.2);pointer-events:auto}
+.toast-ok{background:#22c55e;color:#fff}
+.toast-err{background:#ef4444;color:#fff}
+.toast-info{background:#6366f1;color:#fff}
+#sidebar{width:236px;min-height:100vh;background:#fff;border-right:1px solid #e2e8f0;padding:16px;flex-shrink:0;display:flex;flex-direction:column;transition:transform .2s}
+.dark #sidebar{background:#0f172a;border-color:#1e293b}
+#main{flex:1;overflow-y:auto;min-height:100vh}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:#64748b;transition:all .15s;margin-bottom:2px;text-decoration:none;user-select:none}
+.nav-item:hover{background:#f1f5f9;color:#334155}
+.nav-item.active{background:#eef2ff;color:#4f46e5}
+.dark .nav-item{color:#94a3b8}
+.dark .nav-item:hover{background:#1e293b;color:#e2e8f0}
+.dark .nav-item.active{background:#1e1b4b;color:#818cf8}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:12px}
+.dark .card{background:#1e293b;border-color:#334155}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;text-decoration:none}
+.btn-p{background:#6366f1;color:#fff}.btn-p:hover{background:#4f46e5}
+.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.btn-o{background:#fff;color:#334155;border:1px solid #e2e8f0}.btn-o:hover{background:#f1f5f9}
+.dark .btn-o{background:#1e293b;color:#e2e8f0;border-color:#334155}.dark .btn-o:hover{background:#334155}
+.btn-d{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.btn-d:hover{background:#fee2e2}
+.btn-sm{padding:5px 10px;font-size:12px}
+.inp{width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;background:#fff;color:#334155;transition:border-color .15s}
+.inp:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.dark .inp{background:#1e293b;border-color:#334155;color:#e2e8f0}
+.dark .inp:focus{border-color:#818cf8}
+.ta{width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;resize:vertical;background:#fff;color:#334155;min-height:80px}
+.ta:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+.dark .ta{background:#1e293b;border-color:#334155;color:#e2e8f0}
+.sel{width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;outline:none;background:#fff;color:#334155}
+.sel:focus{border-color:#6366f1}
+.dark .sel{background:#1e293b;border-color:#334155;color:#e2e8f0}
+.lbl{display:block;font-size:13px;font-weight:500;color:#475569;margin-bottom:6px}
+.dark .lbl{color:#94a3b8}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid}
+.bd-draft{background:#fef9c3;color:#a16207;border-color:#fde047}
+.bd-sub{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd}
+.bd-app{background:#d1fae5;color:#065f46;border-color:#6ee7b7}
+.bd-sched{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+.bd-pub{background:#dcfce7;color:#166534;border-color:#86efac}
+.bd-gray{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+.dark .bd-draft{background:#3f3200;color:#fbbf24;border-color:#78350f}
+.dark .bd-sub{background:#2d1b69;color:#c4b5fd;border-color:#4c1d95}
+.dark .bd-app{background:#022c22;color:#6ee7b7;border-color:#065f46}
+.dark .bd-sched{background:#1e3a5f;color:#93c5fd;border-color:#1e40af}
+.dark .bd-pub{background:#15301f;color:#86efac;border-color:#166534}
+.dark .bd-gray{background:#1e293b;color:#94a3b8;border-color:#334155}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
+.dark .modal{background:#1e293b;color:#e2e8f0}
+.cal-day{min-height:80px;padding:4px;border-right:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background .1s}
+.cal-day:hover{background:#f8fafc}
+.dark .cal-day{border-color:#1e293b}.dark .cal-day:hover{background:#1e293b}
+.cal-pill{font-size:10px;padding:1px 5px;border-radius:10px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:1px;cursor:pointer}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.skeleton{background:#f1f5f9;border-radius:8px;animation:pulse 1.5s ease infinite}
+.dark .skeleton{background:#1e293b}
+@media(max-width:768px){
+  #sidebar{position:fixed;z-index:200;top:0;left:0;height:100vh;transform:translateX(-100%)}
+  #sidebar.open{transform:translateX(0)}
+  #mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
+  #mob-overlay.show{display:block}
+}
+</style>
+</head>
+<body>
+<div id="app" class="flex">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="flex items-center gap-2 mb-6 px-2 pt-2">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">CC</div>
+      <span class="font-bold text-base text-slate-800 dark:text-white">CaptionCraft</span>
+    </div>
+    <div id="nav-links"></div>
+    <div class="mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
+      <div class="nav-item" onclick="nav('profile')">
+        <span>👤</span><span>Profile</span>
+      </div>
+      <div class="nav-item" onclick="nav('settings')">
+        <span>⚙️</span><span>Settings</span>
+      </div>
+      <div class="nav-item" onclick="toggleDark()">
+        <span id="dark-icon">🌙</span><span id="dark-label">Dark Mode</span>
+      </div>
+    </div>
+  </nav>
+  <div id="mob-overlay" onclick="closeMobSidebar()"></div>
+
+  <!-- Main -->
+  <main id="main">
+    <!-- Mobile header -->
+    <div class="md:hidden sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center gap-3">
+      <button onclick="openMobSidebar()" class="text-slate-600 dark:text-slate-300 text-xl">☰</button>
+      <span class="font-bold text-slate-800 dark:text-white">CaptionCraft</span>
+    </div>
+    <div id="page"></div>
+  </main>
+</div>
+<div id="toast-wrap"></div>
+<div id="modal-root"></div>
+
+<script>
+// ============================
+// DB — localStorage
+// ============================
+const KEYS = {brands:'cc_brands',posts:'cc_posts',photos:'cc_photos',folders:'cc_folders',clients:'cc_clients',team:'cc_team',settings:'cc_settings',profile:'cc_profile'};
+
+function dbGet(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}}
+function dbSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+
+const DB = {
+  brands:()=>dbGet(KEYS.brands)||[],
+  posts:()=>dbGet(KEYS.posts)||[],
+  photos:()=>dbGet(KEYS.photos)||[],
+  folders:()=>dbGet(KEYS.folders)||[],
+  clients:()=>dbGet(KEYS.clients)||[],
+  team:()=>dbGet(KEYS.team)||[],
+  settings:()=>dbGet(KEYS.settings)||{timezone:'UTC',defaultPlatforms:['instagram'],emailNotifications:true,workspaceName:'My Agency'},
+  profile:()=>dbGet(KEYS.profile)||{name:'Agency User',email:'user@agency.com'},
+  save:{
+    brands:v=>dbSet(KEYS.brands,v),
+    posts:v=>dbSet(KEYS.posts,v),
+    photos:v=>dbSet(KEYS.photos,v),
+    folders:v=>dbSet(KEYS.folders,v),
+    clients:v=>dbSet(KEYS.clients,v),
+    team:v=>dbSet(KEYS.team,v),
+    settings:v=>dbSet(KEYS.settings,v),
+    profile:v=>dbSet(KEYS.profile,v),
+  }
+};
+
+// ============================
+// State
+// ============================
+let currentPage = 'dashboard';
+let isDark = localStorage.getItem('cc_dark')==='1';
+if(isDark)document.documentElement.classList.add('dark');
+
+// ============================
+// Nav
+// ============================
+const NAV = [
+  {id:'dashboard',label:'Dashboard',icon:'🏠'},
+  {id:'create-post',label:'Create Post',icon:'✏️'},
+  {id:'posts',label:'Posts',icon:'📄'},
+  {id:'calendar',label:'Calendar',icon:'📅'},
+  {id:'brands',label:'Brands',icon:'🏷️'},
+  {id:'photo-library',label:'Photo Library',icon:'🖼️'},
+  {id:'analytics',label:'Analytics',icon:'📊'},
+  {id:'clients',label:'Clients',icon:'👥'},
+  {id:'team',label:'Team',icon:'🤝'},
+  {id:'holidays',label:'Holidays',icon:'🎉'},
+];
+
+function renderNav(){
+  const el=document.getElementById('nav-links');
+  el.innerHTML=NAV.map(n=>`<div class="nav-item${currentPage===n.id?' active':''}" onclick="nav('${n.id}')"><span>${n.icon}</span><span>${n.label}</span></div>`).join('');
+}
+
+function nav(page){
+  currentPage=page;
+  renderNav();
+  closeMobSidebar();
+  renderPage();
+  window.scrollTo(0,0);
+}
+
+function openMobSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('mob-overlay').classList.add('show')}
+function closeMobSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mob-overlay').classList.remove('show')}
+
+function toggleDark(){
+  isDark=!isDark;
+  document.documentElement.classList.toggle('dark',isDark);
+  localStorage.setItem('cc_dark',isDark?'1':'0');
+  document.getElementById('dark-icon').textContent=isDark?'☀️':'🌙';
+  document.getElementById('dark-label').textContent=isDark?'Light Mode':'Dark Mode';
+}
+
+// ============================
+// Toast
+// ============================
+function toast(msg,type='ok'){
+  const w=document.getElementById('toast-wrap');
+  const d=document.createElement('div');
+  d.className=`toast toast-${type}`;
+  d.textContent=msg;
+  w.appendChild(d);
+  setTimeout(()=>d.remove(),3200);
+}
+
+// ============================
+// Modal helpers
+// ============================
+function showModal(html){
+  const r=document.getElementById('modal-root');
+  r.innerHTML=`<div class="overlay" id="modal-overlay">${html}</div>`;
+}
+function closeModal(){document.getElementById('modal-root').innerHTML=''}
+
+// ============================
+// Confirm dialog
+// ============================
+let _confirmCb=null;
+function _runConfirm(){closeModal();if(_confirmCb){_confirmCb();_confirmCb=null;}}
+function confirm2(title,desc,onOk,okLabel='Delete',danger=true){
+  _confirmCb=onOk;
+  showModal(`<div class="modal" style="max-width:400px">
+    <h3 class="text-lg font-semibold mb-2">${title}</h3>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">${desc}</p>
+    <div class="flex gap-3 justify-end">
+      <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+      <button class="btn ${danger?'btn-d':'btn-p'}" onclick="_runConfirm()">${okLabel}</button>
+    </div>
+  </div>`);
+}
+
+// ============================
+// Claude API helpers
+// ============================
+async function callClaude(systemPrompt, userContent, maxTokens=1024){
+  const key=localStorage.getItem('cc_api_key');
+  if(!key){toast('Add your Claude API key in Settings → Claude API','err');return null;}
+  const model=localStorage.getItem('cc_model')||'claude-haiku-4-5-20251001';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'content-type':'application/json',
+        'anthropic-dangerous-allow-browser':'true',
+      },
+      body:JSON.stringify({model,max_tokens:maxTokens,system:systemPrompt,messages:[{role:'user',content:userContent}]})
+    });
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error?.message||'Claude API error');
+    return data.content[0].text;
+  }catch(e){toast('Claude API error: '+e.message,'err');return null;}
+}
+
+function buildImageContent(dataUrl,textPrompt){
+  if(!dataUrl||!dataUrl.startsWith('data:'))return textPrompt;
+  const [meta,b64]=dataUrl.split(',');
+  const mediaType=meta.match(/data:([^;]+)/)[1];
+  return[
+    {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
+    {type:'text',text:textPrompt}
+  ];
+}
+
+// ============================
+// Mock AI caption generator (fallback when no API key)
+// ============================
+function generateCaptionMock(brand,platforms,customPrompt){
+  const tones={
+    professional:['Elevating your brand with','Strategic excellence in','Innovation meets','Delivering premium'],
+    casual:['Just loving','Super excited about','Check out','We\'re so happy with'],
+    playful:['🎉 How fun is','✨ Obsessed with','Living for this','Can\'t get enough of'],
+    luxury:['Exclusively crafted for','Bespoke and curated','The pinnacle of','Unrivalled excellence in'],
+    inspirational:['Transform your journey with','Believe in the power of','Every step forward with','Rise above with'],
+    friendly:['We love sharing','So happy to bring you','Together we create','Join us in celebrating'],
+  };
+  const hashtags={
+    instagram:['#brand','#content','#socialmedia','#marketing','#instagood'],
+    facebook:['#business','#marketing'],
+    linkedin:['#businessgrowth','#marketing','#professional'],
+  };
+  const tone=brand.tone||'professional';
+  const starters=tones[tone]||tones.professional;
+  const starter=starters[Math.floor(Math.random()*starters.length)];
+  let caption=`${starter} ${brand.name}.\n\n`;
+  if(customPrompt)caption+=`${customPrompt}\n\n`;
+  else caption+=`Discover what makes ${brand.name} different — quality, passion, and commitment to excellence. We're here to bring you something truly special.\n\n`;
+  if(brand.brand_guidelines)caption+=`${brand.brand_guidelines.slice(0,80)}...\n\n`;
+  if(brand.include_hashtags!==false){
+    const tags=new Set();
+    (platforms||['instagram']).forEach(p=>{(hashtags[p]||[]).forEach(h=>tags.add(h))});
+    caption+=Array.from(tags).slice(0,5).join(' ');
+  }
+  if(brand.output_length==='short')caption=caption.slice(0,200);
+  else if(brand.output_length==='medium')caption=caption.slice(0,400);
+  return caption.trim();
+}
+
+// ============================
+// Utility
+// ============================
+function fmtDate(iso){
+  if(!iso)return'—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtDateTime(iso){
+  if(!iso)return'—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function getBrand(id){return DB.brands().find(b=>b.id===id)}
+function statusBadge(s){const m={draft:'bd-draft',submitted:'bd-sub',approved:'bd-app',scheduled:'bd-sched',published:'bd-pub'};return`<span class="badge ${m[s]||'bd-gray'}">${s||'draft'}</span>`}
+
+function readFileAsDataURL(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ============================
+// DASHBOARD PAGE
+// ============================
+function renderDashboard(){
+  const brands=DB.brands();
+  const posts=DB.posts();
+  const scheduled=posts.filter(p=>p.status==='scheduled');
+  const drafts=posts.filter(p=>p.status==='draft');
+  const published=posts.filter(p=>p.status==='published');
+  const submitted=posts.filter(p=>p.status==='submitted');
+
+  const stats=[
+    {label:'Brands',val:brands.length,icon:'🏷️',color:'text-violet-500',page:'brands'},
+    {label:'Drafts',val:drafts.length,icon:'📝',color:'text-yellow-500',page:'posts'},
+    {label:'Scheduled',val:scheduled.length,icon:'📅',color:'text-blue-500',page:'posts'},
+    {label:'Published',val:published.length,icon:'✅',color:'text-green-500',page:'posts'},
+  ];
+
+  const upcomingSched=scheduled.slice(0,5);
+  const brandList=brands.slice(0,5);
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Your content at a glance</p>
+      </div>
+      <button class="btn btn-p" onclick="nav('create-post')">✏️ New Post</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      ${stats.map(s=>`
+        <div class="card p-5 cursor-pointer hover:shadow-md transition-shadow" onclick="nav('${s.page}')">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">${s.icon}</span>
+            <div>
+              <p class="text-2xl font-bold text-slate-800 dark:text-white">${s.val}</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400">${s.label}</p>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    ${submitted.length>0?`
+    <div class="mb-6 p-4 bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-700 rounded-xl flex items-center gap-3">
+      <span class="text-violet-600 text-xl">📋</span>
+      <div class="flex-1">
+        <p class="font-medium text-violet-800 dark:text-violet-300">${submitted.length} post${submitted.length!==1?'s':''} pending review</p>
+        <p class="text-sm text-violet-600 dark:text-violet-400">Team members have submitted posts for approval.</p>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="nav('posts')">Review Now</button>
+    </div>`:''}
+
+    <!-- Getting started -->
+    ${brands.length===0?`
+    <div class="card p-6 mb-6 border-dashed border-2 border-indigo-200 dark:border-indigo-700 text-center">
+      <p class="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">👋 Welcome to CaptionCraft!</p>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-4">Start by creating a brand profile, then create your first post.</p>
+      <div class="flex gap-3 justify-center">
+        <button class="btn btn-p" onclick="nav('brands')">Create Brand</button>
+        <button class="btn btn-o" onclick="nav('create-post')">Create Post</button>
+      </div>
+    </div>`:''}
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- Upcoming -->
+      <div class="card">
+        <div class="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+          <h3 class="font-semibold text-slate-800 dark:text-white">Upcoming Scheduled</h3>
+          <button class="btn btn-o btn-sm" onclick="nav('calendar')">View Calendar</button>
+        </div>
+        <div class="p-4 space-y-3">
+          ${upcomingSched.length===0?`<p class="text-sm text-slate-400">No scheduled posts yet.</p>`:
+          upcomingSched.map(p=>{
+            const b=getBrand(p.brand_profile_id);
+            return`<div class="flex items-center gap-3">
+              ${p.image_url?`<img src="${esc(p.image_url)}" class="w-10 h-10 rounded-lg object-cover flex-shrink-0">`:`<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-lg flex-shrink-0">🖼️</div>`}
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-slate-800 dark:text-white">${esc(b?.name||'Unknown Brand')}</p>
+                <p class="text-xs text-slate-500">${fmtDateTime(p.scheduled_at)}</p>
+              </div>
+              ${statusBadge(p.status)}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Brand profiles -->
+      <div class="card">
+        <div class="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+          <h3 class="font-semibold text-slate-800 dark:text-white">Brand Profiles</h3>
+          <button class="btn btn-o btn-sm" onclick="nav('brands')">Manage</button>
+        </div>
+        <div class="p-4 space-y-3">
+          ${brandList.length===0?`<p class="text-sm text-slate-400">No brands yet.</p>`:
+          brandList.map(b=>`
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style="background:${b.color||'#6366f1'}">${(b.name||'?')[0].toUpperCase()}</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate text-slate-800 dark:text-white">${esc(b.name)}</p>
+                <p class="text-xs text-slate-500 capitalize">${b.tone||'professional'} · ${b.output_length||'medium'}</p>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Brand content status -->
+    ${brands.length>0?`
+    <div class="card mt-6">
+      <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+        <h3 class="font-semibold text-slate-800 dark:text-white">Content by Brand</h3>
+      </div>
+      <div class="p-4 space-y-4">
+        ${brands.map(b=>{
+          const bp=posts.filter(p=>p.brand_profile_id===b.id);
+          const bpub=bp.filter(p=>p.status==='published').length;
+          const bsched=bp.filter(p=>p.status==='scheduled').length;
+          const bdraft=bp.filter(p=>p.status==='draft').length;
+          return`<div>
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full" style="background:${b.color||'#6366f1'}"></div>
+                <span class="text-sm font-medium text-slate-700 dark:text-slate-200">${esc(b.name)}</span>
+              </div>
+              <span class="text-xs text-slate-500">${bp.length} total</span>
+            </div>
+            <div class="flex gap-1 text-xs">
+              <span class="badge bd-pub">${bpub} published</span>
+              <span class="badge bd-sched">${bsched} scheduled</span>
+              <span class="badge bd-draft">${bdraft} draft</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+  </div>`;
+}
+
+// ============================
+// CREATE POST PAGE
+// ============================
+let cpState={brandId:'',platforms:['instagram'],caption:'',images:[],scheduledAt:'',customPrompt:'',generating:false,saving:false,mode:'single'};
+let bulkRows=[{image:null,prompt:'',caption:'',status:'idle'}];
+let bulkBrandId='';
+let bulkPlatforms=['instagram'];
+let bulkGenerating=false;
+
+function renderCreatePost(){
+  const brands=DB.brands();
+  const brand=brands.find(b=>b.id===cpState.brandId);
+
+  if(cpState.mode==='bulk'){renderBulkPost();return;}
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-1">
+      <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Create Post</h1>
+      <div class="flex rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 text-sm">
+        <button class="px-4 py-1.5 ${cpState.mode==='single'?'bg-indigo-600 text-white':'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}" onclick="cpState.mode='single';renderCreatePost()">Single</button>
+        <button class="px-4 py-1.5 ${cpState.mode==='bulk'?'bg-indigo-600 text-white':'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}" onclick="cpState.mode='bulk';renderCreatePost()">Bulk</button>
+      </div>
+    </div>
+    <p class="text-slate-500 dark:text-slate-400 mb-8">Upload photos and generate an AI caption</p>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Left -->
+      <div class="space-y-5">
+        <div>
+          <label class="lbl">Brand Profile</label>
+          <select class="sel" id="cp-brand" onchange="cpState.brandId=this.value;renderCreatePost()">
+            <option value="">Select a brand...</option>
+            ${brands.map(b=>`<option value="${b.id}"${cpState.brandId===b.id?' selected':''}>${esc(b.name)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div>
+          <label class="lbl">Platforms</label>
+          <div class="flex gap-4 flex-wrap">
+            ${['instagram','facebook','linkedin'].map(p=>`
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" ${cpState.platforms.includes(p)?'checked':''} onchange="cpTogglePlatform('${p}')" class="w-4 h-4 accent-indigo-600">
+                <span class="text-sm font-medium capitalize text-slate-700 dark:text-slate-200">${p}</span>
+              </label>`).join('')}
+          </div>
+        </div>
+
+        <div>
+          <label class="lbl">Photos</label>
+          <div id="cp-images" class="space-y-2">
+            ${cpState.images.length>0?`
+              <div class="flex flex-wrap gap-2 mb-2">
+                ${cpState.images.map((img,i)=>`
+                  <div class="relative">
+                    <img src="${esc(img)}" class="w-20 h-20 rounded-lg object-cover border border-slate-200 dark:border-slate-600">
+                    <button onclick="cpRemoveImage(${i})" class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">×</button>
+                  </div>`).join('')}
+              </div>`:''}
+            <label class="flex items-center justify-center w-full h-24 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:border-indigo-400 transition-colors">
+              <div class="text-center">
+                <p class="text-slate-500 text-sm">📎 Click to upload photos</p>
+                <p class="text-xs text-slate-400">PNG, JPG, GIF</p>
+              </div>
+              <input type="file" accept="image/*" multiple class="hidden" onchange="cpHandleImages(event)">
+            </label>
+            <button class="btn btn-o btn-sm w-full" onclick="openPhotoPickerModal()">📚 Pick from Library</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="lbl">Caption</label>
+          <textarea class="ta" id="cp-caption" rows="5" placeholder="Write or generate a caption..." oninput="cpState.caption=this.value">${esc(cpState.caption)}</textarea>
+        </div>
+
+        <div>
+          <label class="lbl">Custom AI Prompt (optional)</label>
+          <textarea class="ta" id="cp-prompt" rows="2" placeholder="e.g. Focus on summer vibes, mention a sale..." oninput="cpState.customPrompt=this.value">${esc(cpState.customPrompt)}</textarea>
+        </div>
+
+        <div>
+          <label class="lbl">Schedule Date & Time</label>
+          <input type="datetime-local" class="inp" id="cp-sched" value="${cpState.scheduledAt}" onchange="cpState.scheduledAt=this.value">
+        </div>
+
+        <button class="btn btn-p w-full" id="cp-gen-btn" onclick="cpGenerate()" ${(!cpState.brandId||cpState.generating)?'disabled':''}>
+          ${cpState.generating?'<span class="spinner w-4 h-4 border-white"></span> Generating...':'🪄 Generate Caption'}
+        </button>
+      </div>
+
+      <!-- Right: preview -->
+      <div class="space-y-4">
+        ${brand?`
+          <div class="card border-dashed p-3 text-sm text-slate-600 dark:text-slate-300 space-y-1">
+            <p><strong>Tone:</strong> ${esc(brand.tone||'professional')}</p>
+            <p><strong>Length:</strong> ${esc(brand.output_length||'medium')}</p>
+            ${brand.brand_guidelines?`<p><strong>Guidelines:</strong> ${esc(brand.brand_guidelines.slice(0,100))}...</p>`:''}
+          </div>`:''}
+
+        <div class="card p-4">
+          <p class="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3">Post Preview</p>
+          <div class="border border-slate-200 dark:border-slate-600 rounded-lg overflow-hidden">
+            <div class="flex items-center gap-2 p-3 border-b border-slate-100 dark:border-slate-700">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background:${brand?.color||'#6366f1'}">${(brand?.name||'B')[0]}</div>
+              <div>
+                <p class="text-sm font-semibold text-slate-800 dark:text-white">${esc(brand?.name||'Brand Name')}</p>
+                <p class="text-xs text-slate-500">${cpState.scheduledAt?fmtDateTime(cpState.scheduledAt):'Now'}</p>
+              </div>
+            </div>
+            ${cpState.images.length>0?`<img src="${esc(cpState.images[0])}" class="w-full max-h-56 object-cover">`:'<div class="h-32 bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 text-sm">No image</div>'}
+            <div class="p-3">
+              <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap">${esc(cpState.caption)||'<span class="text-slate-400">Caption will appear here...</span>'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <button class="btn btn-o w-full" onclick="cpSave('draft')" ${cpState.saving||!cpState.brandId?'disabled':''}>💾 Save as Draft</button>
+          <button class="btn btn-p w-full" onclick="cpSave('scheduled')" ${cpState.saving||!cpState.brandId||!cpState.caption?'disabled':''}>
+            ${cpState.saving?'<span class="spinner w-4 h-4 border-white"></span> Saving...':'📅 Save as Scheduled'}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function cpTogglePlatform(p){
+  if(cpState.platforms.includes(p))cpState.platforms=cpState.platforms.filter(x=>x!==p);
+  else cpState.platforms=[...cpState.platforms,p];
+  renderCreatePost();
+}
+
+async function cpHandleImages(e){
+  const files=Array.from(e.target.files);
+  for(const f of files){
+    if(f.size>2*1024*1024){toast('Image too large (max 2MB)','err');continue;}
+    const url=await readFileAsDataURL(f);
+    cpState.images.push(url);
+  }
+  renderCreatePost();
+}
+
+function cpRemoveImage(i){cpState.images.splice(i,1);renderCreatePost()}
+
+async function cpGenerate(){
+  const brand=DB.brands().find(b=>b.id===cpState.brandId);
+  if(!brand)return;
+  const key=localStorage.getItem('cc_api_key');
+  if(!key){
+    cpState.caption=generateCaptionMock(brand,cpState.platforms,cpState.customPrompt);
+    renderCreatePost();
+    toast('Using mock captions — add a Claude API key in Settings for real AI','info');
+    return;
+  }
+  cpState.generating=true;
+  renderCreatePost();
+  const length=brand.output_length||'medium';
+  const hashtags=brand.include_hashtags!==false?'Include relevant hashtags.':'Do not include hashtags.';
+  const emojis=brand.include_emojis!==false?'Use emojis where appropriate.':'Do not use emojis.';
+  const sys='You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations, no quotation marks, nothing else.';
+  const textPrompt=`Write a ${length} social media caption for the brand "${brand.name}".
+Brand tone: ${brand.tone||'professional'}
+Brand guidelines: ${brand.brand_guidelines||'N/A'}
+Platforms: ${(cpState.platforms||[]).join(', ')||'instagram'}
+${hashtags}
+${emojis}
+${cpState.customPrompt?'Additional instructions: '+cpState.customPrompt:''}
+${cpState.images.length>0?'The caption MUST be specifically about the content shown in the attached image above. Describe what you see and make the caption relevant to it.':'Write an engaging caption that reflects the brand voice.'}`;
+  const content=cpState.images.length>0?buildImageContent(cpState.images[0],textPrompt):textPrompt;
+  const result=await callClaude(sys,content,512);
+  cpState.generating=false;
+  if(result){cpState.caption=result;toast('Caption generated!');}
+  renderCreatePost();
+}
+
+function cpSave(status){
+  if(!cpState.brandId){toast('Select a brand first','err');return}
+  cpState.saving=true;
+  renderCreatePost();
+  const posts=DB.posts();
+  posts.unshift({
+    id:uid(),brand_profile_id:cpState.brandId,
+    image_url:cpState.images[0]||null,
+    image_urls:[...cpState.images],
+    caption:cpState.caption,
+    platforms:[...cpState.platforms],
+    status,
+    scheduled_at:cpState.scheduledAt||null,
+    created_date:new Date().toISOString(),
+    client_visible:false,client_approved:false,
+  });
+  DB.save.posts(posts);
+  cpState={brandId:'',platforms:['instagram'],caption:'',images:[],scheduledAt:'',customPrompt:'',generating:false,saving:false,mode:'single'};
+  toast(status==='draft'?'Draft saved!':'Post scheduled!');
+  nav('posts');
+}
+
+function renderBulkPost(){
+  const brands=DB.brands();
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-1">
+      <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Create Post</h1>
+      <div class="flex rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 text-sm">
+        <button class="px-4 py-1.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50" onclick="cpState.mode='single';renderCreatePost()">Single</button>
+        <button class="px-4 py-1.5 bg-indigo-600 text-white">Bulk</button>
+      </div>
+    </div>
+    <p class="text-slate-500 dark:text-slate-400 mb-6">Generate multiple captions at once</p>
+
+    <div class="card p-5 mb-5">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">Brand (all rows)</label>
+          <select class="sel" id="bulk-brand" onchange="bulkBrandId=this.value">
+            <option value="">Select a brand...</option>
+            ${brands.map(b=>`<option value="${b.id}"${bulkBrandId===b.id?' selected':''}>${esc(b.name)}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="lbl">Platforms (all rows)</label>
+          <div class="flex gap-4 pt-1">
+            ${['instagram','facebook','linkedin'].map(p=>`<label class="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" class="w-4 h-4 accent-indigo-600" ${bulkPlatforms.includes(p)?'checked':''} onchange="bulkTogglePlatform('${p}')"><span class="text-sm capitalize text-slate-700 dark:text-slate-200">${p}</span></label>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-3 mb-4" id="bulk-rows">
+      ${bulkRows.map((row,i)=>`
+      <div class="card p-4" id="bulk-row-${i}">
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0">
+            ${row.image?`<div class="relative w-20 h-20"><img src="${esc(row.image)}" class="w-20 h-20 rounded-lg object-cover"><button onclick="bulkRemoveImage(${i})" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">×</button></div>`:`<label class="flex items-center justify-center w-20 h-20 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:border-indigo-400 text-center text-xs text-slate-400"><span>📎<br>Upload</span><input type="file" accept="image/*" class="hidden" onchange="bulkHandleImage(event,${i})"></label>`}
+          </div>
+          <div class="flex-1 space-y-2">
+            <input class="inp text-sm" placeholder="Custom prompt (optional)..." value="${esc(row.prompt)}" oninput="bulkRows[${i}].prompt=this.value">
+            ${row.caption?`<textarea class="ta text-sm" rows="3" oninput="bulkRows[${i}].caption=this.value">${esc(row.caption)}</textarea>`:''}
+            ${row.status==='generating'?`<p class="text-xs text-indigo-500 flex items-center gap-1"><span class="spinner w-3 h-3 border-indigo-500"></span> Generating...</p>`:''}
+            ${row.status==='done'?`<span class="text-xs text-emerald-600">✓ Ready</span>`:''}
+          </div>
+          <button onclick="bulkRemoveRow(${i})" class="text-slate-400 hover:text-red-500 text-lg leading-none">&times;</button>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <div class="flex gap-3 flex-wrap">
+      <button class="btn btn-o" onclick="bulkAddRow()" ${bulkRows.length>=10?'disabled':''}>＋ Add Row${bulkRows.length>=10?' (max 10)':''}</button>
+      <button class="btn btn-p" onclick="bulkGenerateAll()" ${bulkGenerating?'disabled':''}>
+        ${bulkGenerating?'<span class="spinner w-4 h-4 border-white"></span> Generating...':'✨ Generate All Captions'}
+      </button>
+      <button class="btn btn-o" onclick="bulkSaveAllDrafts()" ${!bulkRows.some(r=>r.caption)?'disabled':''}>💾 Save All as Drafts</button>
+    </div>
+  </div>`;
+}
+
+function bulkTogglePlatform(p){
+  if(bulkPlatforms.includes(p))bulkPlatforms=bulkPlatforms.filter(x=>x!==p);
+  else bulkPlatforms=[...bulkPlatforms,p];
+  renderBulkPost();
+}
+
+async function bulkHandleImage(e,idx){
+  const f=e.target.files[0];
+  if(!f)return;
+  if(f.size>2*1024*1024){toast('Image too large (max 2MB)','err');return;}
+  bulkRows[idx].image=await readFileAsDataURL(f);
+  renderBulkPost();
+}
+
+function bulkRemoveImage(idx){bulkRows[idx].image=null;renderBulkPost();}
+function bulkRemoveRow(idx){if(bulkRows.length===1)return;bulkRows.splice(idx,1);renderBulkPost();}
+function bulkAddRow(){if(bulkRows.length<10){bulkRows.push({image:null,prompt:'',caption:'',status:'idle'});renderBulkPost();}}
+
+async function bulkGenerateAll(){
+  bulkBrandId=document.getElementById('bulk-brand')?.value||bulkBrandId;
+  const brand=DB.brands().find(b=>b.id===bulkBrandId);
+  if(!brand){toast('Select a brand first','err');return;}
+  const key=localStorage.getItem('cc_api_key');
+  if(!key){toast('Add a Claude API key in Settings','err');return;}
+  bulkGenerating=true;
+  renderBulkPost();
+  const sys='You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations.';
+  for(let i=0;i<bulkRows.length;i++){
+    const row=bulkRows[i];
+    if(!row.image&&!row.prompt)continue;
+    bulkRows[i].status='generating';
+    const textPrompt=`Write a ${brand.output_length||'medium'} social media caption for "${brand.name}".
+Tone: ${brand.tone||'professional'}
+Guidelines: ${brand.brand_guidelines||'N/A'}
+Platforms: ${bulkPlatforms.join(', ')||'instagram'}
+${brand.include_hashtags!==false?'Include hashtags.':'No hashtags.'}
+${brand.include_emojis!==false?'Use emojis.':'No emojis.'}
+${row.prompt?'Additional instructions: '+row.prompt:''}
+${row.image?'The caption MUST be specifically about the content shown in the attached image. Describe it and make the caption relevant.':''}`;
+    const content=row.image?buildImageContent(row.image,textPrompt):textPrompt;
+    const result=await callClaude(sys,content,400);
+    bulkRows[i].caption=result||'';
+    bulkRows[i].status=result?'done':'idle';
+  }
+  bulkGenerating=false;
+  renderBulkPost();
+  toast('All captions generated!');
+}
+
+function bulkSaveAllDrafts(){
+  bulkBrandId=document.getElementById('bulk-brand')?.value||bulkBrandId;
+  if(!bulkBrandId){toast('Select a brand first','err');return;}
+  const toSave=bulkRows.filter(r=>r.caption);
+  if(!toSave.length){toast('No captions to save','err');return;}
+  const posts=DB.posts();
+  toSave.forEach(r=>{
+    posts.unshift({id:uid(),brand_profile_id:bulkBrandId,caption:r.caption,platforms:[...bulkPlatforms],status:'draft',image_url:r.image||null,image_urls:r.image?[r.image]:[],created_date:new Date().toISOString(),client_visible:false,client_approved:false});
+  });
+  DB.save.posts(posts);
+  toast(`${toSave.length} draft${toSave.length>1?'s':''} saved!`);
+  bulkRows=[{image:null,prompt:'',caption:'',status:'idle'}];
+  nav('posts');
+}
+
+// Photo picker modal for create post
+function openPhotoPickerModal(){
+  const photos=DB.photos();
+  showModal(`<div class="modal" style="max-width:640px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Pick from Library</h3>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    ${photos.length===0?`<p class="text-slate-500 text-sm py-8 text-center">No photos in library yet. <button class="text-indigo-600 underline" onclick="closeModal();nav('photo-library')">Add photos</button></p>`:`
+    <div class="photo-grid mb-4" style="max-height:400px;overflow-y:auto">
+      ${photos.map(p=>`
+        <div class="cursor-pointer" onclick="cpPickPhoto('${esc(p.url)}')">
+          <img src="${esc(p.url)}" class="w-full h-32 object-cover rounded-lg border-2 border-transparent hover:border-indigo-500 transition-colors">
+          <p class="text-xs text-slate-500 mt-1 truncate">${esc(p.name||'Photo')}</p>
+        </div>`).join('')}
+    </div>`}
+    <button class="btn btn-o w-full" onclick="closeModal()">Cancel</button>
+  </div>`);
+}
+
+function cpPickPhoto(url){
+  if(!cpState.images.includes(url))cpState.images.push(url);
+  closeModal();
+  renderCreatePost();
+}
+
+// ============================
+// POSTS PAGE
+// ============================
+let postsFilter={status:'all',brand:'all'};
+let postsSelected=[];
+
+function renderPosts(){
+  const posts=DB.posts();
+  const brands=DB.brands();
+  let filtered=posts.filter(p=>{
+    const sm=postsFilter.status==='all'||p.status===postsFilter.status;
+    const bm=postsFilter.brand==='all'||p.brand_profile_id===postsFilter.brand;
+    return sm&&bm;
+  });
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Posts</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">All your content in one place</p>
+      </div>
+      <button class="btn btn-p" onclick="nav('create-post')">✏️ New Post</button>
+    </div>
+
+    <!-- Brand filter tabs -->
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button onclick="postsFilter.brand='all';renderPosts()" class="btn btn-sm ${postsFilter.brand==='all'?'btn-p':'btn-o'}">📁 All Brands (${posts.length})</button>
+      ${brands.map(b=>`
+        <button onclick="postsFilter.brand='${b.id}';renderPosts()" class="btn btn-sm ${postsFilter.brand===b.id?'btn-p':'btn-o'}">
+          <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:${b.color||'#6366f1'}"></span>
+          ${esc(b.name)} (${posts.filter(p=>p.brand_profile_id===b.id).length})
+        </button>`).join('')}
+    </div>
+
+    <!-- Status filter -->
+    <div class="flex gap-2 mb-5 flex-wrap">
+      ${['all','draft','submitted','approved','scheduled','published'].map(s=>`
+        <button onclick="postsFilter.status='${s}';renderPosts()" class="btn btn-sm ${postsFilter.status===s?'btn-p':'btn-o'} capitalize">${s==='all'?'All Status':s}</button>`).join('')}
+    </div>
+
+    <!-- Bulk action bar -->
+    ${postsSelected.length>0?`
+    <div class="flex items-center gap-3 mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl flex-wrap">
+      <span class="text-sm font-medium text-indigo-700 dark:text-indigo-300">${postsSelected.length} selected</span>
+      <button class="btn btn-sm btn-o" onclick="postsBulkStatus('draft')">Mark Draft</button>
+      <button class="btn btn-sm btn-o" onclick="postsBulkStatus('scheduled')">Mark Scheduled</button>
+      <button class="btn btn-sm btn-o" onclick="postsBulkStatus('published')">Mark Published</button>
+      <button class="btn btn-sm btn-d" onclick="postsBulkDelete()">Delete All</button>
+      <button class="btn btn-sm btn-o ml-auto" onclick="postsSelected=[];renderPosts()">✕</button>
+    </div>`:''}
+
+    ${filtered.length===0?`<p class="text-center text-slate-400 py-20">No posts found.</p>`:`
+    <div class="space-y-3">
+      <div class="flex items-center gap-2 px-1 mb-2">
+        <input type="checkbox" class="w-4 h-4 accent-indigo-600" ${postsSelected.length===filtered.length&&filtered.length>0?'checked':''} onchange="postsToggleAll(this.checked,${JSON.stringify(filtered.map(p=>p.id))})">
+        <span class="text-xs text-slate-500">${postsSelected.length===filtered.length&&filtered.length>0?'Deselect all':'Select all'}</span>
+      </div>
+      ${filtered.map(p=>renderPostRow(p,brands)).join('')}
+    </div>`}
+  </div>`;
+}
+
+function renderPostRow(p,brands){
+  const b=brands.find(br=>br.id===p.brand_profile_id);
+  const sel=postsSelected.includes(p.id);
+  return`<div class="card flex gap-3 items-start p-4 hover:shadow-sm transition-shadow ${sel?'border-indigo-300 dark:border-indigo-600 bg-indigo-50/50 dark:bg-indigo-900/10':''}">
+    <input type="checkbox" class="w-4 h-4 accent-indigo-600 mt-1 flex-shrink-0" ${sel?'checked':''} onchange="postsToggle('${p.id}',this.checked)">
+    ${p.image_url?`<img src="${esc(p.image_url)}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">`:`<div class="w-16 h-16 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0 text-2xl">🖼️</div>`}
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1 flex-wrap">
+        <span class="font-medium text-sm text-slate-800 dark:text-white">${esc(b?.name||'Unknown Brand')}</span>
+        ${statusBadge(p.status)}
+        ${(p.platforms||[]).map(pl=>`<span class="badge bd-gray capitalize">${pl}</span>`).join('')}
+        ${p.client_approved?`<span class="badge bd-app">👍 Client Approved</span>`:''}
+        ${p.client_visible?`<span class="badge bd-gray">👁 Client Visible</span>`:''}
+      </div>
+      <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">${esc(p.caption)||'No caption yet'}</p>
+      ${p.scheduled_at?`<p class="text-xs text-blue-500 mt-1">📅 Scheduled: ${fmtDateTime(p.scheduled_at)}</p>`:''}
+      ${p.rejection_reason?`<p class="text-xs text-red-600 mt-1 bg-red-50 dark:bg-red-900/20 rounded px-2 py-1">❌ Rejected: ${esc(p.rejection_reason)}</p>`:''}
+    </div>
+    <div class="flex items-center gap-1 flex-shrink-0 flex-wrap justify-end">
+      <button class="btn btn-o btn-sm" onclick="openPostPreview('${p.id}')" title="Preview">👁</button>
+      <button class="btn btn-o btn-sm" onclick="openEditPost('${p.id}')" title="Edit">✏️</button>
+      <button class="btn btn-o btn-sm" onclick="copyCaption('${esc(p.caption||'')}')" title="Copy">📋</button>
+      ${p.status!=='published'?`<button class="btn btn-sm" style="background:#d1fae5;color:#065f46;border:1px solid #6ee7b7" onclick="postsMarkPublished('${p.id}')">✅ Publish</button>`:''}
+      ${p.status==='draft'?`<button class="btn btn-sm" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd" onclick="postsSubmitReview('${p.id}')">📤 Submit</button>`:''}
+      ${p.status==='submitted'?`<button class="btn btn-sm btn-p" onclick="postsApprove('${p.id}')">✓ Approve</button>`:''}
+      <button class="btn btn-d btn-sm" onclick="postsDelete('${p.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+function postsToggle(id,checked){
+  if(checked)postsSelected=[...postsSelected,id];
+  else postsSelected=postsSelected.filter(x=>x!==id);
+  renderPosts();
+}
+function postsToggleAll(checked,ids){
+  postsSelected=checked?[...ids]:[];
+  renderPosts();
+}
+function postsBulkStatus(status){
+  const posts=DB.posts();
+  DB.save.posts(posts.map(p=>postsSelected.includes(p.id)?{...p,status}:p));
+  postsSelected=[];
+  toast(`Updated to ${status}`);
+  renderPosts();
+}
+function postsBulkDelete(){
+  confirm2(`Delete ${postsSelected.length} posts?`,'This cannot be undone.',()=>{
+    const posts=DB.posts().filter(p=>!postsSelected.includes(p.id));
+    DB.save.posts(posts);
+    postsSelected=[];
+    toast('Posts deleted');
+    renderPosts();
+  });
+}
+function postsDelete(id){
+  confirm2('Delete this post?','This cannot be undone.',()=>{
+    DB.save.posts(DB.posts().filter(p=>p.id!==id));
+    toast('Post deleted');
+    renderPosts();
+  });
+}
+function postsMarkPublished(id){
+  DB.save.posts(DB.posts().map(p=>p.id===id?{...p,status:'published',published_at:new Date().toISOString()}:p));
+  toast('Marked as published!');
+  renderPosts();
+}
+function postsSubmitReview(id){
+  DB.save.posts(DB.posts().map(p=>p.id===id?{...p,status:'submitted'}:p));
+  toast('Submitted for review');
+  renderPosts();
+}
+function postsApprove(id){
+  DB.save.posts(DB.posts().map(p=>p.id===id?{...p,status:'approved'}:p));
+  toast('Post approved!');
+  renderPosts();
+}
+function copyCaption(caption){
+  navigator.clipboard.writeText(caption).then(()=>toast('Caption copied!'));
+}
+
+function openPostPreview(id){
+  const p=DB.posts().find(x=>x.id===id);
+  if(!p)return;
+  const b=getBrand(p.brand_profile_id);
+  showModal(`<div class="modal" style="max-width:480px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Post Preview</h3>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="border border-slate-200 dark:border-slate-600 rounded-lg overflow-hidden">
+      <div class="flex items-center gap-2 p-3 border-b border-slate-100 dark:border-slate-700">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm" style="background:${b?.color||'#6366f1'}">${(b?.name||'B')[0]}</div>
+        <div>
+          <p class="font-semibold text-sm text-slate-800 dark:text-white">${esc(b?.name||'Brand')}</p>
+          <p class="text-xs text-slate-500">${fmtDateTime(p.scheduled_at||p.created_date)}</p>
+        </div>
+      </div>
+      ${p.image_url?`<img src="${esc(p.image_url)}" class="w-full max-h-64 object-cover">`:''}
+      <div class="p-3 space-y-2">
+        <p class="text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap">${esc(p.caption||'No caption')}</p>
+        <div class="flex gap-2 flex-wrap">
+          ${statusBadge(p.status)}
+          ${(p.platforms||[]).map(pl=>`<span class="badge bd-gray capitalize">${pl}</span>`).join('')}
+        </div>
+        ${p.scheduled_at?`<p class="text-xs text-blue-500">📅 ${fmtDateTime(p.scheduled_at)}</p>`:''}
+      </div>
+    </div>
+    <div class="flex gap-2 mt-4">
+      <button class="btn btn-o flex-1" onclick="closeModal();openEditPost('${id}')">✏️ Edit</button>
+      <button class="btn btn-o flex-1" onclick="closeModal()">Close</button>
+    </div>
+  </div>`);
+}
+
+function openEditPost(id){
+  const p=DB.posts().find(x=>x.id===id);
+  if(!p)return;
+  const brands=DB.brands();
+  showModal(`<div class="modal">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Edit Post</h3>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="lbl">Brand</label>
+        <select class="sel" id="ep-brand">
+          ${brands.map(b=>`<option value="${b.id}"${p.brand_profile_id===b.id?' selected':''}>${esc(b.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Caption</label>
+        <textarea class="ta" id="ep-caption" rows="5">${esc(p.caption||'')}</textarea>
+      </div>
+      <div>
+        <label class="lbl">Status</label>
+        <select class="sel" id="ep-status">
+          ${['draft','submitted','approved','scheduled','published'].map(s=>`<option${p.status===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Scheduled At</label>
+        <input type="datetime-local" class="inp" id="ep-sched" value="${p.scheduled_at?p.scheduled_at.slice(0,16):''}">
+      </div>
+      <div class="flex gap-3 justify-end pt-2">
+        <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-p" onclick="saveEditPost('${id}')">Save Changes</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function saveEditPost(id){
+  const posts=DB.posts();
+  const idx=posts.findIndex(p=>p.id===id);
+  if(idx<0)return;
+  posts[idx]={
+    ...posts[idx],
+    brand_profile_id:document.getElementById('ep-brand').value,
+    caption:document.getElementById('ep-caption').value,
+    status:document.getElementById('ep-status').value,
+    scheduled_at:document.getElementById('ep-sched').value||null,
+  };
+  DB.save.posts(posts);
+  closeModal();
+  toast('Post saved!');
+  if(currentPage==='posts')renderPosts();
+}
+
+// ============================
+// CALENDAR PAGE
+// ============================
+let calMonth=new Date();
+let calDragPost=null;
+
+function renderCalendar(){
+  const posts=DB.posts().filter(p=>p.scheduled_at);
+  const brands=DB.brands();
+  const year=calMonth.getFullYear(),month=calMonth.getMonth();
+  const firstDay=new Date(year,month,1);
+  const lastDay=new Date(year,month+1,0);
+  const startDow=firstDay.getDay();
+  const totalDays=lastDay.getDate();
+  const today=new Date();
+
+  // Build grid: pad with previous month days
+  const cells=[];
+  for(let i=0;i<startDow;i++)cells.push(null);
+  for(let d=1;d<=totalDays;d++)cells.push(new Date(year,month,d));
+
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Content Calendar</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Drag posts to reschedule. Click to preview.</p>
+      </div>
+      <button class="btn btn-p" onclick="nav('create-post')">✏️ New Post</button>
+    </div>
+
+    <div class="card overflow-hidden">
+      <!-- Month nav -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+        <button class="btn btn-o btn-sm" onclick="calPrev()">‹ Prev</button>
+        <h2 class="font-semibold text-lg text-slate-800 dark:text-white">${monthNames[month]} ${year}</h2>
+        <button class="btn btn-o btn-sm" onclick="calNext()">Next ›</button>
+      </div>
+      <!-- Day headers -->
+      <div class="grid grid-cols-7 border-b border-slate-200 dark:border-slate-700">
+        ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="text-center text-xs font-medium text-slate-500 py-2">${d}</div>`).join('')}
+      </div>
+      <!-- Days -->
+      <div class="grid grid-cols-7">
+        ${cells.map((day,i)=>{
+          if(!day)return`<div class="cal-day bg-slate-50 dark:bg-slate-800/50" style="min-height:80px"></div>`;
+          const isToday=day.getDate()===today.getDate()&&day.getMonth()===today.getMonth()&&day.getFullYear()===today.getFullYear();
+          const dayPosts=posts.filter(p=>{
+            const d=new Date(p.scheduled_at);
+            return d.getDate()===day.getDate()&&d.getMonth()===day.getMonth()&&d.getFullYear()===day.getFullYear();
+          });
+          return`<div class="cal-day" ondragover="calDragOver(event)" ondrop="calDrop(event,'${day.toISOString()}')" ondragleave="this.classList.remove('bg-blue-50','dark:bg-blue-900')">
+            <span class="text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday?'bg-indigo-600 text-white':'text-slate-600 dark:text-slate-300'}">${day.getDate()}</span>
+            <div class="mt-1">
+              ${dayPosts.slice(0,2).map(p=>{
+                const b=brands.find(br=>br.id===p.brand_profile_id);
+                return`<div class="cal-pill" style="background:${b?.color||'#6366f1'}" draggable="true" ondragstart="calDragStart(event,'${p.id}')" onclick="openPostPreview('${p.id}');event.stopPropagation()" title="${esc(b?.name||'Post')}">${esc(b?.name||'Post')}</div>`;
+              }).join('')}
+              ${dayPosts.length>2?`<div class="text-xs text-slate-400 pl-1">+${dayPosts.length-2}</div>`:''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function calPrev(){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1);renderCalendar()}
+function calNext(){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1);renderCalendar()}
+function calDragStart(e,postId){calDragPost=postId;e.dataTransfer.effectAllowed='move'}
+function calDragOver(e){e.preventDefault();e.currentTarget.style.background='#eff6ff'}
+function calDrop(e,dateIso){
+  e.preventDefault();
+  e.currentTarget.style.background='';
+  if(!calDragPost)return;
+  const posts=DB.posts();
+  const p=posts.find(x=>x.id===calDragPost);
+  if(!p){calDragPost=null;return}
+  const oldDate=new Date(p.scheduled_at||new Date());
+  const newBase=new Date(dateIso);
+  newBase.setHours(oldDate.getHours(),oldDate.getMinutes(),0,0);
+  if(confirm(`Reschedule to ${fmtDate(newBase.toISOString())}?`)){
+    DB.save.posts(posts.map(x=>x.id===calDragPost?{...x,scheduled_at:newBase.toISOString()}:x));
+    toast('Post rescheduled!');
+    renderCalendar();
+  }
+  calDragPost=null;
+}
+
+// ============================
+// BRANDS PAGE
+// ============================
+function renderBrands(){
+  const brands=DB.brands();
+  const clients=DB.clients();
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Brand Profiles</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your brand voices and settings</p>
+      </div>
+      <button class="btn btn-p" onclick="openBrandModal()">＋ New Brand</button>
+    </div>
+
+    ${brands.length===0?`
+    <div class="text-center py-20 text-slate-400">
+      <p class="text-lg mb-2">🏷️ No brand profiles yet</p>
+      <p class="text-sm mb-4">Create one to start generating captions</p>
+      <button class="btn btn-p" onclick="openBrandModal()">Create Brand</button>
+    </div>`:`
+    <div class="space-y-4">
+      ${brands.map(b=>renderBrandCard(b,clients)).join('')}
+    </div>`}
+  </div>`;
+}
+
+function renderBrandCard(b,clients){
+  const client=clients.find(c=>c.brand_profile_id===b.id);
+  const posts=DB.posts().filter(p=>p.brand_profile_id===b.id);
+  return`<div class="card p-5">
+    <div class="flex items-start gap-4">
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold flex-shrink-0" style="background:${b.color||'#6366f1'}">${(b.name||'B')[0]}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-3 mb-1">
+          <h3 class="text-lg font-semibold text-slate-800 dark:text-white">${esc(b.name)}</h3>
+          ${b.website?`<a href="${esc(b.website)}" target="_blank" class="text-xs text-indigo-600 hover:underline">🌐 Website</a>`:''}
+        </div>
+        <div class="flex gap-2 flex-wrap mb-2">
+          <span class="badge bd-gray capitalize">🎨 ${b.tone||'professional'}</span>
+          <span class="badge bd-gray capitalize">📏 ${b.output_length||'medium'}</span>
+          ${b.include_hashtags?`<span class="badge bd-gray"># Hashtags</span>`:''}
+          ${b.include_emojis?`<span class="badge bd-gray">😊 Emojis</span>`:''}
+        </div>
+        ${b.brand_guidelines?`<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">${esc(b.brand_guidelines)}</p>`:''}
+        <div class="flex gap-3 mt-2 text-xs text-slate-500">
+          <span>📄 ${posts.length} posts</span>
+          ${client?`<span>👤 Client: ${esc(client.name)}</span>`:''}
+          ${(b.platforms||[]).length>0?`<span>📱 ${(b.platforms||[]).join(', ')}</span>`:''}
+        </div>
+      </div>
+      <div class="flex gap-2 flex-shrink-0">
+        <button class="btn btn-o btn-sm" onclick="openAnalyseModal('${b.id}')">🔍 Analyse</button>
+        <button class="btn btn-o btn-sm" onclick="openBrandModal('${b.id}')">✏️ Edit</button>
+        <button class="btn btn-d btn-sm" onclick="deleteBrand('${b.id}')">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openBrandModal(id){
+  const b=id?DB.brands().find(x=>x.id===id):null;
+  showModal(`<div class="modal">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">${b?'Edit Brand':'New Brand'}</h3>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">Brand Name *</label>
+          <input class="inp" id="bm-name" placeholder="My Brand" value="${esc(b?.name||'')}">
+        </div>
+        <div>
+          <label class="lbl">Brand Color</label>
+          <input type="color" class="inp" id="bm-color" value="${b?.color||'#6366f1'}" style="height:38px;padding:2px 8px">
+        </div>
+      </div>
+      <div>
+        <label class="lbl">Website</label>
+        <input class="inp" id="bm-website" placeholder="https://mybrand.com" value="${esc(b?.website||'')}">
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="lbl">Tone</label>
+          <select class="sel" id="bm-tone">
+            ${['professional','casual','playful','luxury','inspirational','friendly'].map(t=>`<option${(b?.tone||'professional')===t?' selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="lbl">Caption Length</label>
+          <select class="sel" id="bm-length">
+            ${['short','medium','long'].map(l=>`<option${(b?.output_length||'medium')===l?' selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">Brand Guidelines</label>
+        <textarea class="ta" id="bm-guidelines" rows="3" placeholder="Describe your brand's voice, values, key messages...">${esc(b?.brand_guidelines||'')}</textarea>
+      </div>
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="bm-hashtags" class="w-4 h-4 accent-indigo-600" ${b?.include_hashtags!==false?'checked':''}>
+          <span class="text-sm text-slate-700 dark:text-slate-200">Include hashtags</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="bm-emojis" class="w-4 h-4 accent-indigo-600" ${b?.include_emojis!==false?'checked':''}>
+          <span class="text-sm text-slate-700 dark:text-slate-200">Include emojis</span>
+        </label>
+      </div>
+      <div class="flex gap-3 justify-end pt-2">
+        <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-p" onclick="saveBrand('${id||''}')">Save Brand</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function saveBrand(id){
+  const name=document.getElementById('bm-name').value.trim();
+  if(!name){toast('Brand name required','err');return}
+  const data={
+    name,color:document.getElementById('bm-color').value,
+    website:document.getElementById('bm-website').value.trim(),
+    tone:document.getElementById('bm-tone').value,
+    output_length:document.getElementById('bm-length').value,
+    brand_guidelines:document.getElementById('bm-guidelines').value,
+    include_hashtags:document.getElementById('bm-hashtags').checked,
+    include_emojis:document.getElementById('bm-emojis').checked,
+  };
+  const brands=DB.brands();
+  if(id){
+    DB.save.brands(brands.map(b=>b.id===id?{...b,...data}:b));
+    toast('Brand updated!');
+  }else{
+    brands.unshift({id:uid(),created_date:new Date().toISOString(),...data});
+    DB.save.brands(brands);
+    toast('Brand created!');
+  }
+  closeModal();
+  renderBrands();
+}
+
+function deleteBrand(id){
+  confirm2('Delete this brand?','All posts for this brand will still exist.',()=>{
+    DB.save.brands(DB.brands().filter(b=>b.id!==id));
+    toast('Brand deleted');
+    renderBrands();
+  });
+}
+
+function openAnalyseModal(brandId){
+  const b=DB.brands().find(x=>x.id===brandId);
+  if(!b)return;
+  showModal(`<div class="modal" style="max-width:560px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">🔍 Brand Intelligence — ${esc(b.name)}</h3>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <p class="text-sm text-slate-500 mb-3">Paste your website's homepage or about page copy below. Claude will analyse it and auto-fill your brand settings.</p>
+    <textarea class="ta" id="ai-website-text" rows="7" placeholder="Paste your website copy here..."></textarea>
+    <div id="ai-analyse-result" class="mt-3 hidden"></div>
+    <div class="flex gap-3 justify-end mt-4">
+      <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" id="ai-analyse-btn" onclick="runBrandAnalysis('${brandId}')">✨ Analyse with AI</button>
+    </div>
+  </div>`);
+}
+
+async function runBrandAnalysis(brandId){
+  const text=document.getElementById('ai-website-text')?.value?.trim();
+  if(!text){toast('Paste some website copy first','err');return;}
+  const btn=document.getElementById('ai-analyse-btn');
+  if(btn){btn.disabled=true;btn.textContent='Analysing...';}
+  const sys='You are a brand strategist. Respond ONLY with valid JSON, no markdown, no commentary.';
+  const prompt=`Analyse this website copy and return a JSON object with these exact keys:
+- tone: one of professional/casual/playful/luxury/inspirational/friendly
+- brand_guidelines: 2-3 sentences on writing style, key messages, what to emphasise
+- key_messages: array of 3-5 core brand messages (strings)
+- content_recommendations: array of 3-4 content ideas suited to this brand (strings)
+- report: 3-4 paragraph brand intelligence summary (string)
+
+Website copy:
+${text.slice(0,4000)}`;
+  const result=await callClaude(sys,prompt,1200);
+  if(!result){if(btn){btn.disabled=false;btn.textContent='✨ Analyse with AI';}return;}
+  let parsed=null;
+  try{parsed=JSON.parse(result);}catch(e){
+    const m=result.match(/\{[\s\S]*\}/);
+    if(m)try{parsed=JSON.parse(m[0]);}catch(e2){}
+  }
+  if(parsed){
+    // Auto-fill brand form if open, else update brand directly
+    const brands=DB.brands();
+    DB.save.brands(brands.map(b=>b.id===brandId?{...b,tone:parsed.tone||b.tone,brand_guidelines:parsed.brand_guidelines||b.brand_guidelines}:b));
+    const resultEl=document.getElementById('ai-analyse-result');
+    if(resultEl){
+      resultEl.className='mt-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg text-sm space-y-3';
+      resultEl.innerHTML=`
+        <p class="font-semibold text-slate-800 dark:text-white">Brand Report</p>
+        <p class="text-slate-600 dark:text-slate-300">${esc(parsed.report||'')}</p>
+        ${parsed.key_messages?.length?`<div><p class="font-medium text-slate-700 dark:text-slate-200 mb-1">Key Messages</p><ul class="list-disc pl-4 space-y-1">${parsed.key_messages.map(m=>`<li class="text-slate-600 dark:text-slate-300">${esc(m)}</li>`).join('')}</ul></div>`:''}
+        ${parsed.content_recommendations?.length?`<div><p class="font-medium text-slate-700 dark:text-slate-200 mb-1">Content Ideas</p><ul class="list-disc pl-4 space-y-1">${parsed.content_recommendations.map(m=>`<li class="text-slate-600 dark:text-slate-300">${esc(m)}</li>`).join('')}</ul></div>`:''}
+        <p class="text-xs text-emerald-600">✓ Tone and guidelines auto-saved to brand profile</p>`;
+    }
+  } else {
+    const resultEl=document.getElementById('ai-analyse-result');
+    if(resultEl){resultEl.className='mt-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap';resultEl.textContent=result;}
+  }
+  if(btn){btn.disabled=false;btn.textContent='✨ Analyse with AI';}
+  renderBrands();
+}
+
+// ============================
+// PHOTO LIBRARY PAGE
+// ============================
+let photoFilter='';
+let photoFolderId=null;
+
+function renderPhotoLibrary(){
+  const photos=DB.photos().filter(p=>{
+    const sm=!photoFilter||p.name?.toLowerCase().includes(photoFilter.toLowerCase())||(p.tags||[]).some(t=>t.toLowerCase().includes(photoFilter.toLowerCase()));
+    const fm=photoFolderId===null||p.folder_id===photoFolderId;
+    return sm&&fm;
+  });
+  const folders=DB.folders();
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Photo Library</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage your brand assets</p>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-o btn-sm" onclick="openNewFolderModal()">📁 New Folder</button>
+        <label class="btn btn-p cursor-pointer">
+          📎 Upload
+          <input type="file" accept="image/*" multiple class="hidden" onchange="photoUpload(event)">
+        </label>
+      </div>
+    </div>
+
+    <!-- Search + folders -->
+    <div class="flex gap-3 mb-5 flex-wrap items-center">
+      <input class="inp" style="max-width:240px" placeholder="🔍 Search photos..." value="${esc(photoFilter)}" oninput="photoFilter=this.value;renderPhotoLibrary()">
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="photoFolderId=null;renderPhotoLibrary()" class="btn btn-sm ${photoFolderId===null?'btn-p':'btn-o'}">📂 All Photos (${DB.photos().length})</button>
+        ${folders.map(f=>`
+          <button onclick="photoFolderId='${f.id}';renderPhotoLibrary()" class="btn btn-sm ${photoFolderId===f.id?'btn-p':'btn-o'}">
+            📁 ${esc(f.name)} <span onclick="deleteFolder('${f.id}');event.stopPropagation()" class="ml-1 text-red-400 hover:text-red-600">×</span>
+          </button>`).join('')}
+      </div>
+    </div>
+
+    ${photos.length===0?`
+    <div class="text-center py-20 text-slate-400">
+      <p class="text-4xl mb-3">🖼️</p>
+      <p class="text-lg mb-2">No photos yet</p>
+      <p class="text-sm mb-4">Upload photos to use in your posts</p>
+      <label class="btn btn-p cursor-pointer">
+        📎 Upload Photos
+        <input type="file" accept="image/*" multiple class="hidden" onchange="photoUpload(event)">
+      </label>
+    </div>`:`
+    <div class="photo-grid">
+      ${photos.map(p=>renderPhotoCard(p,folders)).join('')}
+    </div>`}
+  </div>`;
+}
+
+function renderPhotoCard(p,folders){
+  const folder=folders.find(f=>f.id===p.folder_id);
+  return`<div class="card overflow-hidden group">
+    <div class="relative">
+      <img src="${esc(p.url)}" class="w-full h-36 object-cover cursor-pointer" onclick="photoLightbox('${p.id}')">
+      <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+        <button class="btn btn-sm" style="background:white;color:#334155" onclick="photoLightbox('${p.id}')">👁 View</button>
+        <button class="btn btn-sm btn-d" onclick="deletePhoto('${p.id}')">🗑</button>
+      </div>
+    </div>
+    <div class="p-2">
+      <input class="text-xs w-full bg-transparent outline-none font-medium text-slate-700 dark:text-slate-200" value="${esc(p.name||'Photo')}" onblur="renamePhoto('${p.id}',this.value)">
+      ${folder?`<p class="text-xs text-slate-400">📁 ${esc(folder.name)}</p>`:''}
+      <div class="flex flex-wrap gap-1 mt-1">
+        ${(p.tags||[]).map(t=>`<span class="text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-1.5 rounded-full cursor-pointer" onclick="removePhotoTag('${p.id}','${esc(t)}')">${esc(t)} ×</span>`).join('')}
+        <input class="text-xs bg-transparent outline-none text-slate-400 w-16" placeholder="+tag" onkeydown="if(event.key==='Enter'){addPhotoTag('${p.id}',this.value);this.value=''}">
+      </div>
+      ${folders.length>0?`
+      <select class="sel mt-1" style="font-size:11px;padding:2px 6px" onchange="movePhotoToFolder('${p.id}',this.value)">
+        <option value="">Move to folder...</option>
+        ${folders.map(f=>`<option value="${f.id}"${p.folder_id===f.id?' selected':''}>${esc(f.name)}</option>`).join('')}
+      </select>`:''}
+    </div>
+  </div>`;
+}
+
+async function photoUpload(e){
+  const files=Array.from(e.target.files);
+  let count=0;
+  for(const f of files){
+    if(f.size>3*1024*1024){toast(`${f.name} too large (max 3MB)`,'err');continue}
+    const url=await readFileAsDataURL(f);
+    const photos=DB.photos();
+    photos.unshift({id:uid(),url,name:f.name.replace(/\.[^.]+$/,''),tags:[],folder_id:photoFolderId,created_date:new Date().toISOString()});
+    DB.save.photos(photos);
+    count++;
+  }
+  if(count>0)toast(`${count} photo${count!==1?'s':''} uploaded!`);
+  renderPhotoLibrary();
+}
+
+function deletePhoto(id){
+  confirm2('Delete this photo?','',()=>{
+    DB.save.photos(DB.photos().filter(p=>p.id!==id));
+    toast('Photo deleted');
+    renderPhotoLibrary();
+  });
+}
+
+function renamePhoto(id,name){
+  DB.save.photos(DB.photos().map(p=>p.id===id?{...p,name}:p));
+}
+
+function addPhotoTag(id,tag){
+  const t=tag.trim();
+  if(!t)return;
+  const photos=DB.photos();
+  const p=photos.find(x=>x.id===id);
+  if(!p)return;
+  p.tags=[...(p.tags||[]).filter(x=>x!==t),t];
+  DB.save.photos(photos);
+  renderPhotoLibrary();
+}
+
+function removePhotoTag(id,tag){
+  const photos=DB.photos();
+  const p=photos.find(x=>x.id===id);
+  if(!p)return;
+  p.tags=(p.tags||[]).filter(t=>t!==tag);
+  DB.save.photos(photos);
+  renderPhotoLibrary();
+}
+
+function movePhotoToFolder(id,folderId){
+  DB.save.photos(DB.photos().map(p=>p.id===id?{...p,folder_id:folderId||null}:p));
+  toast('Moved!');
+  renderPhotoLibrary();
+}
+
+function openNewFolderModal(){
+  showModal(`<div class="modal" style="max-width:360px">
+    <h3 class="text-lg font-semibold mb-4 text-slate-800 dark:text-white">New Folder</h3>
+    <input class="inp mb-4" id="folder-name" placeholder="Folder name">
+    <div class="flex gap-3 justify-end">
+      <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="createFolder()">Create</button>
+    </div>
+  </div>`);
+}
+
+function createFolder(){
+  const name=document.getElementById('folder-name').value.trim();
+  if(!name){toast('Enter folder name','err');return}
+  const folders=DB.folders();
+  folders.push({id:uid(),name});
+  DB.save.folders(folders);
+  closeModal();
+  toast('Folder created!');
+  renderPhotoLibrary();
+}
+
+function deleteFolder(id){
+  confirm2('Delete folder?','Photos will move to root.',()=>{
+    DB.save.folders(DB.folders().filter(f=>f.id!==id));
+    DB.save.photos(DB.photos().map(p=>p.folder_id===id?{...p,folder_id:null}:p));
+    if(photoFolderId===id)photoFolderId=null;
+    toast('Folder deleted');
+    renderPhotoLibrary();
+  });
+}
+
+function photoLightbox(id){
+  const photos=DB.photos();
+  const p=photos.find(x=>x.id===id);
+  if(!p)return;
+  showModal(`<div class="overlay" style="background:rgba(0,0,0,.85)" onclick="closeModal()">
+    <div class="text-center" onclick="event.stopPropagation()">
+      <img src="${esc(p.url)}" style="max-height:80vh;max-width:90vw;border-radius:8px;object-fit:contain">
+      <div class="mt-3 flex gap-2 justify-center">
+        <button class="btn btn-o" onclick="closeModal()">✕ Close</button>
+        <button class="btn btn-p" onclick="cpPickPhoto('${esc(p.url)}');closeModal();nav('create-post')">Use in Post</button>
+      </div>
+    </div>
+  </div>`);
+  // Replace the outer overlay so clicking bg closes
+  document.getElementById('modal-root').firstChild.onclick=closeModal;
+}
+
+// ============================
+// ANALYTICS PAGE
+// ============================
+let analyticsChart=null;
+let analyticsPlatformChart=null;
+
+function renderAnalytics(){
+  const posts=DB.posts();
+  const brands=DB.brands();
+  const published=posts.filter(p=>p.status==='published');
+  const scheduled=posts.filter(p=>p.status==='scheduled');
+  const drafts=posts.filter(p=>p.status==='draft');
+  const approvedByClient=posts.filter(p=>p.client_approved);
+  const clientVisible=posts.filter(p=>p.client_visible);
+  const approvalRate=clientVisible.length>0?Math.round(approvedByClient.length/clientVisible.length*100):0;
+
+  // Monthly data (last 6 months)
+  const months=[];
+  const now=new Date();
+  for(let i=5;i>=0;i--){
+    const m=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const mEnd=new Date(now.getFullYear(),now.getMonth()-i+1,0);
+    months.push({
+      label:m.toLocaleDateString('en-US',{month:'short',year:'2-digit'}),
+      published:posts.filter(p=>{const d=new Date(p.created_date);return p.status==='published'&&d>=m&&d<=mEnd}).length,
+      scheduled:posts.filter(p=>{const d=new Date(p.created_date);return p.status==='scheduled'&&d>=m&&d<=mEnd}).length,
+      drafts:posts.filter(p=>{const d=new Date(p.created_date);return p.status==='draft'&&d>=m&&d<=mEnd}).length,
+    });
+  }
+
+  // Platform breakdown
+  const platformCounts={};
+  posts.forEach(p=>(p.platforms||[]).forEach(pl=>{platformCounts[pl]=(platformCounts[pl]||0)+1}));
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Analytics</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Content performance across your brands</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      ${[
+        {label:'Total Posts',val:posts.length,icon:'📄',c:'text-violet-500'},
+        {label:'Published',val:published.length,icon:'✅',c:'text-green-500'},
+        {label:'Scheduled',val:scheduled.length,icon:'📅',c:'text-blue-500'},
+        {label:'Client Approval Rate',val:approvalRate+'%',icon:'👍',c:'text-orange-500'},
+      ].map(s=>`
+        <div class="card p-4 flex items-center gap-3">
+          <span class="text-2xl">${s.icon}</span>
+          <div>
+            <p class="text-2xl font-bold text-slate-800 dark:text-white">${s.val}</p>
+            <p class="text-xs text-slate-500">${s.label}</p>
+          </div>
+        </div>`).join('')}
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <!-- Monthly chart -->
+      <div class="card p-4">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Posts Over Time</h3>
+        <canvas id="monthly-chart" height="200"></canvas>
+      </div>
+      <!-- Platform chart -->
+      <div class="card p-4">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Platform Breakdown</h3>
+        <canvas id="platform-chart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Brand breakdown table -->
+    <div class="card">
+      <div class="p-4 border-b border-slate-100 dark:border-slate-700">
+        <h3 class="font-semibold text-slate-800 dark:text-white">By Brand</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-100 dark:border-slate-700">
+              <th class="text-left p-3 text-slate-500 font-medium">Brand</th>
+              <th class="text-center p-3 text-slate-500 font-medium">Total</th>
+              <th class="text-center p-3 text-slate-500 font-medium">Published</th>
+              <th class="text-center p-3 text-slate-500 font-medium">Scheduled</th>
+              <th class="text-center p-3 text-slate-500 font-medium">Drafts</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${brands.length===0?`<tr><td colspan="5" class="text-center p-6 text-slate-400">No brands yet</td></tr>`:
+            brands.map(b=>{
+              const bp=posts.filter(p=>p.brand_profile_id===b.id);
+              return`<tr class="border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td class="p-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full" style="background:${b.color||'#6366f1'}"></div>
+                    <span class="font-medium text-slate-700 dark:text-slate-200">${esc(b.name)}</span>
+                  </div>
+                </td>
+                <td class="text-center p-3 text-slate-700 dark:text-slate-200">${bp.length}</td>
+                <td class="text-center p-3"><span class="badge bd-pub">${bp.filter(p=>p.status==='published').length}</span></td>
+                <td class="text-center p-3"><span class="badge bd-sched">${bp.filter(p=>p.status==='scheduled').length}</span></td>
+                <td class="text-center p-3"><span class="badge bd-draft">${bp.filter(p=>p.status==='draft').length}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+
+  // Render charts
+  setTimeout(()=>{
+    const isDarkMode=document.documentElement.classList.contains('dark');
+    const gridColor=isDarkMode?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.06)';
+    const textColor=isDarkMode?'#94a3b8':'#64748b';
+
+    const mc=document.getElementById('monthly-chart');
+    if(mc){
+      if(analyticsChart)analyticsChart.destroy();
+      analyticsChart=new Chart(mc,{
+        type:'bar',
+        data:{
+          labels:months.map(m=>m.label),
+          datasets:[
+            {label:'Published',data:months.map(m=>m.published),backgroundColor:'#22c55e'},
+            {label:'Scheduled',data:months.map(m=>m.scheduled),backgroundColor:'#3b82f6'},
+            {label:'Drafts',data:months.map(m=>m.drafts),backgroundColor:'#f59e0b'},
+          ]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:true,
+          plugins:{legend:{labels:{color:textColor,font:{size:11}}}},
+          scales:{
+            x:{grid:{color:gridColor},ticks:{color:textColor}},
+            y:{grid:{color:gridColor},ticks:{color:textColor,stepSize:1},beginAtZero:true},
+          }
+        }
+      });
+    }
+
+    const pc=document.getElementById('platform-chart');
+    if(pc){
+      if(analyticsPlatformChart)analyticsPlatformChart.destroy();
+      const labels=Object.keys(platformCounts);
+      analyticsPlatformChart=new Chart(pc,{
+        type:'doughnut',
+        data:{
+          labels:labels.map(l=>l[0].toUpperCase()+l.slice(1)),
+          datasets:[{data:labels.map(l=>platformCounts[l]),backgroundColor:['#6366f1','#3b82f6','#0ea5e9','#8b5cf6']}]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:true,
+          plugins:{legend:{position:'bottom',labels:{color:textColor,font:{size:11}}}}
+        }
+      });
+    }
+  },50);
+}
+
+// ============================
+// CLIENTS PAGE
+// ============================
+function renderClients(){
+  const clients=DB.clients();
+  const brands=DB.brands();
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Clients</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage client portals and access</p>
+      </div>
+      <button class="btn btn-p" onclick="openClientModal()">＋ Add Client</button>
+    </div>
+
+    ${clients.length===0?`
+    <div class="text-center py-20 text-slate-400">
+      <p class="text-4xl mb-3">👥</p>
+      <p class="text-lg mb-2">No clients yet</p>
+      <p class="text-sm mb-4">Add clients to give them a portal to review posts</p>
+      <button class="btn btn-p" onclick="openClientModal()">Add Client</button>
+    </div>`:`
+    <div class="space-y-4">
+      ${clients.map(c=>{
+        const brand=brands.find(b=>b.id===c.brand_profile_id);
+        const clientPosts=DB.posts().filter(p=>p.client_id===c.id||p.brand_profile_id===c.brand_profile_id);
+        const approvedPosts=clientPosts.filter(p=>p.client_approved);
+        return`<div class="card p-5">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 font-bold flex-shrink-0">${(c.name||'C')[0].toUpperCase()}</div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-semibold text-slate-800 dark:text-white">${esc(c.name)}</h3>
+              <p class="text-sm text-slate-500">${esc(c.email||'No email')}</p>
+              ${brand?`<p class="text-xs text-slate-400 mt-1">🏷️ Brand: ${esc(brand.name)}</p>`:''}
+              <div class="flex gap-3 mt-2 text-xs text-slate-500">
+                <span>📄 ${clientPosts.length} posts</span>
+                <span>👍 ${approvedPosts.length} approved</span>
+              </div>
+              ${c.portal_password?`<p class="text-xs text-green-600 mt-1">🔑 Portal access enabled</p>`:`<p class="text-xs text-slate-400 mt-1">No portal access</p>`}
+            </div>
+            <div class="flex gap-2">
+              <button class="btn btn-o btn-sm" onclick="openClientModal('${c.id}')">✏️ Edit</button>
+              <button class="btn btn-d btn-sm" onclick="deleteClient('${c.id}')">🗑</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`}
+  </div>`;
+}
+
+function openClientModal(id){
+  const c=id?DB.clients().find(x=>x.id===id):null;
+  const brands=DB.brands();
+  showModal(`<div class="modal">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">${c?'Edit Client':'Add Client'}</h3>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="lbl">Client Name *</label>
+        <input class="inp" id="cl-name" placeholder="Client name" value="${esc(c?.name||'')}">
+      </div>
+      <div>
+        <label class="lbl">Email</label>
+        <input class="inp" id="cl-email" type="email" placeholder="client@company.com" value="${esc(c?.email||'')}">
+      </div>
+      <div>
+        <label class="lbl">Linked Brand</label>
+        <select class="sel" id="cl-brand">
+          <option value="">No brand linked</option>
+          ${brands.map(b=>`<option value="${b.id}"${c?.brand_profile_id===b.id?' selected':''}>${esc(b.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div>
+        <label class="lbl">Portal Password</label>
+        <input class="inp" id="cl-password" type="password" placeholder="Set portal access password" value="${esc(c?.portal_password||'')}">
+        <p class="text-xs text-slate-400 mt-1">Clients use this password to access their portal</p>
+      </div>
+      <div class="flex gap-3 justify-end pt-2">
+        <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-p" onclick="saveClient('${id||''}')">Save</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function saveClient(id){
+  const name=document.getElementById('cl-name').value.trim();
+  if(!name){toast('Client name required','err');return}
+  const data={name,email:document.getElementById('cl-email').value,brand_profile_id:document.getElementById('cl-brand').value,portal_password:document.getElementById('cl-password').value};
+  const clients=DB.clients();
+  if(id){
+    DB.save.clients(clients.map(c=>c.id===id?{...c,...data}:c));
+    toast('Client updated!');
+  }else{
+    clients.unshift({id:uid(),created_date:new Date().toISOString(),...data});
+    DB.save.clients(clients);
+    toast('Client added!');
+  }
+  closeModal();
+  renderClients();
+}
+
+function deleteClient(id){
+  confirm2('Remove this client?','',()=>{
+    DB.save.clients(DB.clients().filter(c=>c.id!==id));
+    toast('Client removed');
+    renderClients();
+  });
+}
+
+// ============================
+// TEAM PAGE
+// ============================
+function renderTeam(){
+  const team=DB.team();
+
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-3xl mx-auto">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Team</h1>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage team members and roles</p>
+      </div>
+      <button class="btn btn-p" onclick="openTeamModal()">＋ Invite Member</button>
+    </div>
+
+    <!-- Current user -->
+    <div class="card p-4 mb-4 border-indigo-200 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">${(DB.profile().name||'U')[0]}</div>
+        <div>
+          <p class="font-semibold text-slate-800 dark:text-white">${esc(DB.profile().name||'You')}</p>
+          <p class="text-sm text-slate-500">${esc(DB.profile().email||'')}</p>
+        </div>
+        <span class="badge bd-sub ml-auto">Owner</span>
+      </div>
+    </div>
+
+    ${team.length===0?`
+    <div class="card p-8 text-center text-slate-400">
+      <p class="text-4xl mb-3">🤝</p>
+      <p class="text-lg mb-2">No team members yet</p>
+      <p class="text-sm mb-4">Invite editors or viewers to collaborate</p>
+      <button class="btn btn-p" onclick="openTeamModal()">Invite Member</button>
+    </div>`:`
+    <div class="space-y-3">
+      ${team.map(m=>`
+        <div class="card p-4 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-200">${(m.name||m.email||'?')[0].toUpperCase()}</div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-slate-800 dark:text-white">${esc(m.name||'')}</p>
+            <p class="text-sm text-slate-500">${esc(m.email)}</p>
+          </div>
+          <span class="badge bd-gray capitalize">${m.role||'editor'}</span>
+          <button class="btn btn-d btn-sm" onclick="removeTeamMember('${m.id}')">Remove</button>
+        </div>`).join('')}
+    </div>`}
+  </div>`;
+}
+
+function openTeamModal(){
+  showModal(`<div class="modal" style="max-width:400px">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Invite Team Member</h3>
+      <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="lbl">Name</label>
+        <input class="inp" id="tm-name" placeholder="Full name">
+      </div>
+      <div>
+        <label class="lbl">Email *</label>
+        <input class="inp" id="tm-email" type="email" placeholder="team@agency.com">
+      </div>
+      <div>
+        <label class="lbl">Role</label>
+        <select class="sel" id="tm-role">
+          <option value="admin">Admin</option>
+          <option value="editor" selected>Editor</option>
+          <option value="viewer">Viewer</option>
+        </select>
+      </div>
+      <div class="flex gap-3 justify-end pt-2">
+        <button class="btn btn-o" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-p" onclick="saveTeamMember()">Send Invite</button>
+      </div>
+    </div>
+  </div>`);
+}
+
+function saveTeamMember(){
+  const email=document.getElementById('tm-email').value.trim();
+  if(!email){toast('Email required','err');return}
+  const team=DB.team();
+  if(team.find(m=>m.email===email)){toast('Already invited','err');return}
+  team.push({id:uid(),name:document.getElementById('tm-name').value.trim(),email,role:document.getElementById('tm-role').value,invited_date:new Date().toISOString()});
+  DB.save.team(team);
+  closeModal();
+  toast('Invite sent (simulated)!');
+  renderTeam();
+}
+
+function removeTeamMember(id){
+  confirm2('Remove this team member?','They will lose access.',()=>{
+    DB.save.team(DB.team().filter(m=>m.id!==id));
+    toast('Member removed');
+    renderTeam();
+  });
+}
+
+// ============================
+// SETTINGS PAGE
+// ============================
+function renderSettings(){
+  const s=DB.settings();
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-1">Settings</h1>
+    <p class="text-slate-500 dark:text-slate-400 mb-8">Configure your workspace preferences</p>
+
+    <div class="space-y-6">
+      <div class="card p-6">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Workspace</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="lbl">Workspace Name</label>
+            <input class="inp" id="s-workspace" value="${esc(s.workspaceName||'My Agency')}">
+          </div>
+          <div>
+            <label class="lbl">Default Timezone</label>
+            <select class="sel" id="s-timezone">
+              ${['UTC','America/New_York','America/Chicago','America/Denver','America/Los_Angeles','Europe/London','Europe/Paris','Asia/Tokyo','Australia/Sydney'].map(tz=>`<option${s.timezone===tz?' selected':''}>${tz}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Default Platforms</label>
+            <div class="flex gap-4 flex-wrap">
+              ${['instagram','facebook','linkedin'].map(p=>`
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="w-4 h-4 accent-indigo-600" id="s-plat-${p}" ${(s.defaultPlatforms||['instagram']).includes(p)?'checked':''}>
+                  <span class="text-sm capitalize text-slate-700 dark:text-slate-200">${p}</span>
+                </label>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-6">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Notifications</h3>
+        <label class="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" id="s-notifs" class="w-4 h-4 accent-indigo-600" ${s.emailNotifications?'checked':''}>
+          <div>
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Email Notifications</p>
+            <p class="text-xs text-slate-500">Receive emails for approvals and published posts</p>
+          </div>
+        </label>
+      </div>
+
+      <div class="card p-6" id="s-claude-card">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-1">Claude API</h3>
+        <p class="text-xs text-slate-500 mb-4">Your key is stored only in this browser and never shared.</p>
+        <div class="space-y-4">
+          <div>
+            <label class="lbl">API Key</label>
+            <div class="flex gap-2">
+              <input type="password" class="inp flex-1" id="s-apikey" placeholder="sk-ant-..." value="${localStorage.getItem('cc_api_key')||''}">
+              <button class="btn btn-p" onclick="saveClaudeKey()">Save</button>
+            </div>
+            <p id="s-key-status" class="text-xs mt-1 ${localStorage.getItem('cc_api_key')?'text-emerald-600':'text-slate-400'}">${localStorage.getItem('cc_api_key')?'✓ Key saved':'No key set'}</p>
+          </div>
+          <div>
+            <label class="lbl">Model</label>
+            <select class="sel" id="s-model">
+              ${[['claude-haiku-4-5-20251001','Haiku — Fast & cheap (default)'],['claude-sonnet-4-6','Sonnet — Balanced'],['claude-opus-4-6','Opus — Most capable']].map(([v,l])=>`<option value="${v}"${(localStorage.getItem('cc_model')||'claude-haiku-4-5-20251001')===v?' selected':''}>${l}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-6">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Data</h3>
+        <div class="space-y-3">
+          <button class="btn btn-o w-full text-left" onclick="exportData()">📥 Export All Data (JSON)</button>
+          <button class="btn btn-d w-full" onclick="clearAllData()">🗑 Clear All Data</button>
+        </div>
+      </div>
+
+      <button class="btn btn-p w-full" onclick="saveSettings()">Save Settings</button>
+    </div>
+  </div>`;
+}
+
+function saveClaudeKey(){
+  const key=document.getElementById('s-apikey').value.trim();
+  const model=document.getElementById('s-model').value;
+  localStorage.setItem('cc_api_key',key);
+  localStorage.setItem('cc_model',model);
+  const el=document.getElementById('s-key-status');
+  if(el){el.textContent=key?'✓ Key saved':'No key set';el.className='text-xs mt-1 '+(key?'text-emerald-600':'text-slate-400');}
+  toast(key?'Claude API key saved!':'API key cleared');
+}
+
+function saveSettings(){
+  const plats=['instagram','facebook','linkedin'].filter(p=>document.getElementById('s-plat-'+p)?.checked);
+  DB.save.settings({
+    workspaceName:document.getElementById('s-workspace').value,
+    timezone:document.getElementById('s-timezone').value,
+    defaultPlatforms:plats,
+    emailNotifications:document.getElementById('s-notifs').checked,
+  });
+  toast('Settings saved!');
+}
+
+function exportData(){
+  const data={brands:DB.brands(),posts:DB.posts(),photos:DB.photos().map(p=>({...p,url:'[base64 omitted]'})),clients:DB.clients(),team:DB.team(),settings:DB.settings()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='captioncraft-export.json';
+  a.click();
+  toast('Data exported!');
+}
+
+function clearAllData(){
+  confirm2('Clear ALL data?','This will delete all brands, posts, photos, clients and team members. Cannot be undone!',()=>{
+    Object.values(KEYS).forEach(k=>localStorage.removeItem(k));
+    toast('All data cleared');
+    renderDashboard();
+    nav('dashboard');
+  },'Clear Everything',true);
+}
+
+// ============================
+// PROFILE PAGE
+// ============================
+function renderProfile(){
+  const p=DB.profile();
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-1">Profile</h1>
+    <p class="text-slate-500 dark:text-slate-400 mb-8">Manage your account details</p>
+
+    <div class="space-y-6">
+      <div class="card p-6">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold">${(p.name||'U')[0]}</div>
+          <div>
+            <p class="text-xl font-semibold text-slate-800 dark:text-white">${esc(p.name||'User')}</p>
+            <p class="text-slate-500">${esc(p.email||'')}</p>
+            <span class="badge bd-sub mt-1">Owner</span>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="lbl">Display Name</label>
+            <input class="inp" id="pf-name" value="${esc(p.name||'')}">
+          </div>
+          <div>
+            <label class="lbl">Email</label>
+            <input class="inp" id="pf-email" type="email" value="${esc(p.email||'')}">
+          </div>
+          <button class="btn btn-p" onclick="saveProfile()">Save Profile</button>
+        </div>
+      </div>
+
+      <div class="card p-6">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Appearance</h3>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Dark Mode</p>
+            <p class="text-xs text-slate-500">Toggle between light and dark interface</p>
+          </div>
+          <button class="btn ${isDark?'btn-p':'btn-o'}" onclick="toggleDark();renderProfile()">${isDark?'☀️ Light Mode':'🌙 Dark Mode'}</button>
+        </div>
+      </div>
+
+      <div class="card p-6">
+        <h3 class="font-semibold text-red-600 mb-4">Danger Zone</h3>
+        <p class="text-sm text-slate-500 mb-3">Deleting your account will clear all local data.</p>
+        <button class="btn btn-d" onclick="clearAllData()">Delete Account Data</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function saveProfile(){
+  DB.save.profile({name:document.getElementById('pf-name').value,email:document.getElementById('pf-email').value});
+  toast('Profile saved!');
+  renderProfile();
+}
+
+// ============================
+// HOLIDAYS PAGE
+// ============================
+const HOLIDAYS_2026=[
+  {date:'2026-01-01',name:"New Year's Day"},
+  {date:'2026-01-19',name:'Martin Luther King Jr. Day'},
+  {date:'2026-02-14',name:"Valentine's Day"},
+  {date:'2026-02-16',name:"Presidents' Day"},
+  {date:'2026-03-08',name:"International Women's Day"},
+  {date:'2026-03-17',name:"St. Patrick's Day"},
+  {date:'2026-04-03',name:'Good Friday'},
+  {date:'2026-04-05',name:'Easter Sunday'},
+  {date:'2026-04-22',name:'Earth Day'},
+  {date:'2026-05-10',name:"Mother's Day"},
+  {date:'2026-05-25',name:'Memorial Day'},
+  {date:'2026-06-19',name:'Juneteenth'},
+  {date:'2026-06-21',name:"Father's Day"},
+  {date:'2026-07-04',name:'Independence Day (US)'},
+  {date:'2026-08-12',name:'International Youth Day'},
+  {date:'2026-09-07',name:'Labor Day'},
+  {date:'2026-10-05',name:'World Mental Health Day (Oct 10)'},
+  {date:'2026-10-31',name:'Halloween'},
+  {date:'2026-11-11',name:"Veterans' Day"},
+  {date:'2026-11-26',name:'Thanksgiving (US)'},
+  {date:'2026-12-24',name:'Christmas Eve'},
+  {date:'2026-12-25',name:'Christmas Day'},
+  {date:'2026-12-31',name:"New Year's Eve"},
+];
+
+let holidayResults={};
+
+function renderHolidays(){
+  const brands=DB.brands();
+  document.getElementById('page').innerHTML=`
+  <div class="p-6 max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-1">Holiday Posts</h1>
+    <p class="text-slate-500 dark:text-slate-400 mb-6">Generate captions for upcoming holidays and save them as drafts.</p>
+    ${brands.length===0?`<div class="text-center py-16 text-slate-400"><p class="text-lg mb-2">No brands yet</p><button class="btn btn-p" onclick="nav('brands')">Create a Brand first</button></div>`:`
+    <div class="space-y-3">
+      ${HOLIDAYS_2026.map((h,i)=>`
+      <div class="card p-4" id="hol-${i}">
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex-shrink-0 w-24">
+            <p class="text-xs text-slate-500">${fmtDate(h.date)}</p>
+          </div>
+          <p class="flex-1 font-medium text-slate-800 dark:text-white">${esc(h.name)}</p>
+          <select class="sel w-40 text-sm py-1" id="hol-brand-${i}">
+            ${brands.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
+          </select>
+          <button class="btn btn-o btn-sm" onclick="generateHolidayCaption(${i})">✨ Generate</button>
+        </div>
+        <div id="hol-result-${i}" class="${holidayResults[i]?'mt-3':'hidden'}">
+          ${holidayResults[i]?`
+          <textarea class="ta text-sm" rows="3" id="hol-caption-${i}">${esc(holidayResults[i])}</textarea>
+          <div class="flex justify-end mt-2">
+            <button class="btn btn-p btn-sm" onclick="saveHolidayDraft(${i},'${esc(h.date)}','${esc(h.name)}')">💾 Save as Draft</button>
+          </div>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`}
+  </div>`;
+}
+
+async function generateHolidayCaption(idx){
+  const brandId=document.getElementById(`hol-brand-${idx}`)?.value;
+  const brand=DB.brands().find(b=>b.id===brandId);
+  if(!brand)return;
+  const h=HOLIDAYS_2026[idx];
+  const key=localStorage.getItem('cc_api_key');
+  if(!key){toast('Add a Claude API key in Settings','err');return;}
+  const btn=document.querySelector(`#hol-${idx} button[onclick*="generateHolidayCaption"]`);
+  if(btn){btn.disabled=true;btn.textContent='Generating...';}
+  const sys='You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations.';
+  const prompt=`Write a ${brand.output_length||'medium'} social media caption for the brand "${brand.name}" celebrating ${h.name} (${h.date}).
+Tone: ${brand.tone||'professional'}
+Brand guidelines: ${brand.brand_guidelines||'N/A'}
+${brand.include_hashtags!==false?'Include relevant holiday hashtags.':'No hashtags.'}
+${brand.include_emojis!==false?'Use festive emojis where appropriate.':'No emojis.'}`;
+  const result=await callClaude(sys,prompt,400);
+  if(btn){btn.disabled=false;btn.textContent='✨ Generate';}
+  if(result){
+    holidayResults[idx]=result;
+    renderHolidays();
+  }
+}
+
+function saveHolidayDraft(idx,date,holidayName){
+  const caption=document.getElementById(`hol-caption-${idx}`)?.value||holidayResults[idx]||'';
+  const brandId=document.getElementById(`hol-brand-${idx}`)?.value;
+  if(!brandId||!caption)return;
+  const posts=DB.posts();
+  posts.unshift({id:uid(),brand_profile_id:brandId,caption,platforms:DB.settings().defaultPlatforms||['instagram'],status:'draft',scheduled_at:date+'T10:00:00',created_date:new Date().toISOString(),client_visible:false,client_approved:false,image_url:'',image_urls:[]});
+  DB.save.posts(posts);
+  toast(`${holidayName} post saved as draft!`);
+}
+
+// ============================
+// ROUTER
+// ============================
+function renderPage(){
+  if(analyticsChart){analyticsChart.destroy();analyticsChart=null}
+  if(analyticsPlatformChart){analyticsPlatformChart.destroy();analyticsPlatformChart=null}
+  switch(currentPage){
+    case'dashboard':renderDashboard();break;
+    case'create-post':renderCreatePost();break;
+    case'posts':renderPosts();break;
+    case'calendar':renderCalendar();break;
+    case'brands':renderBrands();break;
+    case'photo-library':renderPhotoLibrary();break;
+    case'analytics':renderAnalytics();break;
+    case'clients':renderClients();break;
+    case'team':renderTeam();break;
+    case'holidays':renderHolidays();break;
+    case'settings':renderSettings();break;
+    case'profile':renderProfile();break;
+    default:renderDashboard();
+  }
+}
+
+// ============================
+// INIT
+// ============================
+document.addEventListener('DOMContentLoaded',()=>{
+  // Set dark icon state
+  document.getElementById('dark-icon').textContent=isDark?'☀️':'🌙';
+  document.getElementById('dark-label').textContent=isDark?'Light Mode':'Dark Mode';
+
+  // Seed sample data if empty
+  if(DB.brands().length===0&&DB.posts().length===0){
+    const sampleBrandId=uid();
+    const sampleBrandId2=uid();
+    DB.save.brands([
+      {id:sampleBrandId,name:'Sunrise Cafe',color:'#f97316',tone:'friendly',output_length:'medium',brand_guidelines:'Warm, welcoming coffee shop with organic ingredients.',include_hashtags:true,include_emojis:true,created_date:new Date().toISOString()},
+      {id:sampleBrandId2,name:'TechNova',color:'#6366f1',tone:'professional',output_length:'short',brand_guidelines:'B2B software company focused on enterprise solutions.',include_hashtags:false,include_emojis:false,created_date:new Date().toISOString()},
+    ]);
+    const now=new Date();
+    DB.save.posts([
+      {id:uid(),brand_profile_id:sampleBrandId,caption:'☀️ Start your morning right with our freshly brewed single-origin coffee. Every cup tells a story. #morningcoffee #organic #cafe',platforms:['instagram','facebook'],status:'published',image_url:'',published_at:new Date(now-86400000*2).toISOString(),created_date:new Date(now-86400000*2).toISOString(),client_visible:false,client_approved:false},
+      {id:uid(),brand_profile_id:sampleBrandId,caption:'Our weekend brunch menu is here! Fresh, seasonal ingredients sourced locally. Book your table today. #brunch #local',platforms:['instagram'],status:'scheduled',scheduled_at:new Date(now+86400000*2).toISOString(),created_date:new Date(now-86400000).toISOString(),client_visible:true,client_approved:false},
+      {id:uid(),brand_profile_id:sampleBrandId2,caption:'Introducing our new enterprise dashboard — real-time analytics, automated reporting, seamless integration.',platforms:['linkedin'],status:'draft',created_date:new Date().toISOString(),client_visible:false,client_approved:false},
+      {id:uid(),brand_profile_id:sampleBrandId2,caption:'TechNova Q1 2025: 40% increase in enterprise clients. See how we\'re transforming business intelligence.',platforms:['linkedin','facebook'],status:'approved',created_date:new Date().toISOString(),client_visible:false,client_approved:false},
+    ]);
+  }
+
+  renderNav();
+  renderPage();
+});
+</script>
+</body>
+</html>
