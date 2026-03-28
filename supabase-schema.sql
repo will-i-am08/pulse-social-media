@@ -154,11 +154,15 @@ create policy "admin update workspace" on public.workspaces
   );
 
 -- PROFILES
+-- Split into two non-recursive policies to avoid infinite recursion
+-- (my_workspace_id() queries profiles, so we can't use it in a profiles policy)
 drop policy if exists "read workspace profiles" on public.profiles;
-create policy "read workspace profiles" on public.profiles
-  for select using (
-    workspace_id = public.my_workspace_id() or id = auth.uid()
-  );
+create policy "read own profile" on public.profiles
+  for select using (id = auth.uid());
+
+drop policy if exists "admin read workspace profiles" on public.profiles;
+create policy "admin read workspace profiles" on public.profiles
+  for select using (workspace_id = auth.uid());
 
 drop policy if exists "update own profile" on public.profiles;
 create policy "update own profile" on public.profiles
