@@ -4,13 +4,13 @@
     {
       "name": "CaptionCraft",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["/tmp/pulse_server.py", "3456"],
+      "runtimeArgs": ["/tmp/cc_server.py", "3456"],
       "port": 3456
     },
     {
       "name": "pulse-website",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["/tmp/pulse_server.py", "3457"],
+      "runtimeArgs": ["/tmp/cc_server.py", "3457"],
       "port": 3457
     }
   ]

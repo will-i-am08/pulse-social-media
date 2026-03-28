@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={darkMode:'class'}</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc}
@@ -82,10 +83,49 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
   #mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
   #mob-overlay.show{display:block}
 }
+/* Login screen */
+#login-screen{position:fixed;inset:0;z-index:1000;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:16px}
+.dark #login-screen{background:#0f172a}
+#login-screen.hidden{display:none}
+.login-card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.08)}
+.dark .login-card{background:#1e293b;border-color:#334155}
+.login-error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none}
 </style>
 </head>
 <body>
-<div id="app" class="flex">
+<!-- Login Screen — shown before auth, hidden once signed in -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">CC</div>
+      <div>
+        <div class="font-bold text-lg text-slate-800 dark:text-white">CaptionCraft</div>
+        <div class="text-xs text-slate-500">Agency Content Platform</div>
+      </div>
+    </div>
+    <div id="login-form-wrapper">
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-1">Welcome back</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Sign in to your workspace</p>
+      <div id="login-error" class="login-error"></div>
+      <div class="space-y-4">
+        <div>
+          <label class="lbl">Email</label>
+          <input class="inp" id="login-email" type="email" placeholder="you@agency.com" autocomplete="email" onkeydown="if(event.key==='Enter')submitLogin()">
+        </div>
+        <div>
+          <label class="lbl">Password</label>
+          <input class="inp" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')submitLogin()">
+        </div>
+        <button class="btn btn-p" id="login-btn" onclick="submitLogin()" style="width:100%;justify-content:center;padding:10px 16px">Sign In</button>
+        <p class="text-center text-xs text-slate-500">
+          <a href="#" onclick="submitForgotPassword();return false" class="text-indigo-500 hover:underline">Forgot password?</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="flex" style="display:none">
   <!-- Sidebar -->
   <nav id="sidebar">
     <div class="flex items-center gap-2 mb-6 px-2 pt-2">
@@ -97,11 +137,14 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
       <div class="nav-item" onclick="nav('profile')">
         <span>👤</span><span>Profile</span>
       </div>
-      <div class="nav-item" onclick="nav('settings')">
+      <div class="nav-item" id="sidebar-settings" onclick="nav('settings')" style="display:none">
         <span>⚙️</span><span>Settings</span>
       </div>
       <div class="nav-item" onclick="toggleDark()">
         <span id="dark-icon">🌙</span><span id="dark-label">Dark Mode</span>
+      </div>
+      <div class="nav-item" onclick="logout()" style="color:#ef4444">
+        <span>🚪</span><span>Sign Out</span>
       </div>
     </div>
   </nav>
@@ -122,34 +165,227 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif
 
 <script>
 // ============================
-// DB — localStorage
+// SUPABASE — cloud database + auth
 // ============================
-const KEYS = {brands:'cc_brands',posts:'cc_posts',photos:'cc_photos',folders:'cc_folders',clients:'cc_clients',team:'cc_team',settings:'cc_settings',profile:'cc_profile'};
+// TODO: Replace these placeholders with your actual Supabase project values.
+// Find them at: Supabase Dashboard → Settings → API
+const SUPABASE_URL = 'https://YOUR-PROJECT-ID.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-KEY-HERE';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function dbGet(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}}
-function dbSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+// ============================
+// AUTH STATE
+// ============================
+let currentUser = null;
+let currentRole = 'admin';
+let workspaceId  = null;
+
+function isAdmin()  { return currentRole === 'admin'; }
+function isTeam()   { return currentRole === 'team'; }
+function isClient() { return currentRole === 'client'; }
+function getClientBrandId() { return currentUser?.profile?.brand_id || null; }
+
+// ============================
+// IN-MEMORY CACHE (replaces localStorage)
+// ============================
+const _defaultSettings = {
+  timezone:'UTC', defaultPlatforms:['instagram'], emailNotifications:true,
+  workspaceName:'My Agency', makeWebhookUrl:'', autoSendOnApprove:false,
+  bufferChannels:[], cloudinaryCloudName:'', cloudinaryUploadPreset:'',
+  api_key:'', model:'claude-sonnet-4-6'
+};
+
+let _cache = {
+  brands:[], posts:[], photos:[], clients:[],
+  folders: JSON.parse(localStorage.getItem('cc_folders')||'[]'),  // folders stay local (UI-only)
+  settings: {..._defaultSettings},
+  profile: {name:'', email:''},
+};
+
+function uid() { return crypto.randomUUID(); }
 
 const DB = {
-  brands:()=>dbGet(KEYS.brands)||[],
-  posts:()=>dbGet(KEYS.posts)||[],
-  photos:()=>dbGet(KEYS.photos)||[],
-  folders:()=>dbGet(KEYS.folders)||[],
-  clients:()=>dbGet(KEYS.clients)||[],
-  team:()=>dbGet(KEYS.team)||[],
-  settings:()=>dbGet(KEYS.settings)||{timezone:'UTC',defaultPlatforms:['instagram'],emailNotifications:true,workspaceName:'My Agency',makeWebhookUrl:'https://hook.eu1.make.com/rrwvx199r4prra3f8jpblgdc3bp8bp46',autoSendOnApprove:false,bufferChannels:[],cloudinaryCloudName:'',cloudinaryUploadPreset:''},
-  profile:()=>dbGet(KEYS.profile)||{name:'Agency User',email:'user@agency.com'},
-  save:{
-    brands:v=>dbSet(KEYS.brands,v),
-    posts:v=>dbSet(KEYS.posts,v),
-    photos:v=>dbSet(KEYS.photos,v),
-    folders:v=>dbSet(KEYS.folders,v),
-    clients:v=>dbSet(KEYS.clients,v),
-    team:v=>dbSet(KEYS.team,v),
-    settings:v=>dbSet(KEYS.settings,v),
-    profile:v=>dbSet(KEYS.profile,v),
+  brands:   () => _cache.brands,
+  posts:    () => _cache.posts,
+  photos:   () => _cache.photos,
+  folders:  () => _cache.folders,
+  clients:  () => _cache.clients,
+  team:     () => [],  // managed via Netlify function, not direct cache
+  settings: () => _cache.settings,
+  profile:  () => _cache.profile,
+  save: {
+    brands:  (v) => { _cache.brands  = v; _syncTable('brands',  v); },
+    posts:   (v) => { _cache.posts   = v; _syncTable('posts',   v); },
+    photos:  (v) => { _cache.photos  = v; _syncTable('photos',  v); },
+    clients: (v) => { _cache.clients = v; _syncTable('clients', v); },
+    folders: (v) => { _cache.folders = v; localStorage.setItem('cc_folders', JSON.stringify(v)); },
+    team:    ()  => {},  // no-op: use invite flow via Netlify function
+    settings:(v) => { _cache.settings = {..._cache.settings, ...v}; _syncSettings(); },
+    profile: (v) => { _cache.profile  = v; _syncProfile(); },
   }
 };
+
+// ---- Sync helpers (async, fire-and-forget) ----
+async function _syncTable(table, rows) {
+  if (!workspaceId) return;
+  try {
+    await sb.from(table).delete().eq('workspace_id', workspaceId);
+    if (rows.length) {
+      const toInsert = rows.map(r => {
+        const base = { id: r.id, workspace_id: workspaceId, data: r };
+        if (table === 'posts') {
+          base.brand_profile_id = r.brand_profile_id || null;
+          base.client_visible   = r.client_visible   || false;
+        }
+        return base;
+      });
+      const { error } = await sb.from(table).insert(toInsert);
+      if (error) throw error;
+    }
+  } catch(e) { console.error('Sync error [' + table + ']:', e.message); }
+}
+
+async function _syncSettings() {
+  if (!workspaceId) return;
+  try {
+    await sb.from('settings').upsert({ workspace_id: workspaceId, data: _cache.settings });
+  } catch(e) { console.error('Settings sync error:', e.message); }
+}
+
+async function _syncProfile() {
+  if (!currentUser) return;
+  try {
+    await sb.from('profiles').update({ display_name: _cache.profile.name }).eq('id', currentUser.id);
+  } catch(e) { console.error('Profile sync error:', e.message); }
+}
+
+// ---- Load all workspace data from Supabase ----
+async function loadWorkspaceData() {
+  try {
+    const [brandsR, postsR, photosR, clientsR, settingsR, profileR] = await Promise.all([
+      sb.from('brands').select('data').eq('workspace_id', workspaceId),
+      sb.from('posts').select('data').eq('workspace_id', workspaceId),
+      sb.from('photos').select('data').eq('workspace_id', workspaceId),
+      sb.from('clients').select('data').eq('workspace_id', workspaceId),
+      sb.from('settings').select('data').eq('workspace_id', workspaceId).single(),
+      sb.from('profiles').select('*').eq('id', currentUser.id).single(),
+    ]);
+    _cache.brands   = (brandsR.data   || []).map(r => r.data);
+    _cache.posts    = (postsR.data    || []).map(r => r.data);
+    _cache.photos   = (photosR.data   || []).map(r => r.data);
+    _cache.clients  = (clientsR.data  || []).map(r => r.data);
+    if (settingsR.data?.data) _cache.settings = { ..._defaultSettings, ...settingsR.data.data };
+    if (profileR.data) {
+      _cache.profile = {
+        name:  profileR.data.display_name || currentUser.email.split('@')[0],
+        email: profileR.data.email        || currentUser.email,
+        role:  profileR.data.role,
+      };
+      currentUser.profile = profileR.data;
+    }
+  } catch(e) {
+    console.error('Load error:', e.message);
+    toast('Failed to load data — check your Supabase config', 'err');
+  }
+}
+
+// ============================
+// AUTH FUNCTIONS
+// ============================
+async function initAuth() {
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      showPasswordResetForm();
+      return;
+    }
+    if (session?.user) {
+      currentUser = session.user;
+      const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+      currentRole  = profile?.role || 'admin';
+      workspaceId  = currentRole === 'admin' ? session.user.id : profile?.workspace_id;
+      currentUser.profile = profile;
+      await loadWorkspaceData();
+      showApp();
+    } else {
+      showLoginScreen();
+    }
+  });
+}
+
+async function submitLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+  // On success, onAuthStateChange fires and calls showApp()
+}
+
+async function submitForgotPassword() {
+  const email = document.getElementById('login-email')?.value.trim();
+  if (!email) { toast('Enter your email first', 'err'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  if (error) { toast('Error: ' + error.message, 'err'); return; }
+  toast('Password reset email sent — check your inbox!');
+}
+
+function showPasswordResetForm() {
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-form-wrapper').innerHTML = `
+    <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-1">Set New Password</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Enter your new password below</p>
+    <div id="login-error" class="login-error"></div>
+    <div class="space-y-4">
+      <div>
+        <label class="lbl">New Password</label>
+        <input class="inp" id="login-new-password" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')submitNewPassword()">
+      </div>
+      <button class="btn btn-p" id="login-btn" onclick="submitNewPassword()" style="width:100%;justify-content:center;padding:10px 16px">Update Password</button>
+    </div>`;
+}
+
+async function submitNewPassword() {
+  const password = document.getElementById('login-new-password').value;
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Updating…';
+  const { error } = await sb.auth.updateUser({ password });
+  if (error) {
+    toast('Error: ' + error.message, 'err');
+    btn.disabled = false; btn.textContent = 'Update Password';
+    return;
+  }
+  toast('Password updated! Signing you in…');
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  // onAuthStateChange fires and calls showLoginScreen()
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').style.display = 'flex';
+  // Show Settings nav item for admins only
+  const sEl = document.getElementById('sidebar-settings');
+  if (sEl) sEl.style.display = isAdmin() ? '' : 'none';
+  renderNav();
+  renderPage();
+}
+
+function showLoginScreen() {
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').classList.remove('hidden');
+  const pwEl = document.getElementById('login-password');
+  if (pwEl) pwEl.value = '';
+}
 
 // ============================
 // State
@@ -162,21 +398,24 @@ if(isDark)document.documentElement.classList.add('dark');
 // Nav
 // ============================
 const NAV = [
-  {id:'dashboard',label:'Dashboard',icon:'🏠'},
-  {id:'create-post',label:'Create Post',icon:'✏️'},
-  {id:'posts',label:'Posts',icon:'📄'},
-  {id:'calendar',label:'Calendar',icon:'📅'},
-  {id:'brands',label:'Brands',icon:'🏷️'},
-  {id:'photo-library',label:'Photo Library',icon:'🖼️'},
-  {id:'analytics',label:'Analytics',icon:'📊'},
-  {id:'clients',label:'Clients',icon:'👥'},
-  {id:'team',label:'Team',icon:'🤝'},
-  {id:'holidays',label:'Holidays',icon:'🎉'},
+  {id:'dashboard',    label:'Dashboard',     icon:'🏠', roles:['admin','team','client']},
+  {id:'create-post',  label:'Create Post',   icon:'✏️', roles:['admin','team']},
+  {id:'posts',        label:'Posts',         icon:'📄', roles:['admin','team','client']},
+  {id:'calendar',     label:'Calendar',      icon:'📅', roles:['admin','team']},
+  {id:'brands',       label:'Brands',        icon:'🏷️', roles:['admin','team']},
+  {id:'photo-library',label:'Photo Library', icon:'🖼️', roles:['admin','team']},
+  {id:'analytics',    label:'Analytics',     icon:'📊', roles:['admin','team']},
+  {id:'clients',      label:'Clients',       icon:'👥', roles:['admin']},
+  {id:'team',         label:'Team',          icon:'🤝', roles:['admin']},
+  {id:'holidays',     label:'Holidays',      icon:'🎉', roles:['admin','team']},
 ];
 
 function renderNav(){
   const el=document.getElementById('nav-links');
-  el.innerHTML=NAV.map(n=>`<div class="nav-item${currentPage===n.id?' active':''}" onclick="nav('${n.id}')"><span>${n.icon}</span><span>${n.label}</span></div>`).join('');
+  el.innerHTML=NAV
+    .filter(n=>n.roles.includes(currentRole))
+    .map(n=>`<div class="nav-item${currentPage===n.id?' active':''}" onclick="nav('${n.id}')"><span>${n.icon}</span><span>${n.label}</span></div>`)
+    .join('');
 }
 
 function nav(page){
@@ -240,9 +479,9 @@ function confirm2(title,desc,onOk,okLabel='Delete',danger=true){
 // Claude API helpers
 // ============================
 async function callClaude(systemPrompt, userContent, maxTokens=1024){
-  const key=localStorage.getItem('cc_api_key');
+  const key=_cache.settings.api_key;
   if(!key){toast('Add your Claude API key in Settings → Claude API','err');return null;}
-  const model=localStorage.getItem('cc_model')||'claude-sonnet-4-6';
+  const model=_cache.settings.model||'claude-sonnet-4-6';
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -775,7 +1014,7 @@ async function bulkGenerateAll(){
   bulkBrandId=document.getElementById('bulk-brand')?.value||bulkBrandId;
   const brand=DB.brands().find(b=>b.id===bulkBrandId);
   if(!brand){toast('Select a brand first','err');return;}
-  const key=localStorage.getItem('cc_api_key');
+  const key=_cache.settings.api_key;
   if(!key){toast('Add a Claude API key in Settings','err');return;}
   bulkGenerating=true;
   renderBulkPost();
@@ -2056,100 +2295,160 @@ function deleteClient(id){
 // TEAM PAGE
 // ============================
 function renderTeam(){
-  const team=DB.team();
-
+  const p=DB.profile();
   document.getElementById('page').innerHTML=`
   <div class="p-6 max-w-3xl mx-auto">
     <div class="flex items-center justify-between mb-8">
       <div>
         <h1 class="text-3xl font-bold text-slate-800 dark:text-white">Team</h1>
-        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage team members and roles</p>
+        <p class="text-slate-500 dark:text-slate-400 mt-1">Manage team members and client access</p>
       </div>
-      <button class="btn btn-p" onclick="openTeamModal()">＋ Invite Member</button>
+      <button class="btn btn-p" onclick="openInviteModal()">＋ Invite User</button>
     </div>
 
-    <!-- Current user -->
+    <!-- Admin (you) -->
     <div class="card p-4 mb-4 border-indigo-200 dark:border-indigo-700 bg-indigo-50/50 dark:bg-indigo-900/10">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">${(DB.profile().name||'U')[0]}</div>
+        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">${(p.name||'U')[0]}</div>
         <div>
-          <p class="font-semibold text-slate-800 dark:text-white">${esc(DB.profile().name||'You')}</p>
-          <p class="text-sm text-slate-500">${esc(DB.profile().email||'')}</p>
+          <p class="font-semibold text-slate-800 dark:text-white">${esc(p.name||'You')}</p>
+          <p class="text-sm text-slate-500">${esc(p.email||currentUser?.email||'')}</p>
         </div>
-        <span class="badge bd-sub ml-auto">Owner</span>
+        <span class="badge bd-sub ml-auto">Admin</span>
       </div>
     </div>
 
-    ${team.length===0?`
-    <div class="card p-8 text-center text-slate-400">
-      <p class="text-4xl mb-3">🤝</p>
-      <p class="text-lg mb-2">No team members yet</p>
-      <p class="text-sm mb-4">Invite editors or viewers to collaborate</p>
-      <button class="btn btn-p" onclick="openTeamModal()">Invite Member</button>
-    </div>`:`
-    <div class="space-y-3">
-      ${team.map(m=>`
-        <div class="card p-4 flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-200">${(m.name||m.email||'?')[0].toUpperCase()}</div>
-          <div class="flex-1 min-w-0">
-            <p class="font-medium text-slate-800 dark:text-white">${esc(m.name||'')}</p>
-            <p class="text-sm text-slate-500">${esc(m.email)}</p>
-          </div>
-          <span class="badge bd-gray capitalize">${m.role||'editor'}</span>
-          <button class="btn btn-d btn-sm" onclick="removeTeamMember('${m.id}')">Remove</button>
-        </div>`).join('')}
-    </div>`}
+    <div id="team-list">
+      <div class="text-center py-8 text-slate-400">
+        <div class="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full spin mb-3"></div>
+        <p class="text-sm">Loading workspace members…</p>
+      </div>
+    </div>
   </div>`;
+
+  loadTeamMembers();
 }
 
-function openTeamModal(){
-  showModal(`<div class="modal" style="max-width:400px">
+async function loadTeamMembers(){
+  const el=document.getElementById('team-list');
+  if(!el)return;
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const token=session?.access_token;
+    if(!token)throw new Error('Not authenticated');
+    const res=await fetch('/.netlify/functions/admin-users?action=list',{
+      headers:{Authorization:`Bearer ${token}`}
+    });
+    if(!res.ok)throw new Error(await res.text());
+    const members=await res.json();
+
+    if(!members||members.length===0){
+      el.innerHTML=`<div class="card p-8 text-center text-slate-400">
+        <p class="text-4xl mb-3">🤝</p>
+        <p class="text-lg mb-2">No team members or clients yet</p>
+        <p class="text-sm mb-4">Invite team members to collaborate, or give clients a read-only portal</p>
+        <button class="btn btn-p" onclick="openInviteModal()">＋ Invite User</button>
+      </div>`;
+      return;
+    }
+
+    const brands=DB.brands();
+    el.innerHTML=`<div class="space-y-3">${members.map(m=>{
+      const brandName=m.brand_id?brands.find(b=>b.id===m.brand_id)?.name||'Unknown brand':'';
+      const badge=m.role==='team'?'bd-sub':m.role==='client'?'bd-app':'bd-gray';
+      const label=m.role==='team'?'Team':m.role==='client'?'Client':'Unknown';
+      return `<div class="card p-4 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center font-bold text-slate-600 dark:text-slate-200">${(m.display_name||m.email||'?')[0].toUpperCase()}</div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-slate-800 dark:text-white">${esc(m.display_name||'Pending invite')}</p>
+          <p class="text-sm text-slate-500">${esc(m.email||'')}${brandName?` · <span class="text-indigo-500">${esc(brandName)}</span>`:''}</p>
+        </div>
+        <span class="badge ${badge}">${label}</span>
+        <button class="btn btn-d btn-sm" onclick="removeWorkspaceMember('${m.id}')">Remove</button>
+      </div>`;
+    }).join('')}</div>`;
+  }catch(e){
+    el.innerHTML=`<div class="card p-6 text-center text-slate-400">
+      <p class="mb-1">Could not load team members.</p>
+      <p class="text-xs">${esc(e.message)}</p>
+      <p class="text-xs mt-2">Make sure the app is deployed to Netlify with the function configured.</p>
+    </div>`;
+  }
+}
+
+function openInviteModal(){
+  const brands=DB.brands();
+  showModal(`<div class="modal" style="max-width:420px">
     <div class="flex items-center justify-between mb-5">
-      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Invite Team Member</h3>
+      <h3 class="text-lg font-semibold text-slate-800 dark:text-white">Invite User</h3>
       <button class="btn btn-o btn-sm" onclick="closeModal()">✕</button>
     </div>
     <div class="space-y-4">
       <div>
-        <label class="lbl">Name</label>
-        <input class="inp" id="tm-name" placeholder="Full name">
-      </div>
-      <div>
         <label class="lbl">Email *</label>
-        <input class="inp" id="tm-email" type="email" placeholder="team@agency.com">
+        <input class="inp" id="inv-email" type="email" placeholder="user@example.com">
       </div>
       <div>
         <label class="lbl">Role</label>
-        <select class="sel" id="tm-role">
-          <option value="admin">Admin</option>
-          <option value="editor" selected>Editor</option>
-          <option value="viewer">Viewer</option>
+        <select class="sel" id="inv-role" onchange="document.getElementById('inv-brand-wrap').classList.toggle('hidden',this.value!=='client')">
+          <option value="team">Team Member — full app access</option>
+          <option value="client">Client — view their brand's approved posts only</option>
         </select>
       </div>
+      <div id="inv-brand-wrap" class="hidden">
+        <label class="lbl">Assigned Brand</label>
+        <select class="sel" id="inv-brand">
+          ${brands.length===0?'<option value="">— Create a brand first —</option>':brands.map(b=>`<option value="${b.id}">${esc(b.name)}</option>`).join('')}
+        </select>
+      </div>
+      <p class="text-xs text-slate-500">They'll receive an email invitation to set their password and log in.</p>
       <div class="flex gap-3 justify-end pt-2">
         <button class="btn btn-o" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-p" onclick="saveTeamMember()">Send Invite</button>
+        <button class="btn btn-p" id="inv-btn" onclick="sendInvite()">Send Invite</button>
       </div>
     </div>
   </div>`);
 }
 
-function saveTeamMember(){
-  const email=document.getElementById('tm-email').value.trim();
-  if(!email){toast('Email required','err');return}
-  const team=DB.team();
-  if(team.find(m=>m.email===email)){toast('Already invited','err');return}
-  team.push({id:uid(),name:document.getElementById('tm-name').value.trim(),email,role:document.getElementById('tm-role').value,invited_date:new Date().toISOString()});
-  DB.save.team(team);
-  closeModal();
-  toast('Invite sent (simulated)!');
-  renderTeam();
+async function sendInvite(){
+  const email=document.getElementById('inv-email')?.value.trim();
+  const role=document.getElementById('inv-role')?.value||'team';
+  const brand_id=role==='client'?document.getElementById('inv-brand')?.value||null:null;
+  if(!email){toast('Email required','err');return;}
+  const btn=document.getElementById('inv-btn');
+  btn.disabled=true;btn.textContent='Sending…';
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const token=session?.access_token;
+    const res=await fetch('/.netlify/functions/admin-users?action=invite',{
+      method:'POST',
+      headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({email,role,brand_id})
+    });
+    if(!res.ok){const err=await res.json();throw new Error(err.error||'Invite failed');}
+    closeModal();
+    toast('Invite sent to '+email+'!');
+    loadTeamMembers();
+  }catch(e){
+    toast('Error: '+e.message,'err');
+    btn.disabled=false;btn.textContent='Send Invite';
+  }
 }
 
-function removeTeamMember(id){
-  confirm2('Remove this team member?','They will lose access.',()=>{
-    DB.save.team(DB.team().filter(m=>m.id!==id));
-    toast('Member removed');
-    renderTeam();
+async function removeWorkspaceMember(userId){
+  confirm2('Remove this member?','They will immediately lose access to the workspace.',async()=>{
+    try{
+      const {data:{session}}=await sb.auth.getSession();
+      const token=session?.access_token;
+      const res=await fetch('/.netlify/functions/admin-users?action=remove',{
+        method:'POST',
+        headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},
+        body:JSON.stringify({userId})
+      });
+      if(!res.ok){const err=await res.json();throw new Error(err.error||'Remove failed');}
+      toast('Member removed');
+      loadTeamMembers();
+    }catch(e){toast('Error: '+e.message,'err');}
   });
 }
 
@@ -2208,15 +2507,15 @@ function renderSettings(){
           <div>
             <label class="lbl">API Key</label>
             <div class="flex gap-2">
-              <input type="password" class="inp flex-1" id="s-apikey" placeholder="sk-ant-..." value="${localStorage.getItem('cc_api_key')||''}">
+              <input type="password" class="inp flex-1" id="s-apikey" placeholder="sk-ant-..." value="${esc(s.api_key||'')}">
               <button class="btn btn-p" onclick="saveClaudeKey()">Save</button>
             </div>
-            <p id="s-key-status" class="text-xs mt-1 ${localStorage.getItem('cc_api_key')?'text-emerald-600':'text-slate-400'}">${localStorage.getItem('cc_api_key')?'✓ Key saved':'No key set'}</p>
+            <p id="s-key-status" class="text-xs mt-1 ${s.api_key?'text-emerald-600':'text-slate-400'}">${s.api_key?'✓ Key saved':'No key set'}</p>
           </div>
           <div>
             <label class="lbl">Model</label>
             <select class="sel" id="s-model">
-              ${[['claude-haiku-4-5-20251001','Haiku 4.5 — Fast & cheap'],['claude-sonnet-4-6','Sonnet 4.6 — Balanced (default)'],['claude-opus-4-6','Opus 4.6 — Most capable']].map(([v,l])=>`<option value="${v}"${(localStorage.getItem('cc_model')||'claude-sonnet-4-6')===v?' selected':''}>${l}</option>`).join('')}
+              ${[['claude-haiku-4-5-20251001','Haiku 4.5 — Fast & cheap'],['claude-sonnet-4-6','Sonnet 4.6 — Balanced (default)'],['claude-opus-4-6','Opus 4.6 — Most capable']].map(([v,l])=>`<option value="${v}"${(s.model||'claude-sonnet-4-6')===v?' selected':''}>${l}</option>`).join('')}
             </select>
           </div>
           <button class="btn btn-o w-full" id="s-test-btn" onclick="testClaudeConnection()">🧪 Test Connection</button>
@@ -2335,8 +2634,7 @@ function renderSettings(){
 function saveClaudeKey(){
   const key=document.getElementById('s-apikey').value.trim();
   const model=document.getElementById('s-model').value;
-  localStorage.setItem('cc_api_key',key);
-  localStorage.setItem('cc_model',model);
+  DB.save.settings({...DB.settings(), api_key:key, model:model});
   const el=document.getElementById('s-key-status');
   if(el){el.textContent=key?'✓ Key saved':'No key set';el.className='text-xs mt-1 '+(key?'text-emerald-600':'text-slate-400');}
   toast(key?'Claude API key saved!':'API key cleared');
@@ -2347,8 +2645,8 @@ async function testClaudeConnection(){
   const res=document.getElementById('s-test-result');
   if(btn){btn.disabled=true;btn.textContent='⏳ Testing...';}
   if(res){res.className='text-sm p-3 rounded-lg bg-slate-100 dark:bg-slate-700';res.textContent='Connecting to Claude API...';}
-  const key=localStorage.getItem('cc_api_key');
-  const model=localStorage.getItem('cc_model')||'claude-sonnet-4-6';
+  const key=_cache.settings.api_key;
+  const model=_cache.settings.model||'claude-sonnet-4-6';
   if(!key){
     if(res){res.className='text-sm p-3 rounded-lg bg-red-50 text-red-700';res.textContent='❌ No API key saved. Enter your key above and click Save first.';}
     if(btn){btn.disabled=false;btn.textContent='🧪 Test Connection';}
@@ -2440,7 +2738,7 @@ function saveSettings(){
     autoSendOnApprove:document.getElementById('s-auto-buffer')?.checked||false,
   });
   const modelEl=document.getElementById('s-model');
-  if(modelEl)localStorage.setItem('cc_model',modelEl.value);
+  if(modelEl)DB.save.settings({...DB.settings(),model:modelEl.value});
   toast('Settings saved!');
 }
 
@@ -2455,10 +2753,18 @@ function exportData(){
 }
 
 function clearAllData(){
-  confirm2('Clear ALL data?','This will delete all brands, posts, photos, clients and team members. Cannot be undone!',()=>{
-    Object.values(KEYS).forEach(k=>localStorage.removeItem(k));
+  confirm2('Clear ALL data?','This will permanently delete all brands, posts, photos and clients from the database. Cannot be undone!',async()=>{
+    if(workspaceId){
+      await Promise.all([
+        sb.from('brands').delete().eq('workspace_id',workspaceId),
+        sb.from('posts').delete().eq('workspace_id',workspaceId),
+        sb.from('photos').delete().eq('workspace_id',workspaceId),
+        sb.from('clients').delete().eq('workspace_id',workspaceId),
+      ]);
+    }
+    _cache.brands=[];_cache.posts=[];_cache.photos=[];_cache.clients=[];
+    _cache.folders=[];localStorage.removeItem('cc_folders');
     toast('All data cleared');
-    renderDashboard();
     nav('dashboard');
   },'Clear Everything',true);
 }
@@ -2468,6 +2774,8 @@ function clearAllData(){
 // ============================
 function renderProfile(){
   const p=DB.profile();
+  const roleBadge={admin:'bd-sub',team:'bd-gray',client:'bd-app'}[currentRole]||'bd-gray';
+  const roleLabel={admin:'Admin',team:'Team Member',client:'Client'}[currentRole]||currentRole;
   document.getElementById('page').innerHTML=`
   <div class="p-6 max-w-2xl mx-auto">
     <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-1">Profile</h1>
@@ -2479,8 +2787,8 @@ function renderProfile(){
           <div class="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-white text-2xl font-bold">${(p.name||'U')[0]}</div>
           <div>
             <p class="text-xl font-semibold text-slate-800 dark:text-white">${esc(p.name||'User')}</p>
-            <p class="text-slate-500">${esc(p.email||'')}</p>
-            <span class="badge bd-sub mt-1">Owner</span>
+            <p class="text-slate-500">${esc(p.email||currentUser?.email||'')}</p>
+            <span class="badge ${roleBadge} mt-1">${roleLabel}</span>
           </div>
         </div>
         <div class="space-y-4">
@@ -2490,7 +2798,8 @@ function renderProfile(){
           </div>
           <div>
             <label class="lbl">Email</label>
-            <input class="inp" id="pf-email" type="email" value="${esc(p.email||'')}">
+            <input class="inp" id="pf-email" type="email" value="${esc(p.email||currentUser?.email||'')}" disabled class="inp opacity-60 cursor-not-allowed">
+            <p class="text-xs text-slate-400 mt-1">Email is managed via your login credentials</p>
           </div>
           <button class="btn btn-p" onclick="saveProfile()">Save Profile</button>
         </div>
@@ -2508,10 +2817,22 @@ function renderProfile(){
       </div>
 
       <div class="card p-6">
-        <h3 class="font-semibold text-red-600 mb-4">Danger Zone</h3>
-        <p class="text-sm text-slate-500 mb-3">Deleting your account will clear all local data.</p>
-        <button class="btn btn-d" onclick="clearAllData()">Delete Account Data</button>
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Account</h3>
+        <div class="flex items-center justify-between py-2">
+          <div>
+            <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Sign Out</p>
+            <p class="text-xs text-slate-500">End your session and return to the login screen</p>
+          </div>
+          <button class="btn btn-o btn-sm" onclick="logout()">Sign Out</button>
+        </div>
       </div>
+
+      ${isAdmin()?`
+      <div class="card p-6">
+        <h3 class="font-semibold text-red-600 mb-4">Danger Zone</h3>
+        <p class="text-sm text-slate-500 mb-3">Permanently deletes all brands, posts, photos and clients from the database.</p>
+        <button class="btn btn-d" onclick="clearAllData()">Delete All Data</button>
+      </div>`:''}
     </div>
   </div>`;
 }
@@ -2590,7 +2911,7 @@ async function generateHolidayCaption(idx){
   const brand=DB.brands().find(b=>b.id===brandId);
   if(!brand)return;
   const h=HOLIDAYS_2026[idx];
-  const key=localStorage.getItem('cc_api_key');
+  const key=_cache.settings.api_key;
   if(!key){toast('Add a Claude API key in Settings','err');return;}
   const btn=document.querySelector(`#hol-${idx} button[onclick*="generateHolidayCaption"]`);
   if(btn){btn.disabled=true;btn.textContent='Generating...';}
@@ -2624,6 +2945,9 @@ function saveHolidayDraft(idx,date,holidayName){
 function renderPage(){
   if(analyticsChart){analyticsChart.destroy();analyticsChart=null}
   if(analyticsPlatformChart){analyticsPlatformChart.destroy();analyticsPlatformChart=null}
+  // Redirect non-admins away from admin-only pages
+  const adminOnly=['settings','team','clients'];
+  if(adminOnly.includes(currentPage)&&!isAdmin()){currentPage='dashboard';}
   switch(currentPage){
     case'dashboard':renderDashboard();break;
     case'create-post':renderCreatePost();break;
@@ -2645,29 +2969,9 @@ function renderPage(){
 // INIT
 // ============================
 document.addEventListener('DOMContentLoaded',()=>{
-  // Set dark icon state
   document.getElementById('dark-icon').textContent=isDark?'☀️':'🌙';
   document.getElementById('dark-label').textContent=isDark?'Light Mode':'Dark Mode';
-
-  // Seed sample data if empty
-  if(DB.brands().length===0&&DB.posts().length===0){
-    const sampleBrandId=uid();
-    const sampleBrandId2=uid();
-    DB.save.brands([
-      {id:sampleBrandId,name:'Sunrise Cafe',color:'#f97316',tone:'friendly',output_length:'medium',brand_guidelines:'Warm, welcoming coffee shop with organic ingredients.',include_hashtags:true,include_emojis:true,created_date:new Date().toISOString()},
-      {id:sampleBrandId2,name:'TechNova',color:'#6366f1',tone:'professional',output_length:'short',brand_guidelines:'B2B software company focused on enterprise solutions.',include_hashtags:false,include_emojis:false,created_date:new Date().toISOString()},
-    ]);
-    const now=new Date();
-    DB.save.posts([
-      {id:uid(),brand_profile_id:sampleBrandId,caption:'☀️ Start your morning right with our freshly brewed single-origin coffee. Every cup tells a story. #morningcoffee #organic #cafe',platforms:['instagram','facebook'],status:'published',image_url:'',published_at:new Date(now-86400000*2).toISOString(),created_date:new Date(now-86400000*2).toISOString(),client_visible:false,client_approved:false},
-      {id:uid(),brand_profile_id:sampleBrandId,caption:'Our weekend brunch menu is here! Fresh, seasonal ingredients sourced locally. Book your table today. #brunch #local',platforms:['instagram'],status:'scheduled',scheduled_at:new Date(now+86400000*2).toISOString(),created_date:new Date(now-86400000).toISOString(),client_visible:true,client_approved:false},
-      {id:uid(),brand_profile_id:sampleBrandId2,caption:'Introducing our new enterprise dashboard — real-time analytics, automated reporting, seamless integration.',platforms:['linkedin'],status:'draft',created_date:new Date().toISOString(),client_visible:false,client_approved:false},
-      {id:uid(),brand_profile_id:sampleBrandId2,caption:'TechNova Q1 2025: 40% increase in enterprise clients. See how we\'re transforming business intelligence.',platforms:['linkedin','facebook'],status:'approved',created_date:new Date().toISOString(),client_visible:false,client_approved:false},
-    ]);
-  }
-
-  renderNav();
-  renderPage();
+  initAuth();
 });
 </script>
 </body>
