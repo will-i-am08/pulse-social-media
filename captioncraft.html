@@ -137,7 +137,7 @@ const DB = {
   folders:()=>dbGet(KEYS.folders)||[],
   clients:()=>dbGet(KEYS.clients)||[],
   team:()=>dbGet(KEYS.team)||[],
-  settings:()=>dbGet(KEYS.settings)||{timezone:'UTC',defaultPlatforms:['instagram'],emailNotifications:true,workspaceName:'My Agency',makeWebhookUrl:'https://hook.eu1.make.com/rrwvx199r4prra3f8jpblgdc3bp8bp46',autoSendOnApprove:false,bufferChannels:[]},
+  settings:()=>dbGet(KEYS.settings)||{timezone:'UTC',defaultPlatforms:['instagram'],emailNotifications:true,workspaceName:'My Agency',makeWebhookUrl:'https://hook.eu1.make.com/rrwvx199r4prra3f8jpblgdc3bp8bp46',autoSendOnApprove:false,bufferChannels:[],cloudinaryCloudName:'',cloudinaryUploadPreset:''},
   profile:()=>dbGet(KEYS.profile)||{name:'Agency User',email:'user@agency.com'},
   save:{
     brands:v=>dbSet(KEYS.brands,v),
@@ -260,14 +260,14 @@ async function callClaude(systemPrompt, userContent, maxTokens=1024){
   }catch(e){toast('Claude API error: '+e.message,'err');return null;}
 }
 
-function buildImageContent(dataUrl,textPrompt){
-  if(!dataUrl||!dataUrl.startsWith('data:'))return textPrompt;
-  const [meta,b64]=dataUrl.split(',');
-  const mediaType=meta.match(/data:([^;]+)/)[1];
-  return[
-    {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
-    {type:'text',text:textPrompt}
-  ];
+function buildImageContent(imgUrl,textPrompt){
+  if(!imgUrl)return textPrompt;
+  if(imgUrl.startsWith('data:')){
+    const [meta,b64]=imgUrl.split(',');
+    const mediaType=meta.match(/data:([^;]+)/)[1];
+    return[{type:'image',source:{type:'base64',media_type:mediaType,data:b64}},{type:'text',text:textPrompt}];
+  }
+  return[{type:'image',source:{type:'url',url:imgUrl}},{type:'text',text:textPrompt}];
 }
 
 // ============================
@@ -328,6 +328,20 @@ function readFileAsDataURL(file){
     r.onerror=rej;
     r.readAsDataURL(file);
   });
+}
+
+async function uploadToCloudinary(file){
+  const s=DB.settings();
+  const cloud=(s.cloudinaryCloudName||'').trim();
+  const preset=(s.cloudinaryUploadPreset||'').trim();
+  if(!cloud||!preset)throw new Error('Cloudinary not configured — add Cloud Name and Upload Preset in Settings');
+  const fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset',preset);
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`,{method:'POST',body:fd});
+  const data=await res.json();
+  if(!res.ok)throw new Error(data.error?.message||'Cloudinary upload failed');
+  return data.secure_url;
 }
 
 // ============================
@@ -605,11 +619,15 @@ function cpTogglePlatform(p){
 
 async function cpHandleImages(e){
   const files=Array.from(e.target.files);
+  cpState.saving=true;
+  renderCreatePost();
   for(const f of files){
-    if(f.size>2*1024*1024){toast('Image too large (max 2MB)','err');continue;}
-    const url=await readFileAsDataURL(f);
-    cpState.images.push(url);
+    try{
+      const url=await uploadToCloudinary(f);
+      cpState.images.push(url);
+    }catch(err){toast('Upload failed: '+err.message,'err');}
   }
+  cpState.saving=false;
   renderCreatePost();
 }
 
@@ -709,6 +727,7 @@ function renderBulkPost(){
           <div class="flex-1 space-y-2">
             <input class="inp text-sm" placeholder="Custom prompt (optional)..." value="${esc(row.prompt)}" oninput="bulkRows[${i}].prompt=this.value">
             ${row.caption?`<textarea class="ta text-sm" rows="3" oninput="bulkRows[${i}].caption=this.value">${esc(row.caption)}</textarea>`:''}
+            ${row.status==='uploading'?`<p class="text-xs text-slate-500 flex items-center gap-1"><span class="spinner w-3 h-3 border-slate-400"></span> Uploading...</p>`:''}
             ${row.status==='generating'?`<p class="text-xs text-indigo-500 flex items-center gap-1"><span class="spinner w-3 h-3 border-indigo-500"></span> Generating...</p>`:''}
             ${row.status==='done'?`<span class="text-xs text-emerald-600">✓ Ready</span>`:''}
           </div>
@@ -736,8 +755,15 @@ function bulkTogglePlatform(p){
 async function bulkHandleImage(e,idx){
   const f=e.target.files[0];
   if(!f)return;
-  if(f.size>2*1024*1024){toast('Image too large (max 2MB)','err');return;}
-  bulkRows[idx].image=await readFileAsDataURL(f);
+  bulkRows[idx].status='uploading';
+  renderBulkPost();
+  try{
+    bulkRows[idx].image=await uploadToCloudinary(f);
+    bulkRows[idx].status='idle';
+  }catch(err){
+    toast('Upload failed: '+err.message,'err');
+    bulkRows[idx].status='idle';
+  }
   renderBulkPost();
 }
 
@@ -1649,12 +1675,15 @@ function renderPhotoCard(p,folders){
 async function photoUpload(e){
   const files=Array.from(e.target.files);
   let count=0;
+  if(files.length)toast('Uploading...','info');
   for(const f of files){
-    const url=await readFileAsDataURL(f);
-    const photos=DB.photos();
-    photos.unshift({id:uid(),url,name:f.name.replace(/\.[^.]+$/,''),tags:[],folder_id:photoFolderId,created_date:new Date().toISOString()});
-    DB.save.photos(photos);
-    count++;
+    try{
+      const url=await uploadToCloudinary(f);
+      const photos=DB.photos();
+      photos.unshift({id:uid(),url,name:f.name.replace(/\.[^.]+$/,''),tags:[],folder_id:photoFolderId,created_date:new Date().toISOString()});
+      DB.save.photos(photos);
+      count++;
+    }catch(err){toast('Upload failed: '+err.message,'err');}
   }
   if(count>0)toast(`${count} photo${count!==1?'s':''} uploaded!`);
   renderPhotoLibrary();
@@ -2272,6 +2301,25 @@ function renderSettings(){
       </div>
 
       <div class="card p-6">
+        <h3 class="font-semibold text-slate-800 dark:text-white mb-1">☁️ Photo Storage — Cloudinary</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Required for photo library and post image uploads. Images are stored in your Cloudinary account — no size limit on free tier. <a href="https://cloudinary.com/users/register/free" target="_blank" class="text-indigo-500 underline">Create a free account →</a></p>
+        <div class="space-y-4">
+          <div>
+            <label class="lbl">Cloud Name</label>
+            <input type="text" class="inp" id="s-cld-cloud" placeholder="e.g. my-agency" value="${esc(s.cloudinaryCloudName||'')}">
+            <p class="text-xs text-slate-400 mt-1">Found on the Cloudinary Dashboard home page.</p>
+          </div>
+          <div>
+            <label class="lbl">Upload Preset</label>
+            <input type="text" class="inp" id="s-cld-preset" placeholder="e.g. captioncraft_unsigned" value="${esc(s.cloudinaryUploadPreset||'')}">
+            <p class="text-xs text-slate-400 mt-1">Settings → Upload → Upload Presets → Add preset → set to <strong>Unsigned</strong>.</p>
+          </div>
+          <button class="btn btn-p" onclick="saveCloudinarySettings()">Save Cloudinary Settings</button>
+          <p id="s-cld-status" class="text-xs ${s.cloudinaryCloudName&&s.cloudinaryUploadPreset?'text-emerald-600':'text-slate-400'}">${s.cloudinaryCloudName&&s.cloudinaryUploadPreset?'✓ Cloudinary configured':'Not configured — photo uploads will fail until set'}</p>
+        </div>
+      </div>
+
+      <div class="card p-6">
         <h3 class="font-semibold text-slate-800 dark:text-white mb-4">Data</h3>
         <div class="space-y-3">
           <button class="btn btn-o w-full text-left" onclick="exportData()">📥 Export All Data (JSON)</button>
@@ -2358,6 +2406,16 @@ function removeBufferChannel(id){
   renderSettings();
 }
 
+function saveCloudinarySettings(){
+  const cloud=document.getElementById('s-cld-cloud').value.trim();
+  const preset=document.getElementById('s-cld-preset').value.trim();
+  const s=DB.settings();
+  DB.save.settings({...s,cloudinaryCloudName:cloud,cloudinaryUploadPreset:preset});
+  const el=document.getElementById('s-cld-status');
+  if(el){el.textContent=cloud&&preset?'✓ Cloudinary configured':'Not configured — photo uploads will fail until set';el.className='text-xs '+(cloud&&preset?'text-emerald-600':'text-slate-400');}
+  toast(cloud&&preset?'Cloudinary settings saved!':'Cloudinary settings cleared');
+}
+
 function saveWebhookUrl(){
   const url=document.getElementById('s-webhook').value.trim();
   const autoSend=document.getElementById('s-auto-buffer')?.checked||false;
@@ -2387,7 +2445,7 @@ function saveSettings(){
 }
 
 function exportData(){
-  const data={brands:DB.brands(),posts:DB.posts(),photos:DB.photos().map(p=>({...p,url:'[base64 omitted]'})),clients:DB.clients(),team:DB.team(),settings:DB.settings()};
+  const data={brands:DB.brands(),posts:DB.posts(),photos:DB.photos(),clients:DB.clients(),team:DB.team(),settings:DB.settings()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
