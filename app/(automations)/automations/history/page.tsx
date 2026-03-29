@@ -158,10 +158,10 @@ export default function HistoryPage() {
                               <span className="text-xs px-1.5 py-0.5 rounded bg-[rgba(255,255,255,0.05)] text-slate-500">{step.actionType}</span>
                               <span className="text-xs text-slate-600">{step.durationMs}ms</span>
                             </div>
-                            {step.error && (
-                              <p className="text-xs text-red-400 mt-1">{step.error}</p>
-                            )}
-                            {step.output && (
+                            {step.error ? (
+                              <p className="text-xs text-red-400 mt-1">{String(step.error)}</p>
+                            ) : null}
+                            {step.output != null && (
                               <details className="mt-1">
                                 <summary className="text-xs text-sky-400 cursor-pointer hover:underline">View output</summary>
                                 <pre className="text-xs text-slate-500 bg-[rgba(255,255,255,0.03)] rounded p-2 mt-1 overflow-x-auto max-h-40 overflow-y-auto">
