@@ -2,16 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "CaptionCraft",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["/tmp/cc_server.py", "3456"],
-      "port": 3456
-    },
-    {
-      "name": "pulse-website",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["/tmp/cc_server.py", "3457"],
-      "port": 3457
+      "name": "Next.js",
+      "runtimeExecutable": "/private/tmp/node-v20.11.0-darwin-arm64/bin/node",
+      "runtimeArgs": ["node_modules/.bin/next", "dev"],
+      "port": 3000
     }
   ]
 }
