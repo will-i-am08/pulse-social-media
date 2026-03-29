@@ -32,11 +32,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return meta
 }
 
-export async function generateStaticParams() {
-  const posts = await getPublishedPosts()
-  return posts.map(p => ({ slug: p.slug }))
-}
-
 function readTime(wordCount: number) {
   return Math.max(1, Math.ceil(wordCount / 200))
 }
