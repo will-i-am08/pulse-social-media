@@ -133,7 +133,7 @@ export default function LibraryPage() {
 
   function addTag(id: string, tag: string) {
     if (!tag.trim()) return
-    savePhotos(photos.map(p => p.id === id ? { ...p, tags: [...new Set([...p.tags, tag.trim().toLowerCase()])] } : p))
+    savePhotos(photos.map(p => p.id === id ? { ...p, tags: Array.from(new Set([...p.tags, tag.trim().toLowerCase()])) } : p))
     setTagVal('')
   }
 
