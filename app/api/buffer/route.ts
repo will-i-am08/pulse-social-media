@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   const token = await getDecryptedBufferToken(user.id)
   if (!token) return NextResponse.json({ error: 'No Buffer token configured. Add it in Account Settings.' }, { status: 400 })
 
-  const { profileIds, text, media, scheduledAt } = await req.json()
+  const { profileIds, text, media } = await req.json()
 
   if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer profile' }, { status: 400 })
   if (!text?.trim()) return NextResponse.json({ error: 'Post text is required' }, { status: 400 })
@@ -46,11 +46,6 @@ export async function POST(req: NextRequest) {
       params.append('text', text)
       if (media?.link) params.append('media[link]', media.link)
       if (media?.photo) params.append('media[photo]', media.photo)
-      if (scheduledAt) {
-        params.append('scheduled_at', scheduledAt)
-      } else {
-        params.append('now', 'true')
-      }
 
       try {
         const res = await fetch(`${BUFFER_API}/updates/create.json`, {

@@ -17,7 +17,6 @@ import {
   PaperAirplaneIcon,
   TrashIcon,
   ArrowPathIcon,
-  CalendarDaysIcon,
 } from '@heroicons/react/16/solid'
 
 interface BufferProfile {
@@ -31,8 +30,6 @@ interface BufferProfile {
 const STATUS_OPTIONS = ['all', 'draft', 'submitted', 'approved', 'scheduled', 'published']
 const PLATFORM_ICONS: Record<string, string> = { instagram: 'IG', facebook: 'FB', linkedin: 'LI' }
 
-const DAY_MAP: Record<number, string> = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' }
-
 export default function PostsPage() {
   const { brands, posts, savePosts } = useWorkspace()
   const [statusFilter, setStatusFilter] = useState('all')
@@ -42,8 +39,6 @@ export default function PostsPage() {
   const [bulkSending, setBulkSending] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showScheduler, setShowScheduler] = useState(false)
-  const [schedStart, setSchedStart] = useState('')
-  const [schedEnd, setSchedEnd] = useState('')
   const [schedulingDrafts, setSchedulingDrafts] = useState(false)
   const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([])
   const [selectedProfiles, setSelectedProfiles] = useState<Set<string>>(new Set())
@@ -90,13 +85,12 @@ export default function PostsPage() {
           profileIds,
           text: post.caption,
           media: post.image_url ? { photo: post.image_url } : undefined,
-          scheduledAt: post.scheduled_at || undefined,
         }),
       })
       const data = await res.json()
       if (data.success) {
         changeStatus(post.id, 'published')
-        toast.success('Sent to Buffer!')
+        toast.success('Added to Buffer queue!')
       } else {
         toast.error(data.results?.find((r: any) => !r.success)?.error || 'Failed to send to Buffer')
       }
@@ -127,7 +121,6 @@ export default function PostsPage() {
             profileIds,
             text: post.caption,
             media: post.image_url ? { photo: post.image_url } : undefined,
-            scheduledAt: post.scheduled_at || undefined,
           }),
         })
         const data = await res.json()
@@ -143,14 +136,13 @@ export default function PostsPage() {
     }
 
     setBulkSending(false)
-    if (sent > 0) toast.success(`${sent} post${sent !== 1 ? 's' : ''} sent to Buffer!`)
+    if (sent > 0) toast.success(`${sent} post${sent !== 1 ? 's' : ''} added to Buffer queue!`)
     if (failed > 0) toast.error(`${failed} post${failed !== 1 ? 's' : ''} failed to send`)
   }
 
   async function scheduleDrafts() {
     const drafts = posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter))
-    if (drafts.length === 0) { toast.error('No drafts to schedule'); return }
-    if (!schedStart || !schedEnd) { toast.error('Pick a date range'); return }
+    if (drafts.length === 0) { toast.error('No drafts to send'); return }
 
     // Group drafts by brand
     const byBrand: Record<string, typeof drafts> = {}
@@ -160,61 +152,40 @@ export default function PostsPage() {
     }
 
     setSchedulingDrafts(true)
-    let totalScheduled = 0
-    let totalBuffered = 0
+    let totalSent = 0
 
     for (const [bid, brandDrafts] of Object.entries(byBrand)) {
       const brand = brands.find(b => b.id === bid)
-      if (!brand?.posting_days?.length) continue
-      const time = brand.posting_time || '09:00'
-      const existingDates = new Set(
-        posts.filter(p => p.scheduled_at && p.brand_profile_id === bid && p.status !== 'draft')
-          .map(p => p.scheduled_at!.slice(0, 10))
-      )
+      const profileIds = brand?.buffer_profile_ids || []
+      if (!profileIds.length) continue
 
-      const slots: string[] = []
-      const start = new Date(schedStart)
-      const end = new Date(schedEnd)
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const dayName = DAY_MAP[d.getDay()]
-        if (brand.posting_days.includes(dayName)) {
-          const dateStr = d.toISOString().slice(0, 10)
-          if (!existingDates.has(dateStr)) slots.push(`${dateStr}T${time}`)
-        }
-      }
-
-      const profileIds = brand.buffer_profile_ids || []
-      for (let i = 0; i < brandDrafts.length && i < slots.length; i++) {
-        brandDrafts[i].scheduled_at = slots[i]
-        brandDrafts[i].status = profileIds.length > 0 ? 'published' : 'scheduled'
-        totalScheduled++
-
-        if (profileIds.length > 0) {
-          try {
-            const res = await fetch('/api/buffer', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                profileIds,
-                text: brandDrafts[i].caption,
-                media: brandDrafts[i].image_url ? { photo: brandDrafts[i].image_url } : undefined,
-                scheduledAt: slots[i],
-              }),
-            })
-            const data = await res.json()
-            if (data.success) totalBuffered++
-          } catch { /* continue */ }
-        }
+      for (const draft of brandDrafts) {
+        try {
+          const res = await fetch('/api/buffer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              profileIds,
+              text: draft.caption,
+              media: draft.image_url ? { photo: draft.image_url } : undefined,
+            }),
+          })
+          const data = await res.json()
+          if (data.success) {
+            draft.status = 'published'
+            totalSent++
+          }
+        } catch { /* continue */ }
       }
     }
 
     savePosts([...posts])
     setSchedulingDrafts(false)
     setShowScheduler(false)
-    if (totalScheduled > 0) {
-      toast.success(`${totalScheduled} post${totalScheduled !== 1 ? 's' : ''} scheduled${totalBuffered > 0 ? ` (${totalBuffered} sent to Buffer)` : ''}!`)
+    if (totalSent > 0) {
+      toast.success(`${totalSent} post${totalSent !== 1 ? 's' : ''} added to Buffer queue!`)
     } else {
-      toast.error('No brands have posting days configured. Set them in Settings.')
+      toast.error('No brands have Buffer profiles configured. Set them in Settings.')
     }
   }
 
@@ -237,7 +208,7 @@ export default function PostsPage() {
         <div className="flex gap-2">
           {posts.some(p => p.status === 'draft') && (
             <button onClick={() => setShowScheduler(true)} className="btn btn-o flex items-center gap-2">
-              <CalendarDaysIcon className="w-4 h-4" /> Schedule Drafts
+              <PaperAirplaneIcon className="w-4 h-4" /> Send Drafts to Buffer
             </button>
           )}
           {bufferProfiles.length > 0 && posts.some(p => p.status === 'approved' || p.status === 'scheduled') && (
@@ -422,34 +393,24 @@ export default function PostsPage() {
         />
       )}
 
-      {/* Schedule Drafts Modal */}
+      {/* Send Drafts to Buffer Modal */}
       {showScheduler && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowScheduler(false)}>
           <div className="card p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
             <h3 className="text-lg font-semibold text-[#e6e1e1] mb-1 flex items-center gap-2">
-              <CalendarDaysIcon className="w-5 h-5 text-[#ff5473]" /> Schedule Drafts
+              <PaperAirplaneIcon className="w-5 h-5 text-[#ff5473]" /> Send Drafts to Buffer
             </h3>
             <p className="text-xs text-[#e1bec0] mb-4">
-              Assigns dates to draft posts using each brand&apos;s posting schedule. Posts with Buffer profiles configured will be sent automatically.
+              Sends draft posts to each brand&apos;s Buffer queue. Buffer&apos;s auto-schedule handles the timing.
             </p>
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="text-xs text-[#e1bec0] mb-1 block">Start Date</label>
-                <input type="date" className="inp" value={schedStart} onChange={e => setSchedStart(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-xs text-[#e1bec0] mb-1 block">End Date</label>
-                <input type="date" className="inp" value={schedEnd} onChange={e => setSchedEnd(e.target.value)} />
-              </div>
-            </div>
             <p className="text-xs text-[#e1bec0] mb-4">
-              {posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length} draft{posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length !== 1 ? 's' : ''} will be scheduled
+              {posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length} draft{posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length !== 1 ? 's' : ''} will be sent
               {brandFilter !== 'all' ? ` for ${brands.find(b => b.id === brandFilter)?.name || 'selected brand'}` : ' across all brands'}
             </p>
             <div className="flex gap-3 justify-end">
               <button className="btn btn-o" onClick={() => setShowScheduler(false)}>Cancel</button>
-              <button className="btn btn-p flex items-center gap-2" disabled={schedulingDrafts || !schedStart || !schedEnd} onClick={scheduleDrafts}>
-                {schedulingDrafts ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Scheduling...</> : <><CalendarDaysIcon className="w-4 h-4" /> Schedule & Send</>}
+              <button className="btn btn-p flex items-center gap-2" disabled={schedulingDrafts} onClick={scheduleDrafts}>
+                {schedulingDrafts ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Sending...</> : <><PaperAirplaneIcon className="w-4 h-4" /> Send to Buffer</>}
               </button>
             </div>
           </div>
