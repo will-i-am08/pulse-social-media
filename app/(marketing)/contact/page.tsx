@@ -1,9 +1,11 @@
+import { Metadata } from 'next'
 import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 import ContactForm from '@/components/marketing/ContactForm'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Contact Us | Pulse Digital Agency',
+  description: 'Get in touch with Pulse Digital to discuss your brand, social media strategy, or digital growth project.',
 }
 
 export default function ContactPage() {

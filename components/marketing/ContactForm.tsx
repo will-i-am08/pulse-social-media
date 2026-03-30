@@ -1,20 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 const INTENTS = ['Brand Identity', 'Digital Product', 'Growth Strategy', 'Motion Design']
 
 export default function ContactForm() {
   const [selected, setSelected] = useState('Digital Product')
+  const [submitted, setSubmitted] = useState(false)
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    formData.set('intent', selected)
+    try {
+      await fetch('/__forms.html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData as unknown as Record<string, string>).toString(),
+      })
+      setSubmitted(true)
+    } catch {
+      setSubmitted(true)
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="glass-form p-8 md:p-12 rounded-xl relative text-center py-20">
+        <span className="material-symbols-outlined text-primary text-5xl mb-4">check_circle</span>
+        <h3 className="text-2xl font-bold text-on-surface mb-2">Message Sent</h3>
+        <p className="text-on-surface-variant">We&apos;ll get back to you within 4 hours during business hours.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="glass-form p-8 md:p-12 rounded-xl relative">
       <div className="absolute -top-10 -left-10 w-40 h-40 bg-primary/10 blur-[100px] rounded-full pointer-events-none"></div>
-      <form className="space-y-8 relative z-10">
+      <form name="contact" method="POST" data-netlify="true" onSubmit={handleSubmit} className="space-y-8 relative z-10">
+        <input type="hidden" name="form-name" value="contact" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-xs uppercase tracking-widest text-primary font-bold ml-1">Full Name</label>
             <input
+              name="name"
+              required
               className="w-full bg-surface-container-highest border-none rounded-lg p-4 focus:ring-2 focus:ring-primary/40 text-on-surface placeholder:text-neutral-600 transition-all outline-none"
               placeholder="Your Name"
               type="text"
@@ -23,6 +54,8 @@ export default function ContactForm() {
           <div className="space-y-2">
             <label className="text-xs uppercase tracking-widest text-primary font-bold ml-1">Email Address</label>
             <input
+              name="email"
+              required
               className="w-full bg-surface-container-highest border-none rounded-lg p-4 focus:ring-2 focus:ring-primary/40 text-on-surface placeholder:text-neutral-600 transition-all outline-none"
               placeholder="you@company.com"
               type="email"
@@ -31,6 +64,7 @@ export default function ContactForm() {
         </div>
         <div className="space-y-2">
           <label className="text-xs uppercase tracking-widest text-primary font-bold ml-1">Project Intent</label>
+          <input type="hidden" name="intent" value={selected} />
           <div className="flex flex-wrap gap-3">
             {INTENTS.map(intent => (
               <button
@@ -51,6 +85,8 @@ export default function ContactForm() {
         <div className="space-y-2">
           <label className="text-xs uppercase tracking-widest text-primary font-bold ml-1">Message</label>
           <textarea
+            name="message"
+            required
             className="w-full bg-surface-container-highest border-none rounded-lg p-4 focus:ring-2 focus:ring-primary/40 text-on-surface placeholder:text-neutral-600 transition-all outline-none resize-none"
             placeholder="Tell us about your project..."
             rows={5}

@@ -1,7 +1,13 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 import StaggerChildren from '@/components/marketing/StaggerChildren'
+
+export const metadata: Metadata = {
+  title: 'Services | Pulse Digital Agency',
+  description: 'Social media management, AI-driven automation, analytics, and creative strategy — explore the full range of Pulse Digital services.',
+}
 
 export default function ServicesPage() {
   return (
@@ -87,9 +93,9 @@ export default function ServicesPage() {
               </ul>
             </div>
             <div className="relative z-10">
-              <button className="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all">
+              <Link href="/contact" className="text-primary font-bold flex items-center gap-2 hover:gap-4 transition-all">
                 Explore Strategy <span className="material-symbols-outlined">north_east</span>
-              </button>
+              </Link>
             </div>
           </AnimateOnScroll>
 
@@ -102,9 +108,9 @@ export default function ServicesPage() {
             <p className="text-on-primary-container/80 text-sm leading-relaxed my-6">
               Custom AI solutions that streamline your workflows and help you spot opportunities before your competitors do.
             </p>
-            <button className="w-full py-4 bg-on-primary-container text-primary-container rounded font-bold hover:bg-neutral-900 hover:text-white transition-colors">
+            <Link href="/contact" className="block w-full py-4 bg-on-primary-container text-primary-container rounded font-bold hover:bg-neutral-900 hover:text-white transition-colors text-center">
               Deploy Solutions
-            </button>
+            </Link>
           </AnimateOnScroll>
 
           {/* SaaS Platform Card */}

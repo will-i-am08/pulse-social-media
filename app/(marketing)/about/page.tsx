@@ -1,6 +1,12 @@
+import { Metadata } from 'next'
 import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 import StaggerChildren from '@/components/marketing/StaggerChildren'
+
+export const metadata: Metadata = {
+  title: 'About | Pulse Digital Agency',
+  description: 'Meet the team behind Pulse Digital — a creative agency combining human expertise with AI-powered tools to grow brands.',
+}
 
 const TEAM = [
   {

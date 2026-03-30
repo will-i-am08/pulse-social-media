@@ -1,5 +1,11 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
+
+export const metadata: Metadata = {
+  title: 'CaptionCraft | Pulse Digital Agency',
+  description: 'AI-powered caption and content generation for social media. Create on-brand posts in seconds with CaptionCraft by Pulse Digital.',
+}
 
 export default function CaptionCraftPromoPage() {
   return (

@@ -1,7 +1,13 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
 
 const ALGO = 'aes-256-gcm'
-const KEY = Buffer.from(process.env.ENCRYPTION_SECRET || 'REPLACE_WITH_32_CHAR_SECRET_KEY!!', 'utf8').slice(0, 32)
+function getKey() {
+  if (!process.env.ENCRYPTION_SECRET) {
+    throw new Error('ENCRYPTION_SECRET environment variable is required')
+  }
+  return Buffer.from(process.env.ENCRYPTION_SECRET, 'utf8').slice(0, 32)
+}
+const KEY = getKey()
 
 export function encrypt(plaintext: string): { enc: string; iv: string; tag: string } {
   const iv = randomBytes(12)

@@ -14,6 +14,14 @@ const APP_ROUTES = [
   '/holidays',
   '/settings',
   '/profile',
+  '/account',
+  '/apps',
+  '/automations',
+  '/creative-studio',
+  '/blog-engine',
+  '/brand-research',
+  '/geo',
+  '/proposals',
 ]
 
 export async function middleware(request: NextRequest) {

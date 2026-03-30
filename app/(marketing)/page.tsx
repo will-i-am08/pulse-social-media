@@ -1,10 +1,12 @@
+import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 import StaggerChildren from '@/components/marketing/StaggerChildren'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Pulse Digital Agency | Social Media That Works',
+  description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and content that connects with your audience.',
 }
 
 export default function HomePage() {
@@ -49,10 +51,10 @@ export default function HomePage() {
                 <Link href="/contact" className="bg-primary-container text-on-primary-container px-8 py-4 rounded-lg font-bold text-lg hover:shadow-[0_0_20px_rgba(255,84,115,0.4)] transition-all">
                   Ignite Your Brand
                 </Link>
-                <button className="flex items-center gap-2 text-on-surface font-semibold hover:text-primary transition-colors">
+                <Link href="/services" className="flex items-center gap-2 text-on-surface font-semibold hover:text-primary transition-colors">
                   <span className="material-symbols-outlined">play_circle</span>
-                  Watch Reel
-                </button>
+                  Our Services
+                </Link>
               </div>
             </AnimateOnScroll>
           </div>

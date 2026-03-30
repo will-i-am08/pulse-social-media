@@ -1,5 +1,13 @@
 import Image from 'next/image'
+import Link from 'next/link'
+import { Metadata } from 'next'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
+import NewsletterForm from '@/components/marketing/NewsletterForm'
+
+export const metadata: Metadata = {
+  title: 'Insights | Pulse Digital Agency',
+  description: 'Digital strategy insights, AI trends, and actionable guides from the Pulse Digital team.',
+}
 
 export default function InsightsPage() {
   return (
@@ -27,10 +35,10 @@ export default function InsightsPage() {
             </AnimateOnScroll>
             <AnimateOnScroll variant="fade-up" delay={0.3}>
               <div className="flex items-center gap-6">
-                <button className="flex items-center gap-2 group">
+                <Link href="/blog" className="flex items-center gap-2 group">
                   <span className="font-label text-sm font-bold uppercase tracking-widest text-on-surface group-hover:text-primary transition-colors">Read More</span>
                   <span className="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                </button>
+                </Link>
                 <span className="text-outline-variant text-sm font-medium tracking-tight">12 Min Read — Jan 2026</span>
               </div>
             </AnimateOnScroll>
@@ -165,16 +173,7 @@ export default function InsightsPage() {
                 Get our <span className="text-primary">weekly digital insights</span>. Every Tuesday.
               </h2>
               <p className="text-on-surface-variant mb-10 text-lg">We break down the latest digital trends into practical takeaways. No fluff, just the good stuff.</p>
-              <form className="flex flex-col md:flex-row gap-4">
-                <input
-                  className="bg-surface-container border-none rounded px-6 py-4 flex-grow focus:ring-1 focus:ring-primary text-on-surface placeholder:text-outline transition-all outline-none"
-                  placeholder="Your email address"
-                  type="email"
-                />
-                <button className="bg-primary-container text-on-primary-container px-10 py-4 rounded font-bold uppercase tracking-widest text-sm hover:shadow-[0_0_20px_rgba(255,84,115,0.4)] transition-all" type="submit">
-                  Subscribe
-                </button>
-              </form>
+              <NewsletterForm />
               <p className="mt-6 text-[10px] text-outline uppercase tracking-widest">Privacy guaranteed. Opt-out at any time.</p>
             </div>
           </div>

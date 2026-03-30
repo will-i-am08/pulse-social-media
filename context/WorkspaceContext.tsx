@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import toast from 'react-hot-toast'
 import type { Brand, Client, Folder, Photo, Post, Settings, WorkspaceBrand } from '@/lib/types'
 import { DEFAULT_SETTINGS } from '@/lib/types'
 import { uid as genUid } from '@/lib/utils'
@@ -175,6 +176,7 @@ export function WorkspaceProvider({
       })
     } catch (e) {
       console.error('WorkspaceProvider load error:', e)
+      toast.error('Failed to load workspace data')
       dispatch({ type: 'LOAD_SUCCESS', payload: { loading: false } })
     }
   }, [workspaceId, userId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -199,6 +201,7 @@ export function WorkspaceProvider({
       }
     } catch (e) {
       console.error(`Sync error [${table}]:`, e)
+      toast.error(`Failed to save ${table}`)
     }
   }
 
@@ -212,7 +215,7 @@ export function WorkspaceProvider({
     // Delete removed
     for (const id of prevIds) {
       if (!newIds.has(id)) {
-        fetch(`/api/brands?id=${id}`, { method: 'DELETE' }).catch(() => {})
+        fetch(`/api/brands?id=${id}`, { method: 'DELETE' }).catch(() => toast.error('Failed to delete brand'))
       }
     }
     // Upsert changed/new
@@ -241,7 +244,7 @@ export function WorkspaceProvider({
         method: isNew ? 'POST' : 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      }).catch(() => {})
+      }).catch(() => toast.error('Failed to save brand'))
     }
   }, [state.brands, workspaceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -272,7 +275,7 @@ export function WorkspaceProvider({
     const updated = { ...state.settings, ...v }
     sb.from('settings')
       .upsert({ workspace_id: workspaceId, data: updated })
-      .then(({ error }) => { if (error) console.error('Settings sync error:', error.message) })
+      .then(({ error }) => { if (error) { console.error('Settings sync error:', error.message); toast.error('Failed to save settings') } })
   }, [state.settings, workspaceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const saveProfile = useCallback((v: { name: string; email: string }) => {
@@ -280,7 +283,7 @@ export function WorkspaceProvider({
     sb.from('profiles')
       .update({ display_name: v.name })
       .eq('id', userId)
-      .then(({ error }) => { if (error) console.error('Profile sync error:', error.message) })
+      .then(({ error }) => { if (error) { console.error('Profile sync error:', error.message); toast.error('Failed to save profile') } })
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isAdmin = () => role === 'admin'
