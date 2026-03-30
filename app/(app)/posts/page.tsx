@@ -36,6 +36,7 @@ export default function PostsPage() {
   const [brandFilter, setBrandFilter] = useState('all')
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
+  const [bulkSending, setBulkSending] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([])
   const [selectedProfiles, setSelectedProfiles] = useState<Set<string>>(new Set())
@@ -99,6 +100,46 @@ export default function PostsPage() {
     }
   }
 
+  async function sendAllApproved() {
+    const approved = posts.filter(p => p.status === 'approved' || p.status === 'scheduled')
+    if (approved.length === 0) { toast.error('No approved/scheduled posts to send'); return }
+    if (bufferProfiles.length === 0) { toast.error('Connect Buffer in Account Settings first'); return }
+    const profileIds = Array.from(selectedProfiles)
+    if (profileIds.length === 0) { toast.error('Select at least one Buffer profile'); return }
+
+    setBulkSending(true)
+    let sent = 0
+    let failed = 0
+
+    for (const post of approved) {
+      try {
+        const res = await fetch('/api/buffer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            profileIds,
+            text: post.caption,
+            media: post.image_url ? { photo: post.image_url } : undefined,
+            scheduledAt: post.scheduled_at || undefined,
+          }),
+        })
+        const data = await res.json()
+        if (data.success) {
+          sent++
+          changeStatus(post.id, 'published')
+        } else {
+          failed++
+        }
+      } catch {
+        failed++
+      }
+    }
+
+    setBulkSending(false)
+    if (sent > 0) toast.success(`${sent} post${sent !== 1 ? 's' : ''} sent to Buffer!`)
+    if (failed > 0) toast.error(`${failed} post${failed !== 1 ? 's' : ''} failed to send`)
+  }
+
   function toggleProfile(id: string) {
     setSelectedProfiles(prev => {
       const next = new Set(prev)
@@ -115,9 +156,23 @@ export default function PostsPage() {
           <h1 className="text-3xl font-bold text-[#e6e1e1]">Posts</h1>
           <p className="text-[#e1bec0] mt-1">{filtered.length} of {posts.length} posts</p>
         </div>
-        <Link href="/create-post" className="btn btn-p flex items-center gap-2">
-          <PencilSquareIcon className="w-4 h-4" /> New Post
-        </Link>
+        <div className="flex gap-2">
+          {bufferProfiles.length > 0 && posts.some(p => p.status === 'approved' || p.status === 'scheduled') && (
+            <button
+              onClick={sendAllApproved}
+              disabled={bulkSending || selectedProfiles.size === 0}
+              className="btn btn-o flex items-center gap-2"
+            >
+              {bulkSending
+                ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Sending...</>
+                : <><PaperAirplaneIcon className="w-4 h-4" /> Send All Approved</>
+              }
+            </button>
+          )}
+          <Link href="/create-post" className="btn btn-p flex items-center gap-2">
+            <PencilSquareIcon className="w-4 h-4" /> New Post
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

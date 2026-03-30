@@ -25,6 +25,7 @@ export default function PhotosPage() {
   const [filter, setFilter] = useState('')
   const [folderId, setFolderId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 })
   const [lightbox, setLightbox] = useState<Photo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [newFolderName, setNewFolderName] = useState('')
@@ -37,21 +38,33 @@ export default function PhotosPage() {
   })
 
   async function handleUpload(files: FileList | null) {
-    if (!files) return
+    if (!files || files.length === 0) return
+    const fileArr = Array.from(files)
     setUploading(true)
-    let count = 0
-    for (const file of Array.from(files)) {
-      try {
-        const url = await uploadImage(file)
-        const newPhoto: Photo = { id: uid(), url, name: file.name.replace(/\.[^.]+$/, ''), tags: [], folder_id: folderId, created_date: new Date().toISOString() }
-        savePhotos([newPhoto, ...photos])
-        count++
-      } catch (e: any) {
-        toast.error('Upload failed: ' + e.message)
+    setUploadProgress({ done: 0, total: fileArr.length })
+    const newPhotos: Photo[] = []
+    let failed = 0
+    // Upload in batches of 3 for speed without overwhelming the server
+    for (let i = 0; i < fileArr.length; i += 3) {
+      const batch = fileArr.slice(i, i + 3)
+      const results = await Promise.allSettled(
+        batch.map(async (file) => {
+          const url = await uploadImage(file)
+          return { id: uid(), url, name: file.name.replace(/\.[^.]+$/, ''), tags: [] as string[], folder_id: folderId, created_date: new Date().toISOString() } as Photo
+        })
+      )
+      for (const r of results) {
+        if (r.status === 'fulfilled') newPhotos.push(r.value)
+        else failed++
       }
+      setUploadProgress({ done: Math.min(i + batch.length, fileArr.length), total: fileArr.length })
+    }
+    if (newPhotos.length > 0) {
+      savePhotos([...newPhotos, ...photos])
     }
     setUploading(false)
-    if (count > 0) toast.success(`${count} photo${count !== 1 ? 's' : ''} uploaded!`)
+    if (newPhotos.length > 0) toast.success(`${newPhotos.length} photo${newPhotos.length !== 1 ? 's' : ''} uploaded!`)
+    if (failed > 0) toast.error(`${failed} upload${failed !== 1 ? 's' : ''} failed`)
   }
 
   function renamePhoto(id: string, name: string) {
@@ -102,8 +115,8 @@ export default function PhotosPage() {
             <FolderIcon className="w-4 h-4" /> New Folder
           </button>
           <label className={`btn btn-p cursor-pointer flex items-center gap-2 ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
-            {uploading ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Uploading...</> : <><PaperClipIcon className="w-4 h-4" /> Upload</>}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleUpload(e.target.files)} />
+            {uploading ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Uploading {uploadProgress.done}/{uploadProgress.total}...</> : <><PaperClipIcon className="w-4 h-4" /> Upload</>}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={e => { handleUpload(e.target.files); e.target.value = '' }} />
           </label>
         </div>
       </div>

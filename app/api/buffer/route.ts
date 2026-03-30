@@ -38,37 +38,37 @@ export async function POST(req: NextRequest) {
   if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer profile' }, { status: 400 })
   if (!text?.trim()) return NextResponse.json({ error: 'Post text is required' }, { status: 400 })
 
-  const results: Array<{ profileId: string; success: boolean; error?: string }> = []
-
-  for (const profileId of profileIds) {
-    const params = new URLSearchParams()
-    params.append('access_token', token)
-    params.append('profile_ids[]', profileId)
-    params.append('text', text)
-    if (media?.link) params.append('media[link]', media.link)
-    if (media?.photo) params.append('media[photo]', media.photo)
-    if (scheduledAt) {
-      params.append('scheduled_at', scheduledAt)
-    } else {
-      params.append('now', 'true')
-    }
-
-    try {
-      const res = await fetch(`${BUFFER_API}/updates/create.json`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString(),
-      })
-      const data = await res.json()
-      if (data.success) {
-        results.push({ profileId, success: true })
+  const results = await Promise.all(
+    profileIds.map(async (profileId: string) => {
+      const params = new URLSearchParams()
+      params.append('access_token', token)
+      params.append('profile_ids[]', profileId)
+      params.append('text', text)
+      if (media?.link) params.append('media[link]', media.link)
+      if (media?.photo) params.append('media[photo]', media.photo)
+      if (scheduledAt) {
+        params.append('scheduled_at', scheduledAt)
       } else {
-        results.push({ profileId, success: false, error: data.message || 'Unknown error' })
+        params.append('now', 'true')
       }
-    } catch (e: any) {
-      results.push({ profileId, success: false, error: e.message })
-    }
-  }
+
+      try {
+        const res = await fetch(`${BUFFER_API}/updates/create.json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params.toString(),
+        })
+        const data = await res.json()
+        if (data.success) {
+          return { profileId, success: true }
+        } else {
+          return { profileId, success: false, error: data.message || 'Unknown error' }
+        }
+      } catch (e: any) {
+        return { profileId, success: false, error: e.message }
+      }
+    })
+  )
 
   const allOk = results.every(r => r.success)
   return NextResponse.json({ success: allOk, results }, { status: allOk ? 200 : 207 })
