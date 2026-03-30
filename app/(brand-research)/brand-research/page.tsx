@@ -302,15 +302,19 @@ function BrandDetail({
         body: JSON.stringify({ brandId: brand.id, researchType }),
         signal: ctrl.signal,
       })
-      if (!res.ok) { const e = await res.json(); throw new Error(e.error) }
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        throw new Error('Server timed out. Try again — the report is being generated with a faster model.')
+      }
       const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Request failed')
       if (data.text) {
         setStreamedContent(data.text)
       } else {
         throw new Error('No content returned')
       }
     } catch (e) {
-      if ((e as Error).name !== 'AbortError') toast.error('Research generation failed: ' + (e as Error).message)
+      if ((e as Error).name !== 'AbortError') toast.error((e as Error).message || 'Research generation failed')
     } finally {
       setGenerating(false)
     }
