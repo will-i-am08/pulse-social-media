@@ -78,7 +78,7 @@ export default function InsightsPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {/* Large Bento Card */}
             <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-8 group">
-              <div className="bg-surface-container p-1 rounded-lg transition-all duration-500 hover:shadow-[0_0_40px_-10px_rgba(255,84,115,0.1)]">
+              <Link href="/blog" className="block bg-surface-container p-1 rounded-lg transition-all duration-500 hover:shadow-[0_0_40px_-10px_rgba(255,84,115,0.1)]">
                 <div className="relative h-96 rounded overflow-hidden mb-8">
                   <Image
                     src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
@@ -97,18 +97,18 @@ export default function InsightsPage() {
                   <h3 className="font-headline text-3xl font-bold mb-4 group-hover:text-primary transition-colors">The Death of Search: How LLMs are Rewriting the Visibility Playbook.</h3>
                   <p className="text-on-surface-variant line-clamp-2 max-w-2xl">Traditional SEO is shifting. We look at why optimising for LLMs is becoming as important as ranking on Google, and how brands need to adapt.</p>
                 </div>
-              </div>
+              </Link>
             </AnimateOnScroll>
 
             {/* Small Bento Cards */}
             <AnimateOnScroll variant="fade-up" delay={0.1} className="md:col-span-4 flex flex-col gap-6">
-              <div className="bg-surface-container-high p-8 rounded-lg flex-1 group hover:bg-surface-bright transition-colors duration-300">
+              <Link href="/blog" className="bg-surface-container-high p-8 rounded-lg flex-1 group hover:bg-surface-bright transition-colors duration-300 block">
                 <span className="material-symbols-outlined text-primary text-3xl mb-6">token</span>
                 <h4 className="font-headline text-xl font-bold mb-3">Tokenomics for Creatives</h4>
                 <p className="text-on-surface-variant text-sm leading-relaxed mb-6">A deep dive into decentralised asset management for digital campaigns.</p>
                 <span className="text-xs font-bold uppercase tracking-widest text-primary group-hover:translate-x-2 inline-block transition-transform">Read Analysis</span>
-              </div>
-              <div className="bg-primary-container p-8 rounded-lg flex-1 group overflow-hidden relative">
+              </Link>
+              <Link href="/blog" className="bg-primary-container p-8 rounded-lg flex-1 group overflow-hidden relative block">
                 <div className="relative z-10">
                   <h4 className="font-headline text-xl font-bold text-on-primary-container mb-3">Data-Driven Content Strategy</h4>
                   <p className="text-on-primary-container/80 text-sm leading-relaxed mb-6">Using engagement data to create content that resonates across social platforms.</p>
@@ -118,7 +118,7 @@ export default function InsightsPage() {
                   </div>
                 </div>
                 <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl text-on-primary-container/10 rotate-12 transition-transform group-hover:rotate-0 duration-700">insights</span>
-              </div>
+              </Link>
             </AnimateOnScroll>
 
             {/* Row 2 */}
@@ -146,7 +146,7 @@ export default function InsightsPage() {
               }
             ].map((article, i) => (
               <AnimateOnScroll key={i} variant="fade-up" delay={0.1 + i * 0.1} className="md:col-span-4 group">
-                <div className="bg-surface p-6 rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all">
+                <Link href="/blog" className="block bg-surface p-6 rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all">
                   <div className="relative aspect-video rounded overflow-hidden mb-6">
                     <Image src={article.img} alt={article.alt} fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
                   </div>
@@ -156,7 +156,7 @@ export default function InsightsPage() {
                     <span className="text-[10px] text-outline font-medium">{article.read}</span>
                     <span className="material-symbols-outlined text-primary text-lg">north_east</span>
                   </div>
-                </div>
+                </Link>
               </AnimateOnScroll>
             ))}
           </div>

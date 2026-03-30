@@ -6,7 +6,11 @@ function getKey(): Buffer {
   if (!process.env.ENCRYPTION_SECRET) {
     throw new Error('ENCRYPTION_SECRET environment variable is required')
   }
-  return Buffer.from(process.env.ENCRYPTION_SECRET, 'utf8').slice(0, 32)
+  const buf = Buffer.from(process.env.ENCRYPTION_SECRET, 'utf8')
+  if (buf.length < 32) {
+    throw new Error('ENCRYPTION_SECRET must be at least 32 characters')
+  }
+  return buf.slice(0, 32)
 }
 
 export function encrypt(plaintext: string): { enc: string; iv: string; tag: string } {

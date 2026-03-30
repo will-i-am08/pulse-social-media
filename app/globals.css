@@ -50,6 +50,22 @@ body {
   padding-bottom: 4px;
   font-weight: 700;
 }
+
+/* Policy page prose styling */
+.prose-custom h2 {
+  margin-top: 2rem;
+}
+.prose-custom p {
+  margin-top: 0.5rem;
+  line-height: 1.75;
+}
+.prose-custom a {
+  color: #ffb2b9;
+  text-decoration: none;
+}
+.prose-custom a:hover {
+  text-decoration: underline;
+}
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
