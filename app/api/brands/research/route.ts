@@ -125,16 +125,21 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 3000,
+      stream: true,
       messages: [{ role: 'user', content: prompt }],
     }),
   })
 
-  if (!upstream.ok) {
+  if (!upstream.ok || !upstream.body) {
     const err = await upstream.text()
     return NextResponse.json({ error: err }, { status: upstream.status })
   }
 
-  const data = await upstream.json()
-  const text = data.content?.[0]?.text || ''
-  return NextResponse.json({ text })
+  return new NextResponse(upstream.body, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  })
 }
