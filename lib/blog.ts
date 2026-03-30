@@ -21,18 +21,53 @@ export function rowToPost(row: { id: string; data: Record<string, unknown> }): B
   }
 }
 
-export async function getPublishedPosts(): Promise<BlogPost[]> {
+export async function getPublishedPosts(limit?: number, offset = 0): Promise<BlogPost[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let query = supabase
     .from('posts')
     .select('id, data')
     .eq('data->>type', 'blog')
     .eq('data->>status', 'published')
     .order('data->>published_date', { ascending: false })
 
+  if (limit) {
+    query = query.range(offset, offset + limit - 1)
+  }
+
+  const { data, error } = await query
+
   if (error || !data) return []
 
   return (data as { id: string; data: Record<string, unknown> }[]).map(rowToPost)
+}
+
+export async function getRelatedPosts(currentSlug: string, tags: string, limit = 3): Promise<BlogPost[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('posts')
+    .select('id, data')
+    .eq('data->>type', 'blog')
+    .eq('data->>status', 'published')
+    .neq('data->>slug', currentSlug)
+    .order('data->>published_date', { ascending: false })
+    .limit(limit * 3) // fetch a small pool to score by tag overlap
+
+  if (error || !data) return []
+
+  const posts = (data as { id: string; data: Record<string, unknown> }[]).map(rowToPost)
+  const currentTags = tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+
+  if (currentTags.length === 0) return posts.slice(0, limit)
+
+  const scored = posts
+    .map(post => {
+      const postTags = post.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean)
+      const score = currentTags.reduce((acc, tag) => acc + (postTags.includes(tag) ? 1 : 0), 0)
+      return { post, score }
+    })
+    .sort((a, b) => b.score - a.score)
+
+  return scored.slice(0, limit).map(s => s.post)
 }
 
 export async function getPublishedPostBySlug(slug: string): Promise<BlogPost | null> {

@@ -184,14 +184,22 @@ function BrandForm({
                   {LENGTHS.map(l => <option key={l} value={l} className="capitalize">{l}</option>)}
                 </select>
               </div>
-              <div className="flex flex-col justify-end gap-2 pb-1">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="accent-[#8b5cf6]" checked={form.includeHashtags ?? true} onChange={e => set('includeHashtags', e.target.checked)} />
+              <div className="flex flex-col justify-end gap-3 pb-1">
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <span className="text-sm text-[#e6e1e1]">Hashtags</span>
+                  <div className="relative">
+                    <input type="checkbox" className="sr-only peer" checked={form.includeHashtags ?? true} onChange={e => set('includeHashtags', e.target.checked)} />
+                    <div className="w-10 h-5 rounded-full bg-[#2a2a2a] peer-checked:bg-[#8b5cf6] transition-colors" />
+                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow peer-checked:translate-x-5 transition-transform" />
+                  </div>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="accent-[#8b5cf6]" checked={form.includeEmojis ?? false} onChange={e => set('includeEmojis', e.target.checked)} />
+                <label className="flex items-center gap-3 cursor-pointer select-none">
                   <span className="text-sm text-[#e6e1e1]">Emojis</span>
+                  <div className="relative">
+                    <input type="checkbox" className="sr-only peer" checked={form.includeEmojis ?? false} onChange={e => set('includeEmojis', e.target.checked)} />
+                    <div className="w-10 h-5 rounded-full bg-[#2a2a2a] peer-checked:bg-[#8b5cf6] transition-colors" />
+                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow peer-checked:translate-x-5 transition-transform" />
+                  </div>
                 </label>
               </div>
             </div>

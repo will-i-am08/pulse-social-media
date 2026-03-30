@@ -17,7 +17,9 @@ export default function MarketingNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(64,0,16,0.06)] h-20">
+    <nav
+      className="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(64,0,16,0.06)] h-20 animate-[fadeSlideDown_0.5s_ease-out]"
+    >
       <div className="max-w-7xl mx-auto px-8 flex justify-between items-center h-full">
         <Link href="/" className="flex items-center gap-2 cursor-pointer">
           <Image

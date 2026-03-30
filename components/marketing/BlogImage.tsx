@@ -26,7 +26,7 @@ export default function BlogImage({ src, alt, className, fill, width, height }: 
   }
 
   if (fill) {
-    return <Image src={src} alt={alt} fill className={className} unoptimized />
+    return <Image src={src} alt={alt} fill className={className} sizes="100vw" />
   }
 
   return (
@@ -36,7 +36,7 @@ export default function BlogImage({ src, alt, className, fill, width, height }: 
       width={width || 800}
       height={height || 450}
       className={className}
-      unoptimized
+      sizes="(max-width: 768px) 100vw, 800px"
     />
   )
 }
