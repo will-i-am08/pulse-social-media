@@ -18,6 +18,11 @@ Thumbs.db
 
 # Deploy artifacts
 deploy-*.zip
+deploy-to-netlify/
+
+# Stray dev scripts
+*.py
+*.rb
 
 # Debug
 npm-debug.log*

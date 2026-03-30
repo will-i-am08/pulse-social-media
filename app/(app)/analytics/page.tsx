@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import {
   DocumentTextIcon,
@@ -8,11 +7,15 @@ import {
   CalendarIcon,
   HandThumbUpIcon,
 } from '@heroicons/react/16/solid'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  PieChart, Pie, Cell, ResponsiveContainer,
+} from 'recharts'
+
+const COLORS = ['#ff5473', '#ffb2b9', '#e8405f', '#5a4042', '#f4b7c0', '#ffb59e']
 
 export default function AnalyticsPage() {
   const { posts, brands } = useWorkspace()
-  const monthlyChartRef = useRef<HTMLCanvasElement>(null)
-  const platformChartRef = useRef<HTMLCanvasElement>(null)
 
   const published = posts.filter(p => p.status === 'published')
   const scheduled = posts.filter(p => p.status === 'scheduled')
@@ -27,63 +30,18 @@ export default function AnalyticsPage() {
     const mEnd = new Date(now.getFullYear(), now.getMonth() - (5 - i) + 1, 0)
     return {
       label: m.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-      published: posts.filter(p => { const d = new Date(p.created_date || ''); return p.status === 'published' && d >= m && d <= mEnd }).length,
-      scheduled: posts.filter(p => { const d = new Date(p.created_date || ''); return p.status === 'scheduled' && d >= m && d <= mEnd }).length,
-      drafts: posts.filter(p => { const d = new Date(p.created_date || ''); return p.status === 'draft' && d >= m && d <= mEnd }).length,
+      Published: posts.filter(p => { const d = new Date(p.created_date || ''); return p.status === 'published' && d >= m && d <= mEnd }).length,
+      Scheduled: posts.filter(p => { const d = new Date(p.created_date || ''); return p.status === 'scheduled' && d >= m && d <= mEnd }).length,
+      Drafts: posts.filter(p => { const d = new Date(p.created_date || ''); return p.status === 'draft' && d >= m && d <= mEnd }).length,
     }
   })
 
   const platformCounts: Record<string, number> = {}
   posts.forEach(p => (p.platforms || []).forEach(pl => { platformCounts[pl] = (platformCounts[pl] || 0) + 1 }))
-
-  useEffect(() => {
-    let mc: any = null
-    let pc: any = null
-    async function initCharts() {
-      const Chart = (await import('chart.js/auto')).default
-      const gridColor = 'rgba(90,64,66,0.2)'
-      const textColor = '#e1bec0'
-
-      if (monthlyChartRef.current) {
-        mc = new Chart(monthlyChartRef.current, {
-          type: 'bar',
-          data: {
-            labels: months.map(m => m.label),
-            datasets: [
-              { label: 'Published', data: months.map(m => m.published), backgroundColor: '#ff5473' },
-              { label: 'Scheduled', data: months.map(m => m.scheduled), backgroundColor: '#ffb2b9' },
-              { label: 'Drafts', data: months.map(m => m.drafts), backgroundColor: '#5a4042' },
-            ]
-          },
-          options: {
-            responsive: true, maintainAspectRatio: true,
-            plugins: { legend: { labels: { color: textColor, font: { size: 11 } } } },
-            scales: {
-              x: { grid: { color: gridColor }, ticks: { color: textColor } },
-              y: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 }, beginAtZero: true },
-            }
-          }
-        })
-      }
-
-      if (platformChartRef.current && Object.keys(platformCounts).length > 0) {
-        const labels = Object.keys(platformCounts)
-        pc = new Chart(platformChartRef.current, {
-          type: 'doughnut',
-          data: {
-            labels: labels.map(l => l[0].toUpperCase() + l.slice(1)),
-            datasets: [{ data: labels.map(l => platformCounts[l]), backgroundColor: ['#ff5473', '#ffb2b9', '#e8405f', '#5a4042'] }]
-          },
-          options: {
-            responsive: true, maintainAspectRatio: true,
-            plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } } }
-          }
-        })
-      }
-    }
-    initCharts()
-    return () => { mc?.destroy(); pc?.destroy() }
-  }, [posts])
+  const platformData = Object.entries(platformCounts).map(([name, value]) => ({
+    name: name[0].toUpperCase() + name.slice(1),
+    value,
+  }))
 
   const stats = [
     { label: 'Total Posts', val: posts.length, Icon: DocumentTextIcon },
@@ -117,14 +75,46 @@ export default function AnalyticsPage() {
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <div className="card p-4">
           <h3 className="font-semibold text-[#e6e1e1] mb-4">Posts Over Time</h3>
-          <canvas ref={monthlyChartRef} height={200} />
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={months}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(90,64,66,0.2)" />
+              <XAxis dataKey="label" tick={{ fill: '#e1bec0', fontSize: 11 }} />
+              <YAxis tick={{ fill: '#e1bec0', fontSize: 11 }} allowDecimals={false} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#1a1919', border: '1px solid rgba(90,64,66,0.3)', borderRadius: 8, color: '#e6e1e1' }}
+              />
+              <Legend wrapperStyle={{ fontSize: 11, color: '#e1bec0' }} />
+              <Bar dataKey="Published" fill="#ff5473" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="Scheduled" fill="#ffb2b9" radius={[2, 2, 0, 0]} />
+              <Bar dataKey="Drafts" fill="#5a4042" radius={[2, 2, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
         <div className="card p-4">
           <h3 className="font-semibold text-[#e6e1e1] mb-4">Platform Breakdown</h3>
-          {Object.keys(platformCounts).length === 0 ? (
+          {platformData.length === 0 ? (
             <p className="text-[#e1bec0] text-sm text-center py-16">No platform data yet</p>
           ) : (
-            <canvas ref={platformChartRef} height={200} />
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={platformData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={90}
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {platformData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#1a1919', border: '1px solid rgba(90,64,66,0.3)', borderRadius: 8, color: '#e6e1e1' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           )}
         </div>
       </div>

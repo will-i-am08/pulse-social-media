@@ -37,7 +37,7 @@ export default function MarketingNav() {
               <Link
                 key={href}
                 href={href}
-                className={`nav-link font-medium text-sm tracking-tight${isActive ? ' active' : ''}`}
+                className={`nav-link font-medium text-sm tracking-tight ${isActive ? 'active' : ''}`}
               >
                 {label}
               </Link>

@@ -22,8 +22,15 @@ export default function MarketingFooter() {
             <p className="font-body text-xs uppercase tracking-widest text-rose-500 font-bold">Your Social Media Partner.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8">
-            {['Privacy Policy', 'Terms of Service', 'Cookie Settings', 'Global Offices'].map(t => (
-              <a key={t} className="font-body text-xs uppercase tracking-widest text-neutral-500 hover:text-rose-300 transition-colors cursor-pointer">{t}</a>
+            {[
+              { label: 'Privacy Policy', href: '/privacy' },
+              { label: 'Terms of Service', href: '/terms' },
+              { label: 'Cookie Settings', href: '/cookies' },
+              { label: 'Contact', href: '/contact' },
+            ].map(({ label, href }) => (
+              <Link key={label} href={href} className="font-body text-xs uppercase tracking-widest text-neutral-500 hover:text-rose-300 transition-colors">
+                {label}
+              </Link>
             ))}
           </div>
           <div className="text-neutral-600 font-body text-xs uppercase tracking-widest">&copy; 2026 Pulse Digital Agency. All rights reserved.</div>

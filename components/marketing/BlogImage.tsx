@@ -12,7 +12,7 @@ interface BlogImageProps {
 export default function BlogImage({ src, alt, className, fill, width, height }: BlogImageProps) {
   if (!src) {
     return (
-      <div className={`bg-gradient-to-br from-primary/20 via-surface-container to-primary-container/30 ${className || ''}`}>
+      <div className={`bg-gradient-to-br from-primary/20 via-surface-container to-primary-container/30 relative ${className || ''}`}>
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="material-symbols-outlined text-outline text-5xl">article</span>
         </div>

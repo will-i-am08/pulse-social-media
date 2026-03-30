@@ -77,7 +77,7 @@ export default function InsightsPage() {
           </AnimateOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {/* Large Bento Card */}
-            <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-8 group cursor-pointer">
+            <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-8 group">
               <div className="bg-surface-container p-1 rounded-lg transition-all duration-500 hover:shadow-[0_0_40px_-10px_rgba(255,84,115,0.1)]">
                 <div className="relative h-96 rounded overflow-hidden mb-8">
                   <Image
@@ -102,13 +102,13 @@ export default function InsightsPage() {
 
             {/* Small Bento Cards */}
             <AnimateOnScroll variant="fade-up" delay={0.1} className="md:col-span-4 flex flex-col gap-6">
-              <div className="bg-surface-container-high p-8 rounded-lg flex-1 group cursor-pointer hover:bg-surface-bright transition-colors duration-300">
+              <div className="bg-surface-container-high p-8 rounded-lg flex-1 group hover:bg-surface-bright transition-colors duration-300">
                 <span className="material-symbols-outlined text-primary text-3xl mb-6">token</span>
                 <h4 className="font-headline text-xl font-bold mb-3">Tokenomics for Creatives</h4>
                 <p className="text-on-surface-variant text-sm leading-relaxed mb-6">A deep dive into decentralised asset management for digital campaigns.</p>
                 <span className="text-xs font-bold uppercase tracking-widest text-primary group-hover:translate-x-2 inline-block transition-transform">Read Analysis</span>
               </div>
-              <div className="bg-primary-container p-8 rounded-lg flex-1 group cursor-pointer overflow-hidden relative">
+              <div className="bg-primary-container p-8 rounded-lg flex-1 group overflow-hidden relative">
                 <div className="relative z-10">
                   <h4 className="font-headline text-xl font-bold text-on-primary-container mb-3">Data-Driven Content Strategy</h4>
                   <p className="text-on-primary-container/80 text-sm leading-relaxed mb-6">Using engagement data to create content that resonates across social platforms.</p>
@@ -145,7 +145,7 @@ export default function InsightsPage() {
                 read: "6 MIN READ"
               }
             ].map((article, i) => (
-              <AnimateOnScroll key={i} variant="fade-up" delay={0.1 + i * 0.1} className="md:col-span-4 group cursor-pointer">
+              <AnimateOnScroll key={i} variant="fade-up" delay={0.1 + i * 0.1} className="md:col-span-4 group">
                 <div className="bg-surface p-6 rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all">
                   <div className="relative aspect-video rounded overflow-hidden mb-6">
                     <Image src={article.img} alt={article.alt} fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
