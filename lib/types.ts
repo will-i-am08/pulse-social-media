@@ -83,21 +83,12 @@ export interface Client {
   created_date: string
 }
 
-export interface BufferChannel {
-  id: string
-  name: string
-  service: string
-  bufferId?: string
-}
-
 export interface Settings {
   timezone: string
   defaultPlatforms: string[]
   emailNotifications: boolean
   workspaceName: string
-  makeWebhookUrl: string
   autoSendOnApprove: boolean
-  bufferChannels: BufferChannel[]
   model: string
 }
 
@@ -216,8 +207,6 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultPlatforms: ['instagram'],
   emailNotifications: true,
   workspaceName: 'My Agency',
-  makeWebhookUrl: '',
   autoSendOnApprove: false,
-  bufferChannels: [],
   model: 'claude-sonnet-4-6',
 }

@@ -15,3 +15,18 @@ export async function getDecryptedClaudeKey(userId: string): Promise<string | nu
     return null
   }
 }
+
+export async function getDecryptedBufferToken(userId: string): Promise<string | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('account_settings')
+    .select('buffer_token_enc, buffer_token_iv, buffer_token_tag')
+    .eq('user_id', userId)
+    .single()
+  if (!data?.buffer_token_enc || !data.buffer_token_iv || !data.buffer_token_tag) return null
+  try {
+    return decrypt(data.buffer_token_enc, data.buffer_token_iv, data.buffer_token_tag)
+  } catch {
+    return null
+  }
+}

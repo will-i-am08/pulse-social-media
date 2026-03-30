@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import StatusBadge from '@/components/app/StatusBadge'
 import ConfirmDialog from '@/components/app/ConfirmDialog'
-import { fmtDate } from '@/lib/utils'
+import { fmtDate, bufferServiceIcon } from '@/lib/utils'
 import type { Post } from '@/lib/types'
 import {
   PencilSquareIcon,
@@ -19,16 +19,38 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/16/solid'
 
+interface BufferProfile {
+  id: string
+  service: string
+  formatted_service: string
+  formatted_username: string
+  avatar_https: string
+}
+
 const STATUS_OPTIONS = ['all', 'draft', 'submitted', 'approved', 'scheduled', 'published']
 const PLATFORM_ICONS: Record<string, string> = { instagram: 'IG', facebook: 'FB', linkedin: 'LI' }
 
 export default function PostsPage() {
-  const { brands, posts, savePosts, settings } = useWorkspace()
+  const { brands, posts, savePosts } = useWorkspace()
   const [statusFilter, setStatusFilter] = useState('all')
   const [brandFilter, setBrandFilter] = useState('all')
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [sendingId, setSendingId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([])
+  const [selectedProfiles, setSelectedProfiles] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    fetch('/api/buffer')
+      .then(r => r.json())
+      .then(data => {
+        if (data.profiles) {
+          setBufferProfiles(data.profiles)
+          setSelectedProfiles(new Set(data.profiles.map((p: BufferProfile) => p.id)))
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const filtered = posts.filter(p => {
     if (statusFilter !== 'all' && p.status !== statusFilter) return false
@@ -48,28 +70,42 @@ export default function PostsPage() {
   }
 
   async function sendToBuffer(post: Post) {
-    const webhook = settings.makeWebhookUrl
-    if (!webhook) { toast.error('Add a Make.com webhook URL in Settings'); return }
+    if (bufferProfiles.length === 0) { toast.error('Connect Buffer in Account Settings first'); return }
+    const profileIds = Array.from(selectedProfiles)
+    if (profileIds.length === 0) { toast.error('Select at least one Buffer profile'); return }
     setSendingId(post.id)
     try {
-      await fetch(webhook, {
+      const res = await fetch('/api/buffer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          caption: post.caption,
-          image_url: post.image_url,
-          platforms: post.platforms,
-          scheduled_at: post.scheduled_at,
-          brand_name: brands.find(b => b.id === post.brand_profile_id)?.name,
+          profileIds,
+          text: post.caption,
+          media: post.image_url ? { photo: post.image_url } : undefined,
+          scheduledAt: post.scheduled_at || undefined,
         }),
       })
-      changeStatus(post.id, 'published')
-      toast.success('Sent to Buffer!')
+      const data = await res.json()
+      if (data.success) {
+        changeStatus(post.id, 'published')
+        toast.success('Sent to Buffer!')
+      } else {
+        toast.error(data.results?.find((r: any) => !r.success)?.error || 'Failed to send to Buffer')
+      }
     } catch {
       toast.error('Failed to send to Buffer')
     } finally {
       setSendingId(null)
     }
+  }
+
+  function toggleProfile(id: string) {
+    setSelectedProfiles(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   }
 
   return (
@@ -193,11 +229,32 @@ export default function PostsPage() {
                         </button>
                       ))}
                     </div>
+                    {/* Buffer profile selector */}
+                    {(post.status === 'approved' || post.status === 'scheduled') && bufferProfiles.length > 0 && (
+                      <div className="p-3 bg-[#211f1f] rounded-lg">
+                        <label className="text-xs font-medium text-[#e1bec0] mb-1.5 block">Send to Buffer profiles:</label>
+                        <div className="flex flex-wrap gap-2">
+                          {bufferProfiles.map(p => (
+                            <label key={p.id} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                              <input
+                                type="checkbox"
+                                className="w-3.5 h-3.5 accent-[#ff5473]"
+                                checked={selectedProfiles.has(p.id)}
+                                onChange={() => toggleProfile(p.id)}
+                              />
+                              <span className="text-[#e6e1e1]">
+                                {bufferServiceIcon(p.service)} {p.formatted_username || p.formatted_service}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex gap-2 flex-wrap">
                       {(post.status === 'approved' || post.status === 'scheduled') && (
                         <button
                           onClick={() => sendToBuffer(post)}
-                          disabled={sendingId === post.id}
+                          disabled={sendingId === post.id || selectedProfiles.size === 0}
                           className="btn btn-p btn-sm flex items-center gap-1"
                         >
                           {sendingId === post.id

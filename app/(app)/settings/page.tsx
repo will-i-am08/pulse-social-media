@@ -4,16 +4,12 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import { callClaude } from '@/lib/claude'
-import { uid } from '@/lib/utils'
-import type { BufferChannel } from '@/lib/types'
 import {
   ArrowPathIcon,
   BeakerIcon,
   CheckCircleIcon,
   XCircleIcon,
-  PaperAirplaneIcon,
   BookmarkIcon,
-  PlusIcon,
 } from '@heroicons/react/16/solid'
 
 const TIMEZONES = ['UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney']
@@ -23,13 +19,9 @@ const MODELS = [
   { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6 — Balanced (default)' },
   { value: 'claude-opus-4-6', label: 'Opus 4.6 — Most capable' },
 ]
-const CHANNEL_SERVICES = ['instagram', 'facebook', 'twitter', 'linkedin', 'tiktok', 'pinterest', 'youtube', 'other']
-
 export default function SettingsPage() {
   const { settings, saveSettings } = useWorkspace()
   const [form, setForm] = useState({ ...settings })
-  const [showAddChannel, setShowAddChannel] = useState(false)
-  const [newChannel, setNewChannel] = useState({ name: '', service: 'instagram', bufferId: '' })
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null)
 
@@ -48,20 +40,8 @@ export default function SettingsPage() {
     if (result) {
       setTestResult({ ok: true, msg: result })
     } else {
-      setTestResult({ ok: false, msg: 'Connection failed — check your API key in Settings' })
+      setTestResult({ ok: false, msg: 'Connection failed — check your API key in Account Settings' })
     }
-  }
-
-  function addChannel() {
-    if (!newChannel.name.trim()) { toast.error('Channel name required'); return }
-    const ch: BufferChannel = { id: uid(), name: newChannel.name, service: newChannel.service, bufferId: newChannel.bufferId }
-    setForm(f => ({ ...f, bufferChannels: [...(f.bufferChannels || []), ch] }))
-    setNewChannel({ name: '', service: 'instagram', bufferId: '' })
-    setShowAddChannel(false)
-  }
-
-  function removeChannel(id: string) {
-    setForm(f => ({ ...f, bufferChannels: (f.bufferChannels || []).filter(c => c.id !== id) }))
   }
 
   return (
@@ -139,77 +119,6 @@ export default function SettingsPage() {
                 {testResult.msg}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Publishing */}
-        <div className="card p-6">
-          <div className="flex items-center gap-2 mb-1">
-            <PaperAirplaneIcon className="w-4 h-4 text-[#ff5473]" />
-            <h3 className="font-semibold text-[#e6e1e1]">Publishing — Buffer / Later</h3>
-          </div>
-          <p className="text-xs text-[#e1bec0] mb-4">Connect a Make.com webhook to push approved posts to Buffer or Later.</p>
-          <div className="space-y-4">
-            <div>
-              <label className="lbl">Make.com Webhook URL</label>
-              <input className="inp" placeholder="https://hook.eu1.make.com/..."
-                value={form.makeWebhookUrl || ''} onChange={e => setForm(f => ({ ...f, makeWebhookUrl: e.target.value }))} />
-            </div>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 accent-[#ff5473]"
-                checked={form.autoSendOnApprove || false}
-                onChange={e => setForm(f => ({ ...f, autoSendOnApprove: e.target.checked }))} />
-              <div>
-                <p className="text-sm font-medium text-[#e6e1e1]">Auto-send to Buffer when approved</p>
-                <p className="text-xs text-[#e1bec0]">Automatically push posts to Buffer as soon as you approve them</p>
-              </div>
-            </label>
-
-            {/* Buffer Channels */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="lbl mb-0">Buffer Channels</label>
-                <button className="btn btn-o btn-sm flex items-center gap-1" onClick={() => setShowAddChannel(v => !v)}>
-                  <PlusIcon className="w-3 h-3" /> Add Channel
-                </button>
-              </div>
-              {(form.bufferChannels || []).length === 0 ? (
-                <p className="text-xs text-[#5a4042] italic">No channels added yet.</p>
-              ) : (
-                <div className="space-y-1">
-                  {(form.bufferChannels || []).map(ch => (
-                    <div key={ch.id} className="flex items-center justify-between py-1.5 px-2 rounded bg-[#2b2a29]">
-                      <span className="text-sm text-[#e6e1e1]"><strong>{ch.name}</strong> <span className="text-xs text-[#e1bec0]">{ch.service}{ch.bufferId ? ' · ' + ch.bufferId : ''}</span></span>
-                      <button className="text-xs text-[#f87171] hover:text-red-400 ml-2" onClick={() => removeChannel(ch.id)}>Remove</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {showAddChannel && (
-                <div className="mt-2 p-3 border border-[rgba(90,64,66,0.3)] rounded-lg space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="lbl text-xs">Channel Name *</label>
-                      <input className="inp" placeholder="e.g. Brand A Instagram" value={newChannel.name} onChange={e => setNewChannel(c => ({ ...c, name: e.target.value }))} />
-                    </div>
-                    <div>
-                      <label className="lbl text-xs">Platform *</label>
-                      <select className="sel" value={newChannel.service} onChange={e => setNewChannel(c => ({ ...c, service: e.target.value }))}>
-                        {CHANNEL_SERVICES.map(s => <option key={s} className="capitalize">{s}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="lbl text-xs">Buffer Profile ID <span className="text-[#5a4042]">(optional)</span></label>
-                    <input className="inp" placeholder="Found in Buffer channel settings" value={newChannel.bufferId} onChange={e => setNewChannel(c => ({ ...c, bufferId: e.target.value }))} />
-                  </div>
-                  <div className="flex gap-2 justify-end">
-                    <button className="btn btn-o btn-sm" onClick={() => setShowAddChannel(false)}>Cancel</button>
-                    <button className="btn btn-p btn-sm" onClick={addChannel}>Save Channel</button>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </div>
 

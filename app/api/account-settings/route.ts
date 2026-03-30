@@ -9,12 +9,13 @@ export async function GET() {
 
   const { data } = await supabase
     .from('account_settings')
-    .select('claude_key_enc')
+    .select('claude_key_enc, buffer_token_enc')
     .eq('user_id', user.id)
     .single()
 
   return NextResponse.json({
     hasClaudeKey: !!data?.claude_key_enc,
+    hasBufferToken: !!data?.buffer_token_enc,
   })
 }
 
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { claudeKey } = body
+  const { claudeKey, bufferToken } = body
 
   const row: Record<string, unknown> = { user_id: user.id, updated_at: new Date().toISOString() }
 
@@ -33,6 +34,13 @@ export async function POST(req: NextRequest) {
     row.claude_key_enc = enc
     row.claude_key_iv = iv
     row.claude_key_tag = tag
+  }
+
+  if (bufferToken) {
+    const { enc, iv, tag } = encrypt(bufferToken)
+    row.buffer_token_enc = enc
+    row.buffer_token_iv = iv
+    row.buffer_token_tag = tag
   }
 
   const { error } = await supabase
@@ -55,6 +63,10 @@ export async function DELETE(req: NextRequest) {
     clear.claude_key_enc = null
     clear.claude_key_iv = null
     clear.claude_key_tag = null
+  } else if (field === 'buffer') {
+    clear.buffer_token_enc = null
+    clear.buffer_token_iv = null
+    clear.buffer_token_tag = null
   }
 
   const { error } = await supabase

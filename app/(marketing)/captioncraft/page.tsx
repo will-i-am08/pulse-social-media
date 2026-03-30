@@ -186,14 +186,14 @@ export default function CaptionCraftPromoPage() {
               <span className="material-symbols-outlined text-primary text-4xl mb-6">send</span>
               <h3 className="text-xl font-bold font-headline mb-3">One-Click Publishing</h3>
               <p className="text-on-surface-variant text-sm leading-relaxed">
-                Buffer integration via Make.com sends approved posts straight to your social channels. Set it once, automate forever.
+                Direct Buffer integration sends approved posts straight to your social channels. Connect once, publish everywhere.
               </p>
             </div>
             <div className="pt-6 flex items-center gap-3">
               <div className="px-3 py-1.5 rounded-full bg-surface-variant text-on-surface text-xs font-medium flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>Buffer
               </div>
-              <div className="px-3 py-1.5 rounded-full bg-surface-variant text-on-surface text-xs font-medium">Make.com</div>
+              <div className="px-3 py-1.5 rounded-full bg-surface-variant text-on-surface text-xs font-medium">Direct API</div>
               <div className="px-3 py-1.5 rounded-full bg-surface-variant text-on-surface text-xs font-medium">Auto-send</div>
             </div>
           </div>
