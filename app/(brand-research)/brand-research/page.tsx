@@ -303,33 +303,14 @@ function BrandDetail({
         signal: ctrl.signal,
       })
       if (!res.ok) { const e = await res.json(); throw new Error(e.error) }
-      const reader = res.body!.getReader()
-      const decoder = new TextDecoder()
-      let buf = ''
-      try {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buf += decoder.decode(value, { stream: true })
-          const lines = buf.split('\n')
-          buf = lines.pop() || ''
-          for (const line of lines) {
-            if (!line.startsWith('data:')) continue
-            const raw = line.slice(5).trim()
-            if (raw === '[DONE]') break
-            try {
-              const ev = JSON.parse(raw)
-              if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
-                setStreamedContent(prev => prev + ev.delta.text)
-              }
-            } catch { /* skip */ }
-          }
-        }
-      } catch {
-        // Stream may close abruptly on Netlify — this is fine if content was received
+      const data = await res.json()
+      if (data.text) {
+        setStreamedContent(data.text)
+      } else {
+        throw new Error('No content returned')
       }
     } catch (e) {
-      if ((e as Error).name !== 'AbortError' && !streamedContent) toast.error('Research generation failed')
+      if ((e as Error).name !== 'AbortError') toast.error('Research generation failed: ' + (e as Error).message)
     } finally {
       setGenerating(false)
     }

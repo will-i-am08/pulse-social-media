@@ -123,21 +123,16 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
-      stream: true,
       messages: [{ role: 'user', content: prompt }],
     }),
   })
 
-  if (!upstream.ok || !upstream.body) {
+  if (!upstream.ok) {
     const err = await upstream.text()
     return NextResponse.json({ error: err }, { status: upstream.status })
   }
 
-  return new NextResponse(upstream.body, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-    },
-  })
+  const data = await upstream.json()
+  const text = data.content?.[0]?.text || ''
+  return NextResponse.json({ text })
 }
