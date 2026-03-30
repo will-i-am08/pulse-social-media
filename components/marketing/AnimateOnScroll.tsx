@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useState, useEffect, type ReactNode } from 'react'
-import { motion, useInView, type Variants } from 'framer-motion'
+import { useRef, type ReactNode } from 'react'
+import { motion, type Variants } from 'framer-motion'
 
 type Variant = 'fade-up' | 'fade-in' | 'slide-left' | 'slide-right' | 'scale-up'
 
@@ -46,25 +46,14 @@ export default function AnimateOnScroll({
   once = true,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const [mounted, setMounted] = useState(false)
-  const isInView = useInView(ref, { once, margin: '-80px' })
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Before hydration, render children visible in a plain div (no opacity:0 flash)
-  if (!mounted) {
-    return <div ref={ref} className={className}>{children}</div>
-  }
-
   const v = variants[variant]
 
   return (
     <motion.div
       ref={ref}
       initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
+      whileInView="visible"
+      viewport={{ once, margin: '-80px' }}
       variants={v}
       transition={{ duration, delay, ease: [0.25, 0.4, 0, 1] }}
       className={className}

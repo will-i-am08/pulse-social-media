@@ -1,7 +1,7 @@
 'use client'
 
-import { useRef, useState, useEffect, type ReactNode, Children } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { useRef, type ReactNode, Children } from 'react'
+import { motion } from 'framer-motion'
 
 interface Props {
   children: ReactNode
@@ -35,29 +35,13 @@ export default function StaggerChildren({
   once = true,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const [mounted, setMounted] = useState(false)
-  const isInView = useInView(ref, { once, margin: '-60px' })
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Before hydration, render children visible (no opacity:0 flash)
-  if (!mounted) {
-    return (
-      <div ref={ref} className={className}>
-        {Children.map(children, (child) => (
-          <div>{child}</div>
-        ))}
-      </div>
-    )
-  }
 
   return (
     <motion.div
       ref={ref}
       initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
+      whileInView="visible"
+      viewport={{ once, margin: '-60px' }}
       variants={containerVariants}
       custom={staggerDelay}
       className={className}
