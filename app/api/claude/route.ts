@@ -10,9 +10,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY ?? await getDecryptedClaudeKey(user.id)
+  const apiKey = await getDecryptedClaudeKey(user.id)
   if (!apiKey) {
     return NextResponse.json({ error: 'No Claude API key configured. Add it in Account Settings.' }, { status: 400 })
+  }
+
+  if (!apiKey.startsWith('sk-ant-')) {
+    return NextResponse.json({ error: `Key decryption issue — decrypted key starts with "${apiKey.substring(0, 6)}..." which is not a valid Anthropic key format. Please re-save your key.` }, { status: 400 })
   }
 
   let body: { systemPrompt?: string; userContent?: unknown; maxTokens?: number; model?: string }
