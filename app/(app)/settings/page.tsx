@@ -4,28 +4,71 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import { callClaude } from '@/lib/claude'
+import { bufferServiceIcon } from '@/lib/utils'
 import {
   ArrowPathIcon,
   BeakerIcon,
   CheckCircleIcon,
   XCircleIcon,
   BookmarkIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/16/solid'
+
+interface BufferProfile {
+  id: string
+  service: string
+  formatted_service: string
+  formatted_username: string
+  avatar_https: string
+}
 
 const TIMEZONES = ['UTC', 'America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'Europe/London', 'Europe/Paris', 'Asia/Tokyo', 'Australia/Sydney']
 const PLATFORMS = ['instagram', 'facebook', 'linkedin']
+const DAYS = [
+  { value: 'mon', label: 'Mon' }, { value: 'tue', label: 'Tue' }, { value: 'wed', label: 'Wed' },
+  { value: 'thu', label: 'Thu' }, { value: 'fri', label: 'Fri' }, { value: 'sat', label: 'Sat' }, { value: 'sun', label: 'Sun' },
+]
 const MODELS = [
   { value: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5 — Fast & cheap' },
   { value: 'claude-sonnet-4-6', label: 'Sonnet 4.6 — Balanced (default)' },
   { value: 'claude-opus-4-6', label: 'Opus 4.6 — Most capable' },
 ]
 export default function SettingsPage() {
-  const { settings, saveSettings } = useWorkspace()
+  const { settings, saveSettings, brands, saveBrands } = useWorkspace()
   const [form, setForm] = useState({ ...settings })
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; msg: string } | null>(null)
+  const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([])
 
   useEffect(() => { setForm({ ...settings }) }, [settings])
+
+  useEffect(() => {
+    fetch('/api/buffer')
+      .then(r => r.json())
+      .then(data => { if (data.profiles) setBufferProfiles(data.profiles) })
+      .catch(() => {})
+  }, [])
+
+  function updateBrand(id: string, updates: Record<string, unknown>) {
+    const updated = brands.map(b => b.id === id ? { ...b, ...updates } : b)
+    saveBrands(updated)
+  }
+
+  function toggleBrandDay(brandId: string, day: string) {
+    const brand = brands.find(b => b.id === brandId)
+    if (!brand) return
+    const days = brand.posting_days || []
+    const next = days.includes(day) ? days.filter(d => d !== day) : [...days, day]
+    updateBrand(brandId, { posting_days: next })
+  }
+
+  function toggleBrandProfile(brandId: string, profileId: string) {
+    const brand = brands.find(b => b.id === brandId)
+    if (!brand) return
+    const ids = brand.buffer_profile_ids || []
+    const next = ids.includes(profileId) ? ids.filter(i => i !== profileId) : [...ids, profileId]
+    updateBrand(brandId, { buffer_profile_ids: next })
+  }
 
   function saveAll() {
     saveSettings(form)
@@ -142,6 +185,75 @@ export default function SettingsPage() {
             <p className="text-xs text-[#5a4042] mt-1">Restart the dev server after adding the key. The key stays on your server — never exposed to the browser.</p>
           </div>
         </div>
+
+        {/* Brand Posting Schedules */}
+        {brands.length > 0 && (
+          <div className="card p-6">
+            <div className="flex items-center gap-2 mb-1">
+              <CalendarDaysIcon className="w-4 h-4 text-[#ff5473]" />
+              <h3 className="font-semibold text-[#e6e1e1]">Brand Posting Schedules</h3>
+            </div>
+            <p className="text-xs text-[#e1bec0] mb-4">Set posting days, time, and Buffer profiles for each brand. Used for smart scheduling.</p>
+            <div className="space-y-4">
+              {brands.map(brand => (
+                <div key={brand.id} className="p-4 bg-[#2b2a29] rounded-lg space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: brand.color || '#ff5473' }}>
+                      {brand.name[0]}
+                    </div>
+                    <span className="font-medium text-[#e6e1e1]">{brand.name}</span>
+                  </div>
+
+                  {/* Posting Days */}
+                  <div>
+                    <label className="text-xs font-medium text-[#e1bec0] mb-1.5 block">Posting Days</label>
+                    <div className="flex gap-1.5">
+                      {DAYS.map(d => {
+                        const active = (brand.posting_days || []).includes(d.value)
+                        return (
+                          <button key={d.value} onClick={() => toggleBrandDay(brand.id, d.value)}
+                            className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${active ? 'bg-[#ff5473] text-white' : 'bg-[#1c1b1b] text-[#5a4042] hover:text-[#e1bec0]'}`}>
+                            {d.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Posting Time */}
+                  <div>
+                    <label className="text-xs font-medium text-[#e1bec0] mb-1.5 block">Posting Time</label>
+                    <input type="time" className="inp" style={{ maxWidth: 140 }}
+                      value={brand.posting_time || '09:00'}
+                      onChange={e => updateBrand(brand.id, { posting_time: e.target.value })} />
+                  </div>
+
+                  {/* Buffer Profiles */}
+                  {bufferProfiles.length > 0 && (
+                    <div>
+                      <label className="text-xs font-medium text-[#e1bec0] mb-1.5 block">Buffer Profiles</label>
+                      <div className="flex flex-wrap gap-2">
+                        {bufferProfiles.map(p => {
+                          const active = (brand.buffer_profile_ids || []).includes(p.id)
+                          return (
+                            <label key={p.id} className="flex items-center gap-1.5 cursor-pointer text-sm">
+                              <input type="checkbox" className="w-3.5 h-3.5 accent-[#ff5473]"
+                                checked={active}
+                                onChange={() => toggleBrandProfile(brand.id, p.id)} />
+                              <span className={active ? 'text-[#e6e1e1]' : 'text-[#5a4042]'}>
+                                {bufferServiceIcon(p.service)} {p.formatted_username || p.formatted_service}
+                              </span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button onClick={saveAll} className="btn btn-p w-full justify-center py-3 text-base flex items-center gap-2">
           <BookmarkIcon className="w-4 h-4" /> Save All Settings

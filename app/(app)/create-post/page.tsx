@@ -41,6 +41,9 @@ export default function CreatePostPage() {
   const [bulkPlatforms, setBulkPlatforms] = useState<string[]>(['instagram'])
   const [bulkRows, setBulkRows] = useState([{ image: '', prompt: '', caption: '', status: 'idle' }])
   const [bulkGenerating, setBulkGenerating] = useState(false)
+  const [scheduleStart, setScheduleStart] = useState('')
+  const [scheduleEnd, setScheduleEnd] = useState('')
+  const [bulkScheduling, setBulkScheduling] = useState(false)
 
   const brand = brands.find(b => b.id === brandId)
 
@@ -178,6 +181,88 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
     router.push('/posts')
   }
 
+  const DAY_MAP: Record<number, string> = { 0: 'sun', 1: 'mon', 2: 'tue', 3: 'wed', 4: 'thu', 5: 'fri', 6: 'sat' }
+
+  function getAvailableSlots(): string[] {
+    const bb = brands.find(b => b.id === bulkBrandId)
+    if (!bb || !scheduleStart || !scheduleEnd || !bb.posting_days?.length) return []
+    const slots: string[] = []
+    const start = new Date(scheduleStart)
+    const end = new Date(scheduleEnd)
+    const existingDates = new Set(
+      posts
+        .filter(p => p.scheduled_at && p.brand_profile_id === bulkBrandId)
+        .map(p => p.scheduled_at!.slice(0, 10))
+    )
+    const time = bb.posting_time || '09:00'
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dayName = DAY_MAP[d.getDay()]
+      if (bb.posting_days.includes(dayName)) {
+        const dateStr = d.toISOString().slice(0, 10)
+        if (!existingDates.has(dateStr)) {
+          slots.push(`${dateStr}T${time}`)
+        }
+      }
+    }
+    return slots
+  }
+
+  async function bulkSmartSchedule() {
+    const bb = brands.find(b => b.id === bulkBrandId)
+    if (!bb) { toast.error('Select a brand first'); return }
+    if (!bb.posting_days?.length) { toast.error('Set posting days in Settings first'); return }
+    const toSave = bulkRows.filter(r => r.caption)
+    if (!toSave.length) { toast.error('No captions to schedule'); return }
+    const slots = getAvailableSlots()
+    if (slots.length === 0) { toast.error('No available slots in this date range. Try a wider range or check posting days.'); return }
+    if (slots.length < toSave.length) { toast.error(`Only ${slots.length} slots available but ${toSave.length} posts. Extend the date range.`); return }
+
+    setBulkScheduling(true)
+    const profileIds = bb.buffer_profile_ids || []
+    const newPosts: Post[] = toSave.map((r, i) => ({
+      id: uid(),
+      brand_profile_id: bulkBrandId,
+      caption: r.caption,
+      platforms: [...bulkPlatforms],
+      status: profileIds.length > 0 ? 'published' as const : 'scheduled' as const,
+      scheduled_at: slots[i],
+      image_url: r.image || null,
+      image_urls: r.image ? [r.image] : [],
+      created_date: new Date().toISOString(),
+      client_visible: false,
+      client_approved: false,
+    }))
+
+    // Send to Buffer if profiles are configured
+    if (profileIds.length > 0) {
+      let sent = 0
+      for (const post of newPosts) {
+        try {
+          const res = await fetch('/api/buffer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              profileIds,
+              text: post.caption,
+              media: post.image_url ? { photo: post.image_url } : undefined,
+              scheduledAt: post.scheduled_at,
+            }),
+          })
+          const data = await res.json()
+          if (data.success) sent++
+        } catch { /* continue */ }
+      }
+      toast.success(`${sent} post${sent !== 1 ? 's' : ''} scheduled to Buffer!`)
+    }
+
+    savePosts([...newPosts, ...posts])
+    setBulkScheduling(false)
+    if (profileIds.length === 0) toast.success(`${newPosts.length} post${newPosts.length !== 1 ? 's' : ''} scheduled!`)
+    router.push('/posts')
+  }
+
+  const availableSlots = getAvailableSlots()
+
   if (mode === 'bulk') {
     return (
       <div className="p-6 max-w-4xl mx-auto">
@@ -266,6 +351,69 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
             <BookmarkIcon className="w-4 h-4" /> Save All as Drafts
           </button>
         </div>
+
+        {/* Smart Schedule */}
+        {bulkBrandId && bulkRows.some(r => r.caption) && (
+          <div className="card p-5 mt-5">
+            <div className="flex items-center gap-2 mb-1">
+              <CalendarIcon className="w-4 h-4 text-[#ff5473]" />
+              <h3 className="font-semibold text-[#e6e1e1]">Smart Schedule</h3>
+            </div>
+            {(() => {
+              const bb = brands.find(b => b.id === bulkBrandId)
+              if (!bb?.posting_days?.length) {
+                return <p className="text-xs text-[#e1bec0] mt-2">Set posting days for this brand in <a href="/settings" className="text-[#ff5473] underline">Settings</a> first.</p>
+              }
+              return (
+                <>
+                  <p className="text-xs text-[#e1bec0] mb-3">
+                    Posts on: <strong className="text-[#e6e1e1]">{bb.posting_days.map(d => d.charAt(0).toUpperCase() + d.slice(1)).join(', ')}</strong> at <strong className="text-[#e6e1e1]">{bb.posting_time || '09:00'}</strong>
+                    {bb.buffer_profile_ids?.length ? ' → sends to Buffer' : ''}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="text-xs text-[#e1bec0] mb-1 block">Start Date</label>
+                      <input type="date" className="inp" value={scheduleStart} onChange={e => setScheduleStart(e.target.value)} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-[#e1bec0] mb-1 block">End Date</label>
+                      <input type="date" className="inp" value={scheduleEnd} onChange={e => setScheduleEnd(e.target.value)} />
+                    </div>
+                  </div>
+                  {scheduleStart && scheduleEnd && (
+                    <div className="mb-3">
+                      <p className="text-xs text-[#e1bec0]">
+                        {availableSlots.length} available slot{availableSlots.length !== 1 ? 's' : ''} • {bulkRows.filter(r => r.caption).length} post{bulkRows.filter(r => r.caption).length !== 1 ? 's' : ''} to schedule
+                        {availableSlots.length < bulkRows.filter(r => r.caption).length && (
+                          <span className="text-[#f87171]"> — not enough slots, extend range</span>
+                        )}
+                      </p>
+                      {availableSlots.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {availableSlots.slice(0, bulkRows.filter(r => r.caption).length).map((slot, i) => (
+                            <span key={i} className="text-xs bg-[rgba(255,84,115,0.15)] text-[#ffb2b9] px-2 py-0.5 rounded-full">
+                              {new Date(slot).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })} {bb.posting_time || '09:00'}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <button
+                    className="btn btn-p flex items-center gap-2"
+                    disabled={bulkScheduling || availableSlots.length < bulkRows.filter(r => r.caption).length || !scheduleStart || !scheduleEnd}
+                    onClick={bulkSmartSchedule}
+                  >
+                    {bulkScheduling
+                      ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Scheduling...</>
+                      : <><CalendarIcon className="w-4 h-4" /> Schedule {bulkRows.filter(r => r.caption).length} Posts{bb.buffer_profile_ids?.length ? ' & Send to Buffer' : ''}</>
+                    }
+                  </button>
+                </>
+              )
+            })()}
+          </div>
+        )}
       </div>
     )
   }

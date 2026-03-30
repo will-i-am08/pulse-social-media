@@ -28,6 +28,9 @@ export interface Brand {
   }
   platforms?: string[]
   buffer_channels?: string[]
+  posting_days?: string[]      // ['mon','wed','fri']
+  posting_time?: string        // '09:00' (24hr)
+  buffer_profile_ids?: string[] // Selected Buffer profiles for this brand
   report?: string
   key_messages?: string[]
   content_recommendations?: string[]
@@ -133,6 +136,10 @@ export interface WorkspaceBrand {
   uniqueValueProp: string
   competitors: string
   keyMessages: string[]
+  // Posting schedule
+  postingDays: string[]    // ['mon','wed','fri']
+  postingTime: string      // '09:00'
+  bufferProfileIds: string[] // Selected Buffer profile IDs for this brand
   // Replicate image model
   replicateModelVersion: string
   trainingStatus: 'idle' | 'training' | 'succeeded' | 'failed'
