@@ -83,6 +83,8 @@ Write a detailed markdown brand voice guide covering:
 Make it practical and easy for a content team to follow.`,
 }
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

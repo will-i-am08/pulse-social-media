@@ -9,6 +9,8 @@ interface TechCheck {
   detail: string
 }
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

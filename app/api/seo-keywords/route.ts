@@ -25,6 +25,8 @@ function extractText(data: { content: Array<{ type: string; text?: string }> }):
   return data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim()
 }
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
