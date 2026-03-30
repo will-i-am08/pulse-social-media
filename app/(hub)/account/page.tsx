@@ -102,11 +102,11 @@ export default function AccountPage() {
       const res = await fetch('/api/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ system: 'You are a test assistant.', prompt: 'Reply with exactly: Connection successful', maxTokens: 50 }),
+        body: JSON.stringify({ systemPrompt: 'You are a test assistant.', userContent: 'Reply with exactly: Connection successful', maxTokens: 50 }),
       })
       const data = await res.json()
-      if (res.ok && data.result) {
-        setTestResult({ ok: true, msg: data.result })
+      if (res.ok && data.text) {
+        setTestResult({ ok: true, msg: data.text })
       } else {
         setTestResult({ ok: false, msg: data.error || 'Connection failed' })
       }
