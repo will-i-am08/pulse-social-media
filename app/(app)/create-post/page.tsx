@@ -46,6 +46,7 @@ export default function CreatePostPage() {
   const [scheduleEnd, setScheduleEnd] = useState('')
   const [bulkScheduling, setBulkScheduling] = useState(false)
   const [activeGoals, setActiveGoals] = useState<BrandGoal[]>([])
+  const [useGoals, setUseGoals] = useState(true)
   const [showLibrary, setShowLibrary] = useState(false)
   const [libraryTarget, setLibraryTarget] = useState<'single' | number>('single')
   const [librarySearch, setLibrarySearch] = useState('')
@@ -91,7 +92,7 @@ export default function CreatePostPage() {
       const hashtags = brand.include_hashtags !== false ? 'Include relevant hashtags.' : 'Do not include hashtags.'
       const emojis = brand.include_emojis !== false ? 'Use emojis where appropriate.' : 'Do not use emojis.'
       const sys = 'You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations, no quotation marks, nothing else.'
-      const goalsSection = activeGoals.length > 0
+      const goalsSection = useGoals && activeGoals.length > 0
         ? `\nCurrent brand goals (align content with these):\n${activeGoals.map(g => `- [${g.period}] ${g.title}${g.description ? ' — ' + g.description : ''}`).join('\n')}\n`
         : ''
       const textPrompt = `Write a ${length} social media caption for the brand "${brand.name}".
@@ -166,7 +167,7 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
       if (!row.image && !row.prompt) continue
       rows[i] = { ...rows[i], status: 'generating' }
       setBulkRows([...rows])
-      const bulkGoals = activeGoals.length > 0
+      const bulkGoals = useGoals && activeGoals.length > 0
         ? `\nCurrent brand goals (align content with these):\n${activeGoals.map(g => `- [${g.period}] ${g.title}${g.description ? ' — ' + g.description : ''}`).join('\n')}\n`
         : ''
       const textPrompt = `Write a ${bb.output_length || 'medium'} social media caption for "${bb.name}".
@@ -343,6 +344,16 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
               </div>
             </div>
           </div>
+          {activeGoals.length > 0 && (
+            <div className="flex items-center gap-3 mt-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="w-4 h-4 accent-[#ff5473]" checked={useGoals} onChange={e => setUseGoals(e.target.checked)} />
+                <span className="text-sm text-[#e6e1e1]">Align with brand goals</span>
+              </label>
+              <span className="text-[10px] text-[#5a4042]">{activeGoals.map(g => g.title).join(', ')}</span>
+              {!useGoals && <span className="text-[10px] text-[#e1bec0] bg-[#2b2a29] px-2 py-0.5 rounded-full">General posts</span>}
+            </div>
+          )}
         </div>
 
         <div className="space-y-3 mb-4">
@@ -550,6 +561,19 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
             <label className="lbl">Schedule Date & Time</label>
             <input type="datetime-local" className="inp" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} />
           </div>
+          {/* Goals toggle */}
+          {activeGoals.length > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-[#211f1f] rounded-lg">
+              <label className="flex items-center gap-2 cursor-pointer flex-1">
+                <input type="checkbox" className="w-4 h-4 accent-[#ff5473]" checked={useGoals} onChange={e => setUseGoals(e.target.checked)} />
+                <div>
+                  <p className="text-sm font-medium text-[#e6e1e1]">Align with brand goals</p>
+                  <p className="text-[10px] text-[#5a4042]">{activeGoals.map(g => g.title).join(', ')}</p>
+                </div>
+              </label>
+              {!useGoals && <span className="text-[10px] text-[#e1bec0] bg-[#2b2a29] px-2 py-0.5 rounded-full">General post</span>}
+            </div>
+          )}
           <button className="btn btn-p w-full flex items-center justify-center gap-2" disabled={!brandId || generating} onClick={generate}>
             {generating ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Generating...</> : <><SparklesIcon className="w-4 h-4" /> Generate Caption</>}
           </button>
