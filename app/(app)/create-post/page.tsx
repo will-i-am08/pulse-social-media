@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -8,7 +8,7 @@ import { useWorkspace } from '@/context/WorkspaceContext'
 import { uid } from '@/lib/utils'
 import { callClaude, buildImageContent } from '@/lib/claude'
 import { uploadImage } from '@/lib/supabase/storage'
-import type { Post } from '@/lib/types'
+import type { Post, BrandGoal } from '@/lib/types'
 import {
   SparklesIcon,
   ArrowPathIcon,
@@ -45,11 +45,27 @@ export default function CreatePostPage() {
   const [scheduleStart, setScheduleStart] = useState('')
   const [scheduleEnd, setScheduleEnd] = useState('')
   const [bulkScheduling, setBulkScheduling] = useState(false)
+  const [activeGoals, setActiveGoals] = useState<BrandGoal[]>([])
   const [showLibrary, setShowLibrary] = useState(false)
   const [libraryTarget, setLibraryTarget] = useState<'single' | number>('single')
   const [librarySearch, setLibrarySearch] = useState('')
 
   const brand = brands.find(b => b.id === brandId)
+
+  // Fetch active goals when brand changes
+  const activeBrandId = mode === 'single' ? brandId : bulkBrandId
+  useEffect(() => {
+    if (!activeBrandId) { setActiveGoals([]); return }
+    fetch(`/api/brands/goals?brandId=${activeBrandId}`)
+      .then(r => r.json())
+      .then(goals => {
+        if (Array.isArray(goals)) {
+          const today = new Date().toISOString().slice(0, 10)
+          setActiveGoals(goals.filter((g: BrandGoal) => g.isActive && g.startDate <= today && g.endDate >= today))
+        }
+      })
+      .catch(() => {})
+  }, [activeBrandId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function togglePlatform(p: string) {
     setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
@@ -75,12 +91,15 @@ export default function CreatePostPage() {
       const hashtags = brand.include_hashtags !== false ? 'Include relevant hashtags.' : 'Do not include hashtags.'
       const emojis = brand.include_emojis !== false ? 'Use emojis where appropriate.' : 'Do not use emojis.'
       const sys = 'You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations, no quotation marks, nothing else.'
+      const goalsSection = activeGoals.length > 0
+        ? `\nCurrent brand goals (align content with these):\n${activeGoals.map(g => `- [${g.period}] ${g.title}${g.description ? ' — ' + g.description : ''}`).join('\n')}\n`
+        : ''
       const textPrompt = `Write a ${length} social media caption for the brand "${brand.name}".
 Brand tone: ${brand.tone || 'professional'}
 Brand guidelines: ${brand.brand_guidelines || 'N/A'}
 Platforms: ${platforms.join(', ') || 'instagram'}
 ${hashtags}
-${emojis}
+${emojis}${goalsSection}
 ${customPrompt ? 'Additional instructions: ' + customPrompt : ''}
 ${images.length > 0 ? 'The caption MUST be specifically about the content shown in the attached image.' : 'Write an engaging caption that reflects the brand voice.'}`
 
@@ -147,12 +166,15 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
       if (!row.image && !row.prompt) continue
       rows[i] = { ...rows[i], status: 'generating' }
       setBulkRows([...rows])
+      const bulkGoals = activeGoals.length > 0
+        ? `\nCurrent brand goals (align content with these):\n${activeGoals.map(g => `- [${g.period}] ${g.title}${g.description ? ' — ' + g.description : ''}`).join('\n')}\n`
+        : ''
       const textPrompt = `Write a ${bb.output_length || 'medium'} social media caption for "${bb.name}".
 Tone: ${bb.tone || 'professional'}
 Guidelines: ${bb.brand_guidelines || 'N/A'}
 Platforms: ${bulkPlatforms.join(', ') || 'instagram'}
 ${bb.include_hashtags !== false ? 'Include hashtags.' : 'No hashtags.'}
-${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}
+${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}${bulkGoals}
 ${row.prompt ? 'Additional instructions: ' + row.prompt : ''}
 ${row.image ? 'The caption MUST be specifically about the content shown in the attached image.' : ''}`
       const content = row.image ? buildImageContent(row.image, textPrompt) : textPrompt

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDecryptedClaudeKey } from '@/lib/account/getAccountSettings'
+import { getActiveGoals, goalsToPromptSection } from '@/lib/brands/getActiveGoals'
 
 export const maxDuration = 60
 
@@ -26,6 +27,9 @@ export async function POST(req: NextRequest) {
   const location = brand.location || ''
   const industry = brand.industry || ''
   const brandVoice = brand.brand_voice || ''
+
+  const goals = await getActiveGoals(brandId, user.id)
+  const goalsSection = goalsToPromptSection(goals)
 
   const isHowTo = postType === 'howto' || /how[- ]to|guide|step.by.step|checklist/i.test(title)
 
@@ -53,7 +57,7 @@ Structure:
 6. ## Get Help from ${businessName} — friendly CTA
 7. ## Frequently Asked Questions — 4-5 Q&As (H3 questions, 2-3 sentence answers)
 
-${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
+${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${goalsSection}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
 Target length: 800-1000 words. Write the blog post content only. No title heading at the top. Start with the Direct Answer paragraph.`
   } else {
     prompt = `Write an SEO-optimised blog post for ${businessName}'s blog.${location ? ` Based in ${location}.` : ''}${industry ? ` Industry: ${industry}.` : ''}
@@ -78,7 +82,7 @@ Structure:
 7. ## Get Help from ${businessName} — friendly CTA
 8. ## Frequently Asked Questions — 4-5 Q&As (### for each question, 2-3 sentence answers)
 
-${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
+${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${goalsSection}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
 Target length: 1000-1200 words. Write the blog post content only. No title heading at the top. Start with the Direct Answer paragraph.`
   }
 

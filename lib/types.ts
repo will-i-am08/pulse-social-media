@@ -149,6 +149,18 @@ export interface WorkspaceBrand {
   updatedAt: string
 }
 
+export interface BrandGoal {
+  id: string
+  brandId: string
+  title: string
+  description: string
+  period: 'weekly' | 'monthly' | 'quarterly' | 'yearly'
+  startDate: string
+  endDate: string
+  isActive: boolean
+  createdAt: string
+}
+
 export interface BrandReport {
   id: string
   brandId: string

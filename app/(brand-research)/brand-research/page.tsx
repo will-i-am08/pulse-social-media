@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import toast from 'react-hot-toast'
-import type { WorkspaceBrand, BrandReport } from '@/lib/types'
+import type { WorkspaceBrand, BrandReport, BrandGoal } from '@/lib/types'
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -15,6 +15,8 @@ import {
   ChevronDownIcon,
   XMarkIcon,
   BuildingStorefrontIcon,
+  FlagIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/16/solid'
 
 const TONES = ['professional', 'casual', 'playful', 'luxury', 'inspirational', 'friendly'] as const
@@ -267,7 +269,7 @@ function BrandDetail({
   onEdit: () => void
   onDelete: () => void
 }) {
-  const [tab, setTab] = useState<'guidelines' | 'research' | 'reports'>('guidelines')
+  const [tab, setTab] = useState<'guidelines' | 'research' | 'goals' | 'reports'>('guidelines')
   const [reports, setReports] = useState<BrandReport[]>([])
   const [researchType, setResearchType] = useState<'market' | 'competitor' | 'audience' | 'voice'>('market')
   const [generating, setGenerating] = useState(false)
@@ -276,10 +278,85 @@ function BrandDetail({
   const [viewingReport, setViewingReport] = useState<BrandReport | null>(null)
   const streamRef = useRef<AbortController | null>(null)
 
+  // Goals state
+  const [goals, setGoals] = useState<BrandGoal[]>([])
+  const [showGoalForm, setShowGoalForm] = useState(false)
+  const [goalPeriod, setGoalPeriod] = useState<BrandGoal['period']>('monthly')
+  const [goalTitle, setGoalTitle] = useState('')
+  const [goalDesc, setGoalDesc] = useState('')
+  const [goalStart, setGoalStart] = useState('')
+  const [goalEnd, setGoalEnd] = useState('')
+  const [savingGoal, setSavingGoal] = useState(false)
+
   const loadReports = useCallback(async () => {
     const res = await fetch(`/api/brands/reports?brandId=${brand.id}`)
     if (res.ok) setReports(await res.json())
   }, [brand.id])
+
+  const loadGoals = useCallback(async () => {
+    const res = await fetch(`/api/brands/goals?brandId=${brand.id}`)
+    if (res.ok) setGoals(await res.json())
+  }, [brand.id])
+
+  useEffect(() => { loadGoals() }, [loadGoals])
+
+  function autofillDates(period: BrandGoal['period']) {
+    const now = new Date()
+    let start: Date, end: Date
+    switch (period) {
+      case 'weekly': {
+        const day = now.getDay()
+        start = new Date(now); start.setDate(now.getDate() - (day === 0 ? 6 : day - 1))
+        end = new Date(start); end.setDate(start.getDate() + 6)
+        break
+      }
+      case 'monthly':
+        start = new Date(now.getFullYear(), now.getMonth(), 1)
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+        break
+      case 'quarterly': {
+        const q = Math.floor(now.getMonth() / 3)
+        start = new Date(now.getFullYear(), q * 3, 1)
+        end = new Date(now.getFullYear(), q * 3 + 3, 0)
+        break
+      }
+      case 'yearly':
+        start = new Date(now.getFullYear(), 0, 1)
+        end = new Date(now.getFullYear(), 11, 31)
+        break
+    }
+    setGoalStart(start.toISOString().slice(0, 10))
+    setGoalEnd(end.toISOString().slice(0, 10))
+  }
+
+  async function saveGoal() {
+    if (!goalTitle.trim() || !goalStart || !goalEnd) { toast.error('Fill in title and dates'); return }
+    setSavingGoal(true)
+    try {
+      const res = await fetch('/api/brands/goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brandId: brand.id, title: goalTitle, description: goalDesc, period: goalPeriod, startDate: goalStart, endDate: goalEnd }),
+      })
+      if (!res.ok) throw new Error('Failed to save')
+      toast.success('Goal saved')
+      setShowGoalForm(false)
+      setGoalTitle(''); setGoalDesc(''); setGoalStart(''); setGoalEnd('')
+      loadGoals()
+    } catch { toast.error('Failed to save goal') }
+    finally { setSavingGoal(false) }
+  }
+
+  async function toggleGoalActive(id: string, isActive: boolean) {
+    await fetch('/api/brands/goals', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, isActive }) })
+    loadGoals()
+  }
+
+  async function deleteGoal(id: string) {
+    await fetch(`/api/brands/goals?id=${id}`, { method: 'DELETE' })
+    loadGoals()
+    toast.success('Goal deleted')
+  }
 
   useEffect(() => {
     if (tab === 'reports') loadReports()
@@ -398,7 +475,7 @@ function BrandDetail({
 
         {/* Detail tabs */}
         <div className="flex gap-1 mt-4 bg-[#1c1b1b] rounded-lg p-1">
-          {(['guidelines', 'research', 'reports'] as const).map(t => (
+          {(['guidelines', 'research', 'goals', 'reports'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`flex-1 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
                 tab === t ? 'text-[#c4b5fd]' : 'text-[#6b7280] hover:text-[#e6e1e1]'
@@ -531,6 +608,116 @@ function BrandDetail({
                   </button>
                 </div>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Goals Tab */}
+        {tab === 'goals' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-[#9ca3af]">Set goals/focuses that guide AI content generation</p>
+              <button className="btn btn-o btn-sm flex items-center gap-1" onClick={() => { setShowGoalForm(true); autofillDates('monthly') }}>
+                <PlusIcon className="w-3.5 h-3.5" /> Add Goal
+              </button>
+            </div>
+
+            {showGoalForm && (
+              <div className="card p-4 space-y-3" style={{ borderColor: 'rgba(139,92,246,0.3)' }}>
+                <div>
+                  <label className="text-xs font-medium text-[#9ca3af] mb-1 block">Period</label>
+                  <div className="flex gap-1.5">
+                    {(['weekly', 'monthly', 'quarterly', 'yearly'] as const).map(p => (
+                      <button key={p} onClick={() => { setGoalPeriod(p); autofillDates(p) }}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-colors capitalize ${goalPeriod === p ? 'bg-[#8b5cf6] text-white' : 'bg-[#1c1b1b] text-[#6b7280] hover:text-[#e6e1e1]'}`}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[#9ca3af] mb-1 block">Title</label>
+                  <input className="inp" placeholder="e.g. Easter Campaign, Grow Instagram..." value={goalTitle} onChange={e => setGoalTitle(e.target.value)} autoFocus />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-[#9ca3af] mb-1 block">Description (optional)</label>
+                  <textarea className="ta" rows={2} placeholder="What should content focus on during this period?" value={goalDesc} onChange={e => setGoalDesc(e.target.value)} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-[#9ca3af] mb-1 block">Start</label>
+                    <input type="date" className="inp" value={goalStart} onChange={e => setGoalStart(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-xs text-[#9ca3af] mb-1 block">End</label>
+                    <input type="date" className="inp" value={goalEnd} onChange={e => setGoalEnd(e.target.value)} />
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button className="btn btn-o btn-sm" onClick={() => setShowGoalForm(false)}>Cancel</button>
+                  <button className="btn btn-sm text-white flex items-center gap-1" style={{ background: '#8b5cf6' }} disabled={savingGoal} onClick={saveGoal}>
+                    {savingGoal ? <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" /> : <FlagIcon className="w-3.5 h-3.5" />} Save Goal
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {goals.length === 0 && !showGoalForm ? (
+              <div className="text-center py-10 text-[#6b7280]">
+                <FlagIcon className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">No goals set</p>
+                <p className="text-xs mt-1">Add goals to guide your AI content generation</p>
+              </div>
+            ) : (
+              (['yearly', 'quarterly', 'monthly', 'weekly'] as const).map(period => {
+                const periodGoals = goals.filter(g => g.period === period)
+                if (periodGoals.length === 0) return null
+                const today = new Date().toISOString().slice(0, 10)
+                return (
+                  <div key={period}>
+                    <p className="text-xs font-semibold text-[#8b5cf6] uppercase tracking-wide mb-2 flex items-center gap-1">
+                      <CalendarDaysIcon className="w-3.5 h-3.5" /> {period}
+                    </p>
+                    <div className="space-y-2">
+                      {periodGoals.map(g => {
+                        const isCurrentlyActive = g.isActive && g.startDate <= today && g.endDate >= today
+                        const isExpired = g.endDate < today
+                        return (
+                          <div key={g.id}
+                            className={`card p-3 transition-colors ${isCurrentlyActive ? 'border-emerald-500/40' : isExpired ? 'opacity-50' : ''}`}
+                            style={isCurrentlyActive ? { borderColor: 'rgba(16,185,129,0.4)' } : {}}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <p className="text-sm font-medium text-[#e6e1e1]">{g.title}</p>
+                                  {isCurrentlyActive && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">Active</span>}
+                                  {isExpired && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#2b2a29] text-[#6b7280]">Expired</span>}
+                                  {!g.isActive && !isExpired && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400">Paused</span>}
+                                </div>
+                                {g.description && <p className="text-xs text-[#9ca3af] mb-1">{g.description}</p>}
+                                <p className="text-[10px] text-[#6b7280]">
+                                  {new Date(g.startDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })} — {new Date(g.endDate).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </p>
+                              </div>
+                              <div className="flex gap-1 flex-shrink-0">
+                                <button onClick={() => toggleGoalActive(g.id, !g.isActive)}
+                                  className={`btn btn-sm ${g.isActive ? 'btn-o' : 'text-white'}`}
+                                  style={!g.isActive ? { background: '#8b5cf6' } : {}}
+                                  title={g.isActive ? 'Pause' : 'Activate'}>
+                                  {g.isActive ? '⏸' : '▶'}
+                                </button>
+                                <button onClick={() => deleteGoal(g.id)} className="btn btn-d btn-sm">
+                                  <TrashIcon className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })
             )}
           </div>
         )}

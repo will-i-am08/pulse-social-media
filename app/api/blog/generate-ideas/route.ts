@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDecryptedClaudeKey } from '@/lib/account/getAccountSettings'
+import { getActiveGoals, goalsToPromptSection } from '@/lib/brands/getActiveGoals'
 
 async function callClaude(apiKey: string, model: string, maxTokens: number, messages: unknown[], tools?: unknown[]) {
   const body: Record<string, unknown> = { model, max_tokens: maxTokens, messages }
@@ -87,12 +88,15 @@ INSTRUCTIONS: Each idea MUST directly target one of the searches or questions ab
   const focusAreas: string[] = brand.focus_areas || []
   const focusConstraint = focusArea !== 'all' ? `Focus area: ${focusLabel}` : `Available focus areas: ${focusAreas.length > 0 ? focusAreas.join(', ') : 'all topics'}`
 
+  const goals = await getActiveGoals(brandId, user.id)
+  const goalsSection = goalsToPromptSection(goals)
+
   const prompt = `You are an SEO and AI visibility content strategist for ${businessDesc}.
 
 Generate exactly ${count} blog post ideas based on HIGH-VOLUME, REAL search queries — the exact phrases people type into Google, ChatGPT, and Perplexity.
 
 ${focusConstraint}
-${trendSection}
+${trendSection}${goalsSection}
 
 CRITICAL requirements:
 - Titles must be phrased as actual search queries or questions (e.g. "How much does X cost?" not "Guide to X")
