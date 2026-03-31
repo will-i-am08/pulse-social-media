@@ -6,14 +6,16 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { brandId, caption, platforms, status, scheduledAt, imageUrl } = await req.json()
+  const { brandId, caption, platforms, status, scheduledAt, imageUrl, imageUrls } = await req.json()
   if (!brandId || !caption) return NextResponse.json({ error: 'brandId and caption required' }, { status: 400 })
+
+  const resolvedUrls: string[] = imageUrls?.length ? imageUrls : (imageUrl ? [imageUrl] : [])
 
   const postData = {
     brand_profile_id: brandId,
     caption,
-    image_url: imageUrl || null,
-    image_urls: imageUrl ? [imageUrl] : [],
+    image_url: resolvedUrls[0] || null,
+    image_urls: resolvedUrls,
     platforms: platforms || ['instagram'],
     status: status || 'draft',
     scheduled_at: scheduledAt || null,

@@ -5,15 +5,17 @@ import toast from 'react-hot-toast'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import { HOLIDAYS_2026, type Holiday } from '@/lib/holidays'
 import { callClaude } from '@/lib/claude'
+import { uid } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { SparklesIcon, ArrowPathIcon, ClipboardDocumentIcon } from '@heroicons/react/16/solid'
+import type { Post } from '@/lib/types'
+import { SparklesIcon, ArrowPathIcon, ClipboardDocumentIcon, PlusCircleIcon, DocumentPlusIcon } from '@heroicons/react/16/solid'
 
 interface HolidayCaption {
   [key: string]: string
 }
 
 export default function HolidaysPage() {
-  const { brands } = useWorkspace()
+  const { brands, posts, savePosts } = useWorkspace()
   const router = useRouter()
   const [selectedBrand, setSelectedBrand] = useState('')
   const [captions, setCaptions] = useState<HolidayCaption>({})
@@ -58,6 +60,48 @@ ${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emoji
     toast.success('All holiday captions generated!')
   }
 
+  function createPost(holiday: Holiday) {
+    if (!brand || !captions[holiday.name]) return
+    const newPost: Post = {
+      id: uid(),
+      brand_profile_id: selectedBrand,
+      caption: captions[holiday.name],
+      platforms: ['instagram'],
+      status: 'draft',
+      scheduled_at: `${holiday.date}T09:00`,
+      image_url: null,
+      image_urls: [],
+      created_date: new Date().toISOString(),
+      client_visible: false,
+      client_approved: false,
+    }
+    savePosts([newPost, ...posts])
+    toast.success(`Draft created for ${holiday.name}`)
+  }
+
+  function createAllPosts() {
+    if (!brand) return
+    const holidaysWithCaptions = HOLIDAYS_2026.filter(h => captions[h.name])
+    if (holidaysWithCaptions.length === 0) { toast.error('Generate captions first'); return }
+    const newPosts: Post[] = holidaysWithCaptions.map(h => ({
+      id: uid(),
+      brand_profile_id: selectedBrand,
+      caption: captions[h.name],
+      platforms: ['instagram'],
+      status: 'draft',
+      scheduled_at: `${h.date}T09:00`,
+      image_url: null,
+      image_urls: [],
+      created_date: new Date().toISOString(),
+      client_visible: false,
+      client_approved: false,
+    }))
+    savePosts([...newPosts, ...posts])
+    toast.success(`${newPosts.length} holiday draft${newPosts.length !== 1 ? 's' : ''} created!`)
+  }
+
+  const captionCount = Object.keys(captions).length
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -87,6 +131,11 @@ ${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emoji
               : <><SparklesIcon className="w-4 h-4" /> Generate All</>
             }
           </button>
+          {captionCount > 0 && (
+            <button className="btn btn-o flex items-center gap-2" onClick={createAllPosts}>
+              <DocumentPlusIcon className="w-4 h-4" /> Create {captionCount} Draft{captionCount !== 1 ? 's' : ''}
+            </button>
+          )}
         </div>
       </div>
 
@@ -110,12 +159,20 @@ ${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emoji
                       value={captions[holiday.name]}
                       onChange={e => setCaptions(prev => ({ ...prev, [holiday.name]: e.target.value }))}
                     />
-                    <button
-                      className="btn btn-o btn-sm mt-2 flex items-center gap-1"
-                      onClick={() => { navigator.clipboard.writeText(captions[holiday.name]); toast.success('Copied!') }}
-                    >
-                      <ClipboardDocumentIcon className="w-3 h-3" /> Copy
-                    </button>
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        className="btn btn-o btn-sm flex items-center gap-1"
+                        onClick={() => { navigator.clipboard.writeText(captions[holiday.name]); toast.success('Copied!') }}
+                      >
+                        <ClipboardDocumentIcon className="w-3 h-3" /> Copy
+                      </button>
+                      <button
+                        className="btn btn-o btn-sm flex items-center gap-1"
+                        onClick={() => createPost(holiday)}
+                      >
+                        <PlusCircleIcon className="w-3 h-3" /> Create Post
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-sm text-[#5a4042] italic">No caption generated yet</p>

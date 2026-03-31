@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import StatusBadge from '@/components/app/StatusBadge'
@@ -12,10 +13,38 @@ import {
   CheckCircleIcon,
   ClipboardDocumentIcon,
   PhotoIcon,
+  BellAlertIcon,
+  XMarkIcon,
 } from '@heroicons/react/16/solid'
+
+interface Notification {
+  id: string
+  type: string
+  title: string
+  message: string
+  link: string | null
+  created_at: string
+}
 
 export default function DashboardPage() {
   const { brands, posts, loading } = useWorkspace()
+  const [notifications, setNotifications] = useState<Notification[]>([])
+
+  useEffect(() => {
+    fetch('/api/notifications')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setNotifications(data) })
+      .catch(() => {})
+  }, [])
+
+  function dismissNotification(id: string) {
+    fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    }).catch(() => {})
+    setNotifications(prev => prev.filter(n => n.id !== id))
+  }
 
   const scheduled = posts.filter(p => p.status === 'scheduled')
   const drafts = posts.filter(p => p.status === 'draft')
@@ -67,6 +96,23 @@ export default function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {/* Notifications */}
+      {notifications.map(n => (
+        <div key={n.id} className="mb-4 p-4 bg-[rgba(14,165,233,0.08)] border border-[rgba(14,165,233,0.2)] rounded-xl flex items-center gap-3">
+          <BellAlertIcon className="w-5 h-5 text-sky-400 flex-shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium text-sky-300">{n.title}</p>
+            {n.message && <p className="text-sm text-[#e1bec0]">{n.message}</p>}
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {n.link && <Link href={n.link} className="btn btn-p btn-sm">View</Link>}
+            <button onClick={() => dismissNotification(n.id)} className="text-[#5a4042] hover:text-[#e1bec0]">
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      ))}
 
       {/* Pending review banner */}
       {submitted.length > 0 && (
@@ -182,6 +228,45 @@ export default function DashboardPage() {
                 </div>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Recent Activity */}
+      {posts.length > 0 && (
+        <div className="card mt-6">
+          <div className="flex items-center justify-between p-4 border-b border-[rgba(90,64,66,0.2)]">
+            <h3 className="font-semibold text-[#e6e1e1]">Recent Activity</h3>
+            <Link href="/posts" className="btn btn-o btn-sm">View All</Link>
+          </div>
+          <div className="p-4 space-y-3">
+            {[...posts]
+              .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
+              .slice(0, 8)
+              .map(p => {
+                const brand = brands.find(b => b.id === p.brand_profile_id)
+                const statusLabel: Record<string, string> = {
+                  draft: 'drafted',
+                  submitted: 'submitted for review',
+                  approved: 'approved',
+                  scheduled: 'scheduled',
+                  published: 'published',
+                }
+                return (
+                  <div key={p.id} className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: brand?.color || '#5a4042' }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-[#e6e1e1] truncate">
+                        <span className="font-medium">{brand?.name || 'Unknown'}</span>
+                        {' post '}
+                        <span className="text-[#e1bec0]">{statusLabel[p.status] || p.status}</span>
+                      </p>
+                      <p className="text-xs text-[#5a4042]">{fmtDateTime(p.created_date)}</p>
+                    </div>
+                    <StatusBadge status={p.status} />
+                  </div>
+                )
+              })}
           </div>
         </div>
       )}

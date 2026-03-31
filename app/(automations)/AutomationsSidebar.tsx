@@ -9,10 +9,12 @@ import {
   ListBulletIcon,
   PlusCircleIcon,
   ClockIcon,
+  PhotoIcon,
 } from '@heroicons/react/16/solid'
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard',      icon: Squares2X2Icon,  href: '/automations' },
+  { id: 'photo-drop',label: 'Photo Drop',     icon: PhotoIcon,       href: '/automations/photo-drop' },
   { id: 'list',      label: 'My Automations',  icon: ListBulletIcon,  href: '/automations/list' },
   { id: 'create',    label: 'Create New',      icon: PlusCircleIcon,  href: '/automations/edit/new' },
   { id: 'history',   label: 'Run History',     icon: ClockIcon,       href: '/automations/history' },

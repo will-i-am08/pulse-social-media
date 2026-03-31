@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { brandId, platforms, prompt, tone } = await req.json()
+  const { brandId, platforms, prompt, tone, imageUrl } = await req.json()
   if (!brandId) return NextResponse.json({ error: 'brandId required' }, { status: 400 })
 
   const apiKey = await getDecryptedClaudeKey(user.id)
@@ -50,7 +50,15 @@ ${prompt ? `Topic/instructions: ${prompt}` : 'Write an engaging caption that ref
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 512,
         system: 'You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations, no quotation marks, nothing else.',
-        messages: [{ role: 'user', content: userPrompt }],
+        messages: [{
+          role: 'user',
+          content: imageUrl
+            ? [
+                { type: 'image', source: { type: 'url', url: imageUrl } },
+                { type: 'text', text: userPrompt + '\n\nDescribe what you see in the image and use it as context for the caption.' },
+              ]
+            : userPrompt,
+        }],
       }),
     })
 

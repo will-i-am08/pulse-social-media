@@ -17,6 +17,8 @@ import {
   PaperAirplaneIcon,
   TrashIcon,
   ArrowPathIcon,
+  CheckIcon,
+  XMarkIcon,
 } from '@heroicons/react/16/solid'
 
 interface BufferProfile {
@@ -42,6 +44,7 @@ export default function PostsPage() {
   const [schedulingDrafts, setSchedulingDrafts] = useState(false)
   const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([])
   const [selectedProfiles, setSelectedProfiles] = useState<Set<string>>(new Set())
+  const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch('/api/buffer')
@@ -198,6 +201,29 @@ export default function PostsPage() {
     })
   }
 
+  function togglePostSelect(id: string) {
+    setSelectedPosts(prev => {
+      const n = new Set(prev)
+      if (n.has(id)) n.delete(id); else n.add(id)
+      return n
+    })
+  }
+
+  function selectAllFiltered() {
+    setSelectedPosts(new Set(filtered.map(p => p.id)))
+  }
+
+  function clearSelection() {
+    setSelectedPosts(new Set())
+  }
+
+  function bulkChangeStatus(status: Post['status']) {
+    const updated = posts.map(p => selectedPosts.has(p.id) ? { ...p, status } : p)
+    savePosts(updated)
+    toast.success(`${selectedPosts.size} post${selectedPosts.size !== 1 ? 's' : ''} marked as ${status}`)
+    setSelectedPosts(new Set())
+  }
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -240,6 +266,24 @@ export default function PostsPage() {
         </select>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedPosts.size > 0 && (
+        <div className="mb-4 p-3 bg-[rgba(255,84,115,0.08)] border border-[rgba(255,84,115,0.2)] rounded-xl flex items-center gap-3 flex-wrap">
+          <span className="text-sm font-medium text-[#ffb2b9]">{selectedPosts.size} selected</span>
+          <button onClick={() => bulkChangeStatus('approved')} className="btn btn-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+            <CheckIcon className="w-3 h-3" /> Approve
+          </button>
+          <button onClick={() => bulkChangeStatus('draft')} className="btn btn-sm btn-o flex items-center gap-1">
+            <XMarkIcon className="w-3 h-3" /> Reject to Draft
+          </button>
+          <button onClick={() => bulkChangeStatus('scheduled')} className="btn btn-sm btn-o">Schedule</button>
+          <button onClick={() => bulkChangeStatus('published')} className="btn btn-sm btn-o">Publish</button>
+          <div className="flex-1" />
+          <button onClick={selectAllFiltered} className="btn btn-sm btn-o">Select All ({filtered.length})</button>
+          <button onClick={clearSelection} className="text-xs text-[#e1bec0] hover:text-[#ffb2b9]">Clear</button>
+        </div>
+      )}
+
       {/* Posts list */}
       {filtered.length === 0 ? (
         <div className="card p-12 text-center">
@@ -257,6 +301,13 @@ export default function PostsPage() {
                   className="flex items-center gap-3 p-4 cursor-pointer hover:bg-[rgba(255,84,115,0.04)] transition-colors"
                   onClick={() => setExpandedId(isExpanded ? null : post.id)}
                 >
+                  <input
+                    type="checkbox"
+                    className="w-4 h-4 accent-[#ff5473] flex-shrink-0"
+                    checked={selectedPosts.has(post.id)}
+                    onClick={e => e.stopPropagation()}
+                    onChange={() => togglePostSelect(post.id)}
+                  />
                   {post.image_url ? (
                     <img src={post.image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                   ) : (

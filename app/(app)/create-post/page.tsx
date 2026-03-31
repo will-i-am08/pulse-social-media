@@ -21,6 +21,7 @@ import {
   PhotoIcon,
   PaperAirplaneIcon,
 } from '@heroicons/react/16/solid'
+import CaptionTemplates from '@/components/app/CaptionTemplates'
 
 const PLATFORMS = ['instagram', 'facebook', 'linkedin']
 
@@ -49,6 +50,7 @@ export default function CreatePostPage() {
   const [showLibrary, setShowLibrary] = useState(false)
   const [libraryTarget, setLibraryTarget] = useState<'single' | number>('single')
   const [librarySearch, setLibrarySearch] = useState('')
+  const [showTemplates, setShowTemplates] = useState(false)
 
   const brand = brands.find(b => b.id === brandId)
 
@@ -500,10 +502,25 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
               {!useGoals && <span className="text-[10px] text-[#e1bec0] bg-[#2b2a29] px-2 py-0.5 rounded-full">General post</span>}
             </div>
           )}
-          <button className="btn btn-p w-full flex items-center justify-center gap-2" disabled={!brandId || generating} onClick={generate}>
-            {generating ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Generating...</> : <><SparklesIcon className="w-4 h-4" /> Generate Caption</>}
-          </button>
+          <div className="flex gap-2">
+            <button className="btn btn-p flex-1 flex items-center justify-center gap-2" disabled={!brandId || generating} onClick={generate}>
+              {generating ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Generating...</> : <><SparklesIcon className="w-4 h-4" /> Generate Caption</>}
+            </button>
+            <button className="btn btn-o flex items-center gap-1" onClick={() => setShowTemplates(true)}>
+              <BookmarkIcon className="w-4 h-4" /> Templates
+            </button>
+          </div>
         </div>
+
+        <CaptionTemplates
+          isOpen={showTemplates}
+          onClose={() => setShowTemplates(false)}
+          currentCaption={caption}
+          currentPrompt={customPrompt}
+          brandId={brandId}
+          onUseCaption={setCaption}
+          onUsePrompt={setCustomPrompt}
+        />
 
         {/* Right: preview */}
         <div className="space-y-4">
