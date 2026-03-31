@@ -64,9 +64,33 @@ export default function PostsPage() {
     return true
   })
 
-  function changeStatus(id: string, status: Post['status']) {
+  async function changeStatus(id: string, status: Post['status']) {
     const updated = posts.map(p => p.id === id ? { ...p, status } : p)
     savePosts(updated)
+
+    // Auto-send to Buffer when approving
+    if (status === 'approved') {
+      const post = posts.find(p => p.id === id)
+      if (post) {
+        const brand = brands.find(b => b.id === post.brand_profile_id)
+        const profileIds = brand?.buffer_profile_ids || []
+        if (profileIds.length > 0) {
+          try {
+            const res = await fetch('/api/buffer', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ profileIds, text: post.caption, media: post.image_url ? { photo: post.image_url } : undefined }),
+            })
+            const data = await res.json()
+            if (data.success) {
+              savePosts(posts.map(p => p.id === id ? { ...p, status: 'published' } : p))
+              toast.success('Approved and added to Buffer queue!')
+              return
+            }
+          } catch { /* fall through */ }
+        }
+      }
+    }
     toast.success(`Post marked as ${status}`)
   }
 
@@ -217,9 +241,38 @@ export default function PostsPage() {
     setSelectedPosts(new Set())
   }
 
-  function bulkChangeStatus(status: Post['status']) {
+  async function bulkChangeStatus(status: Post['status']) {
+    const selected = posts.filter(p => selectedPosts.has(p.id))
     const updated = posts.map(p => selectedPosts.has(p.id) ? { ...p, status } : p)
     savePosts(updated)
+
+    // Auto-send to Buffer when bulk approving
+    if (status === 'approved') {
+      let sent = 0
+      const publishedIds = new Set<string>()
+      for (const post of selected) {
+        const brand = brands.find(b => b.id === post.brand_profile_id)
+        const profileIds = brand?.buffer_profile_ids || []
+        if (profileIds.length > 0) {
+          try {
+            const res = await fetch('/api/buffer', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ profileIds, text: post.caption, media: post.image_url ? { photo: post.image_url } : undefined }),
+            })
+            const data = await res.json()
+            if (data.success) { sent++; publishedIds.add(post.id) }
+          } catch { /* continue */ }
+        }
+      }
+      if (sent > 0) {
+        savePosts(posts.map(p => publishedIds.has(p.id) ? { ...p, status: 'published' } : selectedPosts.has(p.id) ? { ...p, status: 'approved' } : p))
+        toast.success(`${selectedPosts.size} approved, ${sent} added to Buffer queue!`)
+        setSelectedPosts(new Set())
+        return
+      }
+    }
+
     toast.success(`${selectedPosts.size} post${selectedPosts.size !== 1 ? 's' : ''} marked as ${status}`)
     setSelectedPosts(new Set())
   }

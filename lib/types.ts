@@ -68,12 +68,14 @@ export interface Photo {
   name: string
   tags: string[]
   folder_id?: string | null
+  processed?: boolean
   created_date: string
 }
 
 export interface Folder {
   id: string
   name: string
+  brand_id?: string | null
 }
 
 export interface Client {

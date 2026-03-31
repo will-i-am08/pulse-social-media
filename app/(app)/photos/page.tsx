@@ -21,7 +21,7 @@ import {
 } from '@heroicons/react/16/solid'
 
 export default function PhotosPage() {
-  const { photos, savePhotos, folders, saveFolders } = useWorkspace()
+  const { photos, savePhotos, folders, saveFolders, brands } = useWorkspace()
   const [filter, setFilter] = useState('')
   const [folderId, setFolderId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -29,6 +29,7 @@ export default function PhotosPage() {
   const [lightbox, setLightbox] = useState<Photo | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [newFolderName, setNewFolderName] = useState('')
+  const [newFolderBrandId, setNewFolderBrandId] = useState('')
   const [folderModal, setFolderModal] = useState(false)
 
   const filtered = photos.filter(p => {
@@ -91,8 +92,9 @@ export default function PhotosPage() {
 
   function createFolder() {
     if (!newFolderName.trim()) return
-    saveFolders([...folders, { id: uid(), name: newFolderName.trim() }])
+    saveFolders([...folders, { id: uid(), name: newFolderName.trim(), brand_id: newFolderBrandId || null }])
     setNewFolderName('')
+    setNewFolderBrandId('')
     setFolderModal(false)
     toast.success('Folder created')
   }
@@ -132,12 +134,16 @@ export default function PhotosPage() {
           <button onClick={() => setFolderId(null)} className={`btn btn-sm flex items-center gap-1 ${folderId === null ? 'btn-p' : 'btn-o'}`}>
             <FolderOpenIcon className="w-4 h-4" /> All Photos ({photos.length})
           </button>
-          {folders.map(f => (
-            <button key={f.id} onClick={() => setFolderId(f.id)} className={`btn btn-sm flex items-center gap-1 ${folderId === f.id ? 'btn-p' : 'btn-o'}`}>
-              <FolderIcon className="w-4 h-4" /> {f.name}
-              <span onClick={e => { e.stopPropagation(); deleteFolder(f.id) }} className="ml-1 text-[#f87171] hover:text-red-400">×</span>
-            </button>
-          ))}
+          {folders.map(f => {
+            const fb = f.brand_id ? brands.find(b => b.id === f.brand_id) : null
+            return (
+              <button key={f.id} onClick={() => setFolderId(f.id)} className={`btn btn-sm flex items-center gap-1 ${folderId === f.id ? 'btn-p' : 'btn-o'}`}>
+                <FolderIcon className="w-4 h-4" /> {f.name}
+                {fb && <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: fb.color || '#ff5473' }} title={fb.name} />}
+                <span onClick={e => { e.stopPropagation(); deleteFolder(f.id) }} className="ml-1 text-[#f87171] hover:text-red-400">×</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -221,8 +227,12 @@ export default function PhotosPage() {
         <Modal onClose={() => setFolderModal(false)}>
           <div className="modal" style={{ maxWidth: 400 }}>
             <h3 className="text-lg font-semibold mb-4 text-[#e6e1e1]">New Folder</h3>
-            <input className="inp mb-4" placeholder="Folder name" value={newFolderName} onChange={e => setNewFolderName(e.target.value)}
+            <input className="inp mb-3" placeholder="Folder name" value={newFolderName} onChange={e => setNewFolderName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') createFolder() }} autoFocus />
+            <select className="sel mb-4" value={newFolderBrandId} onChange={e => setNewFolderBrandId(e.target.value)}>
+              <option value="">No brand (general folder)</option>
+              {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
             <div className="flex gap-3 justify-end">
               <button className="btn btn-o" onClick={() => setFolderModal(false)}>Cancel</button>
               <button className="btn btn-p" onClick={createFolder}>Create</button>
