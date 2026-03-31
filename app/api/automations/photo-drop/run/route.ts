@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
 
   let created = 0
   const processedIds: string[] = []
+  const batchId = crypto.randomUUID()
+  const batchLabel = `Auto Photo Drop — ${brand.name} — ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`
 
   for (const photo of photos) {
     try {
@@ -101,6 +103,8 @@ Describe what you see in the image and use it as context for the caption.`
           status: 'submitted',
           scheduled_at: null,
           published_at: null,
+          batch_id: batchId,
+          batch_label: batchLabel,
           created_date: new Date().toISOString(),
           client_visible: false,
           client_approved: false,

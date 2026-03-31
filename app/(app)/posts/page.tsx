@@ -345,23 +345,101 @@ export default function PostsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map(post => {
-            const brand = brands.find(b => b.id === post.brand_profile_id)
-            const isExpanded = expandedId === post.id
-            return (
-              <div key={post.id} className="card overflow-hidden">
-                <div
-                  className="flex items-center gap-3 p-4 cursor-pointer hover:bg-[rgba(255,84,115,0.04)] transition-colors"
-                  onClick={() => setExpandedId(isExpanded ? null : post.id)}
-                >
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 accent-[#ff5473] flex-shrink-0"
-                    checked={selectedPosts.has(post.id)}
-                    onClick={e => e.stopPropagation()}
-                    onChange={() => togglePostSelect(post.id)}
-                  />
-                  {post.image_url ? (
+          {(() => {
+            // Group posts by batch_id, preserving order
+            const batches: { batchId: string | null; label: string | null; posts: typeof filtered }[] = []
+            const seen = new Set<string>()
+            for (const post of filtered) {
+              if (post.batch_id && !seen.has(post.batch_id)) {
+                seen.add(post.batch_id)
+                batches.push({ batchId: post.batch_id, label: post.batch_label || 'Batch', posts: filtered.filter(p => p.batch_id === post.batch_id) })
+              } else if (!post.batch_id) {
+                batches.push({ batchId: null, label: null, posts: [post] })
+              }
+            }
+            return batches.map((batch, bi) => {
+              if (batch.batchId && batch.posts.length > 1) {
+                // Render grouped batch
+                const allBatchSelected = batch.posts.every(p => selectedPosts.has(p.id))
+                return (
+                  <div key={batch.batchId} className="card overflow-hidden border-l-4 border-l-sky-500/50">
+                    <div className="flex items-center gap-3 px-4 py-2.5 bg-[rgba(14,165,233,0.06)] border-b border-[rgba(90,64,66,0.2)]">
+                      <input type="checkbox" className="w-4 h-4 accent-[#0ea5e9] flex-shrink-0"
+                        checked={allBatchSelected}
+                        onChange={() => {
+                          if (allBatchSelected) setSelectedPosts(prev => { const n = new Set(prev); batch.posts.forEach(p => n.delete(p.id)); return n })
+                          else setSelectedPosts(prev => { const n = new Set(prev); batch.posts.forEach(p => n.add(p.id)); return n })
+                        }}
+                      />
+                      <span className="text-xs font-medium text-sky-400">{batch.label}</span>
+                      <span className="text-[10px] text-[#5a4042]">{batch.posts.length} posts</span>
+                    </div>
+                    {batch.posts.map(post => renderPostRow(post))}
+                  </div>
+                )
+              }
+              // Single post (no batch or batch of 1)
+              return batch.posts.map(post => (
+                <div key={post.id} className="card overflow-hidden">
+                  {renderPostRow(post)}
+                </div>
+              ))
+            })
+          })()}
+        </div>
+      )}
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete Post"
+          description="This will permanently delete this post."
+          onConfirm={() => { deletePost(confirmDelete!); setConfirmDelete(null) }}
+          onClose={() => setConfirmDelete(null)}
+        />
+      )}
+
+      {showScheduler && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowScheduler(false)}>
+          <div className="card p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-[#e6e1e1] mb-1 flex items-center gap-2">
+              <PaperAirplaneIcon className="w-5 h-5 text-[#ff5473]" /> Send Drafts to Buffer
+            </h3>
+            <p className="text-xs text-[#e1bec0] mb-4">
+              Sends draft posts to each brand&apos;s Buffer queue. Buffer&apos;s auto-schedule handles the timing.
+            </p>
+            <p className="text-xs text-[#e1bec0] mb-4">
+              {posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length} draft{posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length !== 1 ? 's' : ''} will be sent
+              {brandFilter !== 'all' ? ` for ${brands.find(b => b.id === brandFilter)?.name || 'selected brand'}` : ' across all brands'}
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button className="btn btn-o" onClick={() => setShowScheduler(false)}>Cancel</button>
+              <button className="btn btn-p flex items-center gap-2" disabled={schedulingDrafts} onClick={scheduleDrafts}>
+                {schedulingDrafts ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Sending...</> : <><PaperAirplaneIcon className="w-4 h-4" /> Send to Buffer</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
+  function renderPostRow(post: Post) {
+    const brand = brands.find(b => b.id === post.brand_profile_id)
+    const isExpanded = expandedId === post.id
+    return (
+      <div key={post.id}>
+        <div
+          className="flex items-center gap-3 p-4 cursor-pointer hover:bg-[rgba(255,84,115,0.04)] transition-colors"
+          onClick={() => setExpandedId(isExpanded ? null : post.id)}
+        >
+          <input
+            type="checkbox"
+            className="w-4 h-4 accent-[#ff5473] flex-shrink-0"
+            checked={selectedPosts.has(post.id)}
+            onClick={e => e.stopPropagation()}
+            onChange={() => togglePostSelect(post.id)}
+          />
+          {post.image_url ? (
                     <img src={post.image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-[#2b2a29] flex items-center justify-center flex-shrink-0">
@@ -484,42 +562,5 @@ export default function PostsPage() {
                 )}
               </div>
             )
-          })}
-        </div>
-      )}
-
-      {confirmDelete && (
-        <ConfirmDialog
-          title="Delete Post"
-          description="This will permanently delete this post."
-          onConfirm={() => { deletePost(confirmDelete!); setConfirmDelete(null) }}
-          onClose={() => setConfirmDelete(null)}
-        />
-      )}
-
-      {/* Send Drafts to Buffer Modal */}
-      {showScheduler && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowScheduler(false)}>
-          <div className="card p-6 max-w-md w-full mx-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold text-[#e6e1e1] mb-1 flex items-center gap-2">
-              <PaperAirplaneIcon className="w-5 h-5 text-[#ff5473]" /> Send Drafts to Buffer
-            </h3>
-            <p className="text-xs text-[#e1bec0] mb-4">
-              Sends draft posts to each brand&apos;s Buffer queue. Buffer&apos;s auto-schedule handles the timing.
-            </p>
-            <p className="text-xs text-[#e1bec0] mb-4">
-              {posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length} draft{posts.filter(p => p.status === 'draft' && (brandFilter === 'all' || p.brand_profile_id === brandFilter)).length !== 1 ? 's' : ''} will be sent
-              {brandFilter !== 'all' ? ` for ${brands.find(b => b.id === brandFilter)?.name || 'selected brand'}` : ' across all brands'}
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button className="btn btn-o" onClick={() => setShowScheduler(false)}>Cancel</button>
-              <button className="btn btn-p flex items-center gap-2" disabled={schedulingDrafts} onClick={scheduleDrafts}>
-                {schedulingDrafts ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Sending...</> : <><PaperAirplaneIcon className="w-4 h-4" /> Send to Buffer</>}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
+          }
 }

@@ -192,6 +192,9 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
     if (!bulkBrandId) { toast.error('Select a brand first'); return }
     const toSave = bulkRows.filter(r => r.caption)
     if (!toSave.length) { toast.error('No captions to save'); return }
+    const batchId = uid()
+    const brandName = brands.find(b => b.id === bulkBrandId)?.name || 'Brand'
+    const batchLabel = `Bulk Create — ${brandName} — ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`
     const newPosts: Post[] = toSave.map(r => ({
       id: uid(),
       brand_profile_id: bulkBrandId,
@@ -201,6 +204,8 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       image_url: r.image || null,
       image_urls: r.image ? [r.image] : [],
       created_date: new Date().toISOString(),
+      batch_id: batchId,
+      batch_label: batchLabel,
       client_visible: false,
       client_approved: false,
     }))
@@ -239,6 +244,8 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
     if (!toSave.length) { toast.error('No captions to send'); return }
 
     setBulkScheduling(true)
+    const batchId = uid()
+    const batchLabel = `Buffer Send — ${bb.name} — ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`
     const newPosts: Post[] = toSave.map((r) => ({
       id: uid(),
       brand_profile_id: bulkBrandId,
@@ -249,6 +256,8 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       image_url: r.image || null,
       image_urls: r.image ? [r.image] : [],
       created_date: new Date().toISOString(),
+      batch_id: batchId,
+      batch_label: batchLabel,
       client_visible: false,
       client_approved: false,
     }))

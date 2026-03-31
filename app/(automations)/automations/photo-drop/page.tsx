@@ -157,6 +157,9 @@ export default function PhotoDropPage() {
     setGroups(postGroups)
     let created = 0
     const processed: string[] = []
+    const batchId = uid()
+    const brandName = brands.find(b => b.id === brandId)?.name || 'Brand'
+    const batchLabel = `Photo Drop — ${brandName} — ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}`
 
     for (let i = 0; i < postGroups.length; i++) {
       const group = postGroups[i]
@@ -173,7 +176,7 @@ export default function PhotoDropPage() {
 
         const postRes = await fetch('/api/automations/social-post', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brandId, caption, platforms, status: 'submitted', imageUrl: group.photos[0].url, imageUrls: group.photos.map(p => p.url) }),
+          body: JSON.stringify({ brandId, caption, platforms, status: 'submitted', imageUrl: group.photos[0].url, imageUrls: group.photos.map(p => p.url), batchId, batchLabel }),
         })
         if (!postRes.ok) throw new Error('Post creation failed')
         created++

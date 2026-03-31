@@ -55,6 +55,8 @@ export interface Post {
   scheduled_at?: string | null
   published_at?: string | null
   created_date: string
+  batch_id?: string | null
+  batch_label?: string | null
   client_visible: boolean
   client_approved: boolean
   rejection_reason?: string
