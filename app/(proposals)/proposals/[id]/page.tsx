@@ -239,30 +239,6 @@ export default function ViewProposalPage() {
           </div>
         )}
 
-        {/* Signatures */}
-        {!editing && (
-          <div className="mt-10 pt-6 border-t border-[rgba(255,255,255,0.08)] grid grid-cols-2 gap-8">
-            <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Agency Signature</p>
-              {proposal.signature_agency ? (
-                <img src={proposal.signature_agency} alt="Agency signature" className="h-16 bg-white rounded p-1" />
-              ) : (
-                <div className="h-16 border-b-2 border-[rgba(255,255,255,0.1)]" />
-              )}
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Client Signature</p>
-              {proposal.signature_client ? (
-                <img src={proposal.signature_client} alt="Client signature" className="h-16 bg-white rounded p-1" />
-              ) : (
-                <div className="h-16 border-b-2 border-[rgba(255,255,255,0.1)]" />
-              )}
-            </div>
-            {proposal.signed_at && (
-              <p className="col-span-2 text-xs text-slate-600">Signed on {new Date(proposal.signed_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
