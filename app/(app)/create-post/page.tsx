@@ -265,6 +265,7 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
     }))
 
     let sent = 0
+    let lastError = ''
     for (const post of newPosts) {
       try {
         const res = await fetch('/api/buffer', {
@@ -277,13 +278,26 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
           }),
         })
         const data = await res.json()
-        if (data.success) sent++
-      } catch { /* continue */ }
+        // Count as sent if at least one channel succeeded
+        const anySuccess = data.success || data.results?.some((r: { success: boolean }) => r.success)
+        if (anySuccess) {
+          sent++
+        } else {
+          const firstError = data.results?.find((r: { success: boolean; error?: string }) => r.error)?.error
+          lastError = firstError || data.error || 'Unknown Buffer error'
+        }
+      } catch (e: unknown) {
+        lastError = e instanceof Error ? e.message : 'Request failed'
+      }
     }
 
     savePosts([...newPosts, ...posts])
     setBulkScheduling(false)
-    toast.success(`${sent} post${sent !== 1 ? 's' : ''} added to Buffer queue!`)
+    if (sent > 0) {
+      toast.success(`${sent} post${sent !== 1 ? 's' : ''} added to Buffer queue!`)
+    } else {
+      toast.error(`Failed to send to Buffer: ${lastError}`)
+    }
     router.push('/posts')
   }
 
