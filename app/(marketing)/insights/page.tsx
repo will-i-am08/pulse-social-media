@@ -3,13 +3,19 @@ import Link from 'next/link'
 import { Metadata } from 'next'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 import NewsletterForm from '@/components/marketing/NewsletterForm'
+import InsightsBlogGrid from './InsightsBlogGrid'
+import { getPublishedPosts } from '@/lib/blog'
 
 export const metadata: Metadata = {
   title: 'Insights | Pulse Digital Agency',
   description: 'Digital strategy insights, AI trends, and actionable guides from the Pulse Digital team.',
 }
 
-export default function InsightsPage() {
+export const revalidate = 60
+
+export default async function InsightsPage() {
+  const posts = await getPublishedPosts()
+
   return (
     <main className="pt-32 pb-24">
       {/* Hero Featured Article */}
@@ -62,104 +68,44 @@ export default function InsightsPage() {
         </div>
       </section>
 
-      {/* Insights Grid */}
-      <section className="bg-surface-container-low py-32">
-        <div className="max-w-7xl mx-auto px-8">
-          <AnimateOnScroll variant="fade-up">
-            <div className="flex justify-between items-end mb-16">
-              <h2 className="font-headline text-3xl font-bold tracking-tight">Latest <br /><span className="text-primary-container">Articles</span></h2>
-              <div className="flex gap-4">
-                <button className="p-3 bg-surface-container hover:bg-surface-bright transition-colors rounded">
-                  <span className="material-symbols-outlined text-on-surface">filter_list</span>
-                </button>
-              </div>
+      {/* Research Callout */}
+      <section className="max-w-7xl mx-auto px-8 mb-32">
+        <AnimateOnScroll variant="fade-up">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-3 mb-2">
+              <span className="text-primary text-xs font-bold uppercase tracking-[0.3em]">Why It Matters</span>
             </div>
-          </AnimateOnScroll>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            {/* Large Bento Card */}
-            <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-8 group">
-              <Link href="/blog" className="block bg-surface-container p-1 rounded-lg transition-all duration-500 hover:shadow-[0_0_40px_-10px_rgba(255,84,115,0.1)]">
-                <div className="relative h-96 rounded overflow-hidden mb-8">
-                  <Image
-                    src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
-                    alt="Futuristic digital circuit board glowing with warm light pulses"
-                    fill
-                    className="object-cover scale-110 group-hover:scale-100 transition-transform duration-700"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                  <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors duration-500"></div>
-                </div>
-                <div className="px-8 pb-8">
-                  <div className="flex gap-4 mb-4">
-                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 bg-surface-bright text-primary-container rounded">Strategy</span>
-                    <span className="text-[10px] font-medium text-outline uppercase tracking-widest self-center">Feb 02, 2026</span>
-                  </div>
-                  <h3 className="font-headline text-3xl font-bold mb-4 group-hover:text-primary transition-colors">The Death of Search: How LLMs are Rewriting the Visibility Playbook.</h3>
-                  <p className="text-on-surface-variant line-clamp-2 max-w-2xl">Traditional SEO is shifting. We look at why optimising for LLMs is becoming as important as ranking on Google, and how brands need to adapt.</p>
-                </div>
-              </Link>
-            </AnimateOnScroll>
-
-            {/* Small Bento Cards */}
-            <AnimateOnScroll variant="fade-up" delay={0.1} className="md:col-span-4 flex flex-col gap-6">
-              <Link href="/blog" className="bg-surface-container-high p-8 rounded-lg flex-1 group hover:bg-surface-bright transition-colors duration-300 block">
-                <span className="material-symbols-outlined text-primary text-3xl mb-6">token</span>
-                <h4 className="font-headline text-xl font-bold mb-3">Tokenomics for Creatives</h4>
-                <p className="text-on-surface-variant text-sm leading-relaxed mb-6">A deep dive into decentralised asset management for digital campaigns.</p>
-                <span className="text-xs font-bold uppercase tracking-widest text-primary group-hover:translate-x-2 inline-block transition-transform">Read Analysis</span>
-              </Link>
-              <Link href="/blog" className="bg-primary-container p-8 rounded-lg flex-1 group overflow-hidden relative block">
-                <div className="relative z-10">
-                  <h4 className="font-headline text-xl font-bold text-on-primary-container mb-3">Data-Driven Content Strategy</h4>
-                  <p className="text-on-primary-container/80 text-sm leading-relaxed mb-6">Using engagement data to create content that resonates across social platforms.</p>
-                  <div className="flex items-center gap-2 text-on-primary-container font-bold text-xs uppercase tracking-widest">
-                    <span>Download Report</span>
-                    <span className="material-symbols-outlined text-sm">download</span>
-                  </div>
-                </div>
-                <span className="material-symbols-outlined absolute -bottom-4 -right-4 text-9xl text-on-primary-container/10 rotate-12 transition-transform group-hover:rotate-0 duration-700">insights</span>
-              </Link>
-            </AnimateOnScroll>
-
-            {/* Row 2 */}
             {[
               {
-                img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
-                alt: "Retro computer hardware with dramatic warm studio lighting",
-                title: "Legacy Tech vs. The Pulse",
-                desc: "Why mid-market firms are struggling with digital transformation by holding onto outdated systems.",
-                read: "8 MIN READ"
+                icon: 'trending_up',
+                headline: 'Brands that actively use social media report up to 92% increased exposure',
+                body: 'Social media platforms provide a global stage for brands to showcase their products, services, and values — creating recognition and awareness far beyond traditional channels.',
               },
               {
-                img: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
-                alt: "Digital eye with glowing rose-tinted data and neural network overlays",
-                title: "The Ethics of Attention",
-                desc: "Balancing smart algorithms with human-first design in today's digital landscape.",
-                read: "14 MIN READ"
+                icon: 'groups',
+                headline: 'Engaged communities drive brand loyalty that advertising alone cannot buy',
+                body: 'By creating communities around their products, brands encourage like-minded individuals to connect and share experiences. Satisfied customers become brand advocates who recommend to their own networks.',
               },
               {
-                img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
-                alt: "Abstract geometric architecture with warm light trails",
-                title: "Spatial Design Paradigms",
-                desc: "How spatial computing is pushing designers to completely rethink traditional interface design.",
-                read: "6 MIN READ"
-              }
-            ].map((article, i) => (
-              <AnimateOnScroll key={i} variant="fade-up" delay={0.1 + i * 0.1} className="md:col-span-4 group">
-                <Link href="/blog" className="block bg-surface p-6 rounded-lg border border-outline-variant/10 hover:border-primary/30 transition-all">
-                  <div className="relative aspect-video rounded overflow-hidden mb-6">
-                    <Image src={article.img} alt={article.alt} fill className="object-cover grayscale hover:grayscale-0 transition-all duration-500" sizes="(max-width: 768px) 100vw, 33vw" />
-                  </div>
-                  <h4 className="font-headline text-lg font-bold mb-2">{article.title}</h4>
-                  <p className="text-on-surface-variant text-xs mb-4">{article.desc}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-outline font-medium">{article.read}</span>
-                    <span className="material-symbols-outlined text-primary text-lg">north_east</span>
-                  </div>
-                </Link>
-              </AnimateOnScroll>
+                icon: 'analytics',
+                headline: 'Data from social platforms enables smarter, faster strategic decisions',
+                body: 'Social media analytics allow brands to track engagement rates, audience demographics, and conversion rates — providing a continuous feedback loop to refine strategy and maximise ROI.',
+              },
+            ].map((item, i) => (
+              <div key={i} className="bg-surface-container-low rounded-xl p-8 border border-outline-variant/10">
+                <span className="material-symbols-outlined text-primary text-3xl mb-4 block">{item.icon}</span>
+                <h3 className="font-headline text-lg font-bold text-on-surface mb-3 leading-snug">{item.headline}</h3>
+                <p className="text-on-surface-variant text-sm leading-relaxed">{item.body}</p>
+              </div>
             ))}
           </div>
+        </AnimateOnScroll>
+      </section>
+
+      {/* Blog Posts */}
+      <section className="bg-surface-container-low py-32">
+        <div className="max-w-7xl mx-auto px-8">
+          <InsightsBlogGrid posts={posts} />
         </div>
       </section>
 

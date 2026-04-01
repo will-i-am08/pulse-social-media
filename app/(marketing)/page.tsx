@@ -167,6 +167,81 @@ export default function HomePage() {
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
       </section>
 
+      {/* Why Social Media Matters */}
+      <section className="py-32 bg-surface-container-lowest">
+        <div className="container mx-auto px-8">
+          <AnimateOnScroll variant="fade-up">
+            <div className="text-center max-w-3xl mx-auto mb-20">
+              <h2 className="text-primary text-sm font-bold uppercase tracking-[0.3em] mb-4">The Research Is Clear</h2>
+              <h3 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight mb-6">Why Social Media Is <span className="thermal-gradient-text">Non-Negotiable</span></h3>
+              <p className="text-on-surface-variant text-lg leading-relaxed">
+                Social media is the modern-day linchpin in brand building. Its ability to engage, foster loyalty, and enhance authenticity makes it not merely advantageous — but imperative for contemporary brand success.
+              </p>
+            </div>
+          </AnimateOnScroll>
+
+          {/* Research Stats */}
+          <AnimateOnScroll variant="scale-up">
+            <div className="bg-surface p-10 rounded-2xl border border-outline-variant/10 mb-16">
+              <p className="text-center text-xs uppercase tracking-[0.3em] text-on-surface-variant font-bold mb-8">Marketers who reported measurable results from social media</p>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
+                {[
+                  { stat: '92%', label: 'Increased Brand Exposure' },
+                  { stat: '80%', label: 'Increased Website Traffic' },
+                  { stat: '72%', label: 'Developed Loyal Fans' },
+                  { stat: '66%', label: 'Generated New Leads' },
+                  { stat: '61%', label: 'Improved Search Rankings' },
+                ].map((item, i) => (
+                  <div key={i}>
+                    <div className="text-4xl font-black text-primary mb-2">{item.stat}</div>
+                    <div className="text-xs uppercase tracking-[0.15em] text-on-surface-variant font-bold leading-snug">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </AnimateOnScroll>
+
+          {/* Reasons Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-2 bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
+              <span className="material-symbols-outlined text-primary text-4xl mb-6">visibility</span>
+              <div>
+                <h4 className="text-2xl font-bold text-on-surface mb-3">Brand Visibility at Scale</h4>
+                <p className="text-on-surface-variant leading-relaxed">Social media platforms provide a global stage for brands to showcase their products, services, and values. Creating and sharing content consistently reaches a vast, diverse audience — instrumental in building recognition and awareness far beyond traditional advertising channels.</p>
+              </div>
+            </AnimateOnScroll>
+            <AnimateOnScroll variant="fade-up" delay={0.1} className="bg-primary-container rounded-xl p-10 flex flex-col justify-between">
+              <span className="material-symbols-outlined text-on-primary-container text-4xl mb-6">forum</span>
+              <div>
+                <h4 className="text-2xl font-bold text-on-primary-container mb-3">Direct Engagement</h4>
+                <p className="text-on-primary-container/80 leading-relaxed text-sm">Social media enables brands to respond to comments, answer questions, and engage in real-time. This two-way interaction humanizes the brand and fosters genuine connection and trust with customers.</p>
+              </div>
+            </AnimateOnScroll>
+            <AnimateOnScroll variant="fade-up" delay={0.15} className="bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
+              <span className="material-symbols-outlined text-primary text-4xl mb-6">group</span>
+              <div>
+                <h4 className="text-2xl font-bold text-on-surface mb-3">Community Building</h4>
+                <p className="text-on-surface-variant leading-relaxed text-sm">Brands can create communities around their products and services, encouraging like-minded individuals to connect and share experiences. This sense of community is one of the most powerful drivers of long-term brand loyalty.</p>
+              </div>
+            </AnimateOnScroll>
+            <AnimateOnScroll variant="fade-up" delay={0.2} className="bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
+              <span className="material-symbols-outlined text-primary text-4xl mb-6">target</span>
+              <div>
+                <h4 className="text-2xl font-bold text-on-surface mb-3">Precise Targeting</h4>
+                <p className="text-on-surface-variant leading-relaxed text-sm">Social platforms collect rich user data, enabling brands to create personalized content and advertisements that cater to specific demographics, interests, and behaviours — ensuring every dollar of spend reaches the right person.</p>
+              </div>
+            </AnimateOnScroll>
+            <AnimateOnScroll variant="fade-up" delay={0.25} className="md:col-span-2 bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
+              <span className="material-symbols-outlined text-primary text-4xl mb-6">monitoring</span>
+              <div>
+                <h4 className="text-2xl font-bold text-on-surface mb-3">Data-Driven Decisions</h4>
+                <p className="text-on-surface-variant leading-relaxed">Social media platforms provide robust analytics — tracking engagement rates, audience demographics, and conversion rates. Brands that use this data to continuously refine their strategy gain a compounding competitive advantage over those still guessing.</p>
+              </div>
+            </AnimateOnScroll>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="py-32 bg-surface">
         <div className="container mx-auto px-8">
