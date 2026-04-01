@@ -175,6 +175,7 @@ export default function ViewProposalPage() {
           <h1 className="text-2xl font-bold text-white mb-2">{proposal.title}</h1>
         )}
         <div className="flex flex-wrap gap-4 text-xs text-slate-500 mb-8 border-b border-[rgba(255,255,255,0.06)] pb-6">
+          <span>From: <span className="text-white">Pulse Social Media</span></span>
           {proposal.client_name && <span>Client: <span className="text-white">{proposal.client_name}</span></span>}
           <span className="capitalize">{TYPE_LABELS[proposal.type as keyof typeof TYPE_LABELS]}</span>
           {proposal.start_date && <span>Start: {new Date(proposal.start_date).toLocaleDateString('en-AU')}</span>}
