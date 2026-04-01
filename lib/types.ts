@@ -119,7 +119,7 @@ export interface WorkspaceBrand {
   blogPath: string
   // Brand voice & content
   brandVoice: string
-  postingInstructions: string
+  postingInstructions?: string
   tone: 'professional' | 'casual' | 'playful' | 'luxury' | 'inspirational' | 'friendly'
   outputLength: 'short' | 'medium' | 'long'
   focusAreas: string[]
