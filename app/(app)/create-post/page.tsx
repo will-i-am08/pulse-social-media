@@ -25,6 +25,13 @@ import CaptionTemplates from '@/components/app/CaptionTemplates'
 
 const PLATFORMS = ['instagram', 'facebook', 'linkedin']
 
+const ASPECT_RATIOS = [
+  { label: 'Square (1:1)',    value: '1/1'  },
+  { label: 'Portrait (4:5)', value: '4/5'  },
+  { label: 'Story (9:16)',   value: '9/16' },
+  { label: 'Land. (16:9)',   value: '16/9' },
+]
+
 export default function CreatePostPage() {
   const router = useRouter()
   const { brands, posts, savePosts, settings, photos } = useWorkspace()
@@ -51,6 +58,8 @@ export default function CreatePostPage() {
   const [libraryTarget, setLibraryTarget] = useState<'single' | number>('single')
   const [librarySearch, setLibrarySearch] = useState('')
   const [showTemplates, setShowTemplates] = useState(false)
+  const [aspectRatio, setAspectRatio] = useState('')
+  const [bulkAspectRatio, setBulkAspectRatio] = useState('')
 
   const brand = brands.find(b => b.id === brandId)
 
@@ -68,6 +77,17 @@ export default function CreatePostPage() {
       })
       .catch(() => {})
   }, [activeBrandId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-set aspect ratio from brand default
+  useEffect(() => {
+    const b = brands.find(x => x.id === brandId)
+    setAspectRatio(b?.default_aspect_ratio || '')
+  }, [brandId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const b = brands.find(x => x.id === bulkBrandId)
+    setBulkAspectRatio(b?.default_aspect_ratio || '')
+  }, [bulkBrandId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function togglePlatform(p: string) {
     setPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
@@ -131,6 +151,7 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
       created_date: new Date().toISOString(),
       client_visible: false,
       client_approved: false,
+      aspect_ratio: aspectRatio || null,
     }
     savePosts([newPost, ...posts])
     toast.success(status === 'draft' ? 'Draft saved!' : 'Post scheduled!')
@@ -210,6 +231,7 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       batch_label: batchLabel,
       client_visible: false,
       client_approved: false,
+      aspect_ratio: bulkAspectRatio || null,
     }))
     savePosts([...newPosts, ...posts])
     toast.success(`${toSave.length} draft${toSave.length > 1 ? 's' : ''} saved!`)
@@ -335,6 +357,17 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
               </div>
             </div>
           </div>
+          <div className="mt-3">
+            <label className="lbl">Aspect Ratio (all rows)</label>
+            <div className="flex gap-2 flex-wrap">
+              {ASPECT_RATIOS.map(r => (
+                <button key={r.value} onClick={() => setBulkAspectRatio(bulkAspectRatio === r.value ? '' : r.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs transition-colors border ${bulkAspectRatio === r.value ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
           {activeGoals.length > 0 && (
             <div className="flex items-center gap-3 mt-3">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -353,8 +386,8 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
                   {row.image ? (
-                    <div className="relative w-20 h-20">
-                      <img src={row.image} alt="" className="w-20 h-20 rounded-lg object-cover" />
+                    <div className="relative w-20" style={{ aspectRatio: bulkAspectRatio || '1/1' }}>
+                      <img src={row.image} alt="" className="w-full h-full rounded-lg object-cover" />
                       <button onClick={() => { const r = [...bulkRows]; r[i] = { ...r[i], image: '' }; setBulkRows(r) }}
                         className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
                         <XMarkIcon className="w-3 h-3" />
@@ -539,6 +572,17 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
             </div>
           </div>
           <div>
+            <label className="lbl">Aspect Ratio</label>
+            <div className="flex gap-2 flex-wrap">
+              {ASPECT_RATIOS.map(r => (
+                <button key={r.value} onClick={() => setAspectRatio(aspectRatio === r.value ? '' : r.value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs transition-colors border ${aspectRatio === r.value ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
             <label className="lbl">Caption</label>
             <textarea className="ta" rows={5} placeholder="Write or generate a caption..." value={caption} onChange={e => setCaption(e.target.value)} />
           </div>
@@ -608,7 +652,9 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
                 </div>
               </div>
               {images.length > 0 ? (
-                <img src={images[0]} alt="" className="w-full max-h-56 object-cover" />
+                <div style={{ aspectRatio: aspectRatio || 'auto', maxHeight: aspectRatio ? undefined : '14rem', overflow: 'hidden' }}>
+                  <img src={images[0]} alt="" className="w-full h-full object-cover" />
+                </div>
               ) : (
                 <div className="h-32 bg-[#2b2a29] flex items-center justify-center text-[#5a4042] text-sm">No image</div>
               )}

@@ -35,7 +35,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 const EMPTY_BRAND: Partial<WorkspaceBrand> = {
   name: '', tagline: '', businessName: '', industry: '', location: '', website: '',
   primaryColor: '#8b5cf6', logoUrl: '', authorName: '', blogPath: '/blog',
-  brandVoice: '', postingInstructions: '', tone: 'professional', outputLength: 'medium', focusAreas: [],
+  brandVoice: '', postingInstructions: '', defaultAspectRatio: '', tone: 'professional', outputLength: 'medium', focusAreas: [],
   includeHashtags: true, includeEmojis: false, socialHandles: {},
   platforms: [], bufferChannels: [], mission: '', values: '',
   targetAudience: '', uniqueValueProp: '', competitors: '', keyMessages: [],
@@ -184,24 +184,35 @@ function BrandForm({
                   {LENGTHS.map(l => <option key={l} value={l} className="capitalize">{l}</option>)}
                 </select>
               </div>
-              <div className="flex flex-col justify-end gap-3 pb-1">
-                <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <span className="text-sm text-[#e6e1e1]">Hashtags</span>
-                  <div className="relative">
-                    <input type="checkbox" className="sr-only peer" checked={form.includeHashtags ?? true} onChange={e => set('includeHashtags', e.target.checked)} />
-                    <div className="w-10 h-5 rounded-full bg-[#2a2a2a] peer-checked:bg-[#8b5cf6] transition-colors" />
-                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow peer-checked:translate-x-5 transition-transform" />
-                  </div>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer select-none">
-                  <span className="text-sm text-[#e6e1e1]">Emojis</span>
-                  <div className="relative">
-                    <input type="checkbox" className="sr-only peer" checked={form.includeEmojis ?? false} onChange={e => set('includeEmojis', e.target.checked)} />
-                    <div className="w-10 h-5 rounded-full bg-[#2a2a2a] peer-checked:bg-[#8b5cf6] transition-colors" />
-                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow peer-checked:translate-x-5 transition-transform" />
-                  </div>
-                </label>
-              </div>
+            </div>
+            <div>
+              <label className="lbl">Default Post Aspect Ratio</label>
+              <select className="sel" value={form.defaultAspectRatio || ''} onChange={e => set('defaultAspectRatio', e.target.value)}>
+                <option value="">No default</option>
+                <option value="1/1">Square (1:1) — Instagram feed</option>
+                <option value="4/5">Portrait (4:5) — Instagram portrait</option>
+                <option value="9/16">Story (9:16) — Instagram/Facebook Stories</option>
+                <option value="16/9">Landscape (16:9) — Facebook/LinkedIn</option>
+              </select>
+              <p className="text-xs text-[#6b7280] mt-1">Auto-selected when creating posts for this brand.</p>
+            </div>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <span className="text-sm text-[#e6e1e1]">Hashtags</span>
+                <div className="relative">
+                  <input type="checkbox" className="sr-only peer" checked={form.includeHashtags ?? true} onChange={e => set('includeHashtags', e.target.checked)} />
+                  <div className="w-10 h-5 rounded-full bg-[#2a2a2a] peer-checked:bg-[#8b5cf6] transition-colors" />
+                  <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow peer-checked:translate-x-5 transition-transform" />
+                </div>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <span className="text-sm text-[#e6e1e1]">Emojis</span>
+                <div className="relative">
+                  <input type="checkbox" className="sr-only peer" checked={form.includeEmojis ?? false} onChange={e => set('includeEmojis', e.target.checked)} />
+                  <div className="w-10 h-5 rounded-full bg-[#2a2a2a] peer-checked:bg-[#8b5cf6] transition-colors" />
+                  <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow peer-checked:translate-x-5 transition-transform" />
+                </div>
+              </label>
             </div>
           </div>
         )}

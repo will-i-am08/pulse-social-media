@@ -40,6 +40,7 @@ export interface Brand {
   trainingStatus?: 'idle' | 'training' | 'succeeded' | 'failed'
   trainingId?: string
   triggerWord?: string
+  default_aspect_ratio?: string
   created_date: string
 }
 
@@ -63,6 +64,7 @@ export interface Post {
   rejection_reason?: string
   buffer_sent?: boolean
   buffer_sent_at?: string
+  aspect_ratio?: string | null
 }
 
 export interface Photo {
@@ -151,6 +153,7 @@ export interface WorkspaceBrand {
   trainingStatus: 'idle' | 'training' | 'succeeded' | 'failed'
   trainingId: string
   triggerWord: string
+  defaultAspectRatio?: string
   createdAt: string
   updatedAt: string
 }

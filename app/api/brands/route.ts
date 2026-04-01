@@ -39,6 +39,7 @@ function rowToBrand(row: Record<string, unknown>): WorkspaceBrand {
     trainingStatus: ((row.training_status as string) || 'idle') as WorkspaceBrand['trainingStatus'],
     trainingId: (row.training_id as string) || '',
     triggerWord: (row.trigger_word as string) || '',
+    defaultAspectRatio: (row.default_aspect_ratio as string) || '',
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
     training_status: body.trainingStatus || 'idle',
     training_id: body.trainingId || '',
     trigger_word: body.triggerWord || '',
+    default_aspect_ratio: body.defaultAspectRatio || '',
   }
 
   const { data, error } = await supabase
@@ -134,7 +136,7 @@ export async function PUT(req: NextRequest) {
     mission: 'mission', values: 'values', targetAudience: 'target_audience',
     uniqueValueProp: 'unique_value_prop', competitors: 'competitors', keyMessages: 'key_messages',
     replicateModelVersion: 'replicate_model_version', trainingStatus: 'training_status',
-    trainingId: 'training_id', triggerWord: 'trigger_word',
+    trainingId: 'training_id', triggerWord: 'trigger_word', defaultAspectRatio: 'default_aspect_ratio',
   }
   for (const [jsKey, dbKey] of Object.entries(fieldMap)) {
     if (rest[jsKey] !== undefined) update[dbKey] = rest[jsKey]
