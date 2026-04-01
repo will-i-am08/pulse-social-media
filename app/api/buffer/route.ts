@@ -84,11 +84,9 @@ export async function POST(req: NextRequest) {
       const input: Record<string, unknown> = {
         channelId,
         text,
-        schedulingType: 'automatic',
-        mode: 'addToQueue',
       }
       if (media?.photo) {
-        input.assets = { images: [{ url: media.photo }] }
+        input.media = { photo: media.photo }
       }
 
       try {
@@ -106,13 +104,14 @@ export async function POST(req: NextRequest) {
         `, { input })
 
         if (data.errors) {
-          return { profileId: channelId, success: false, error: data.errors[0]?.message || 'Unknown error' }
+          const errMsg = data.errors.map((e: { message: string }) => e.message).join(', ')
+          return { profileId: channelId, success: false, error: errMsg }
         }
         const result = data.data?.createPost
         if (result?.post) {
           return { profileId: channelId, success: true }
         }
-        return { profileId: channelId, success: false, error: result?.message || 'Post creation failed' }
+        return { profileId: channelId, success: false, error: result?.message || JSON.stringify(result) || 'Post creation failed' }
       } catch (e: unknown) {
         return { profileId: channelId, success: false, error: e instanceof Error ? e.message : 'Unknown error' }
       }
