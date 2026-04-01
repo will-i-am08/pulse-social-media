@@ -267,6 +267,7 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
     let sent = 0
     let lastError = ''
     for (const post of newPosts) {
+      if (sent + (lastError ? 1 : 0) > 0) await new Promise(r => setTimeout(r, 1500))
       try {
         const res = await fetch('/api/buffer', {
           method: 'POST',

@@ -141,6 +141,7 @@ export default function PostsPage() {
     let lastError = ''
 
     for (const post of approved) {
+      if (sent + failed > 0) await new Promise(r => setTimeout(r, 1500))
       try {
         const res = await fetch('/api/buffer', {
           method: 'POST',
