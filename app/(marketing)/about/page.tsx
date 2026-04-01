@@ -1,35 +1,11 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
-import StaggerChildren from '@/components/marketing/StaggerChildren'
 
 export const metadata: Metadata = {
   title: 'About | Pulse Digital Agency',
   description: 'Meet the team behind Pulse Digital — a creative agency combining human expertise with AI-powered tools to grow brands.',
 }
-
-const TEAM = [
-  {
-    name: 'Marcus Thorne',
-    role: 'Founder & Creative Lead',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    name: 'Elena Vossen',
-    role: 'Design Architect',
-    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    name: 'Julian Chen',
-    role: 'Technical Director',
-    img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    name: 'Sarah Jenkins',
-    role: 'Strategy Head',
-    img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=400&q=80',
-  },
-]
 
 export default function AboutPage() {
   return (
@@ -178,33 +154,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team */}
-      <section className="max-w-7xl mx-auto px-8">
-        <AnimateOnScroll variant="fade-up">
-          <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-4">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-on-surface">Our Team</h2>
-            <p className="text-on-surface-variant max-w-sm text-right font-medium">The people behind the work.</p>
-          </div>
-        </AnimateOnScroll>
-        <StaggerChildren staggerDelay={0.15} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {TEAM.map(({ name, role, img }) => (
-            <div key={name} className="group">
-              <div className="aspect-[3/4] rounded-lg overflow-hidden bg-surface-container mb-6 relative">
-                <Image
-                  src={img}
-                  alt={name}
-                  fill
-                  className="object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                  sizes="(max-width: 768px) 100vw, 42vw"
-                />
-                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </div>
-              <h3 className="text-xl font-bold text-on-surface">{name}</h3>
-              <p className="text-primary text-sm font-bold uppercase tracking-widest">{role}</p>
-            </div>
-          ))}
-        </StaggerChildren>
-      </section>
     </main>
   )
 }
