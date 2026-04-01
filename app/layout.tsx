@@ -11,7 +11,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Pulse Digital Agency',
+  title: 'Pulse Social Media',
   description: 'The Emissary of Heat — AI-driven social architectures and high-thermal data strategies.',
 }
 
