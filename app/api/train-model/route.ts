@@ -121,8 +121,9 @@ export async function POST(request: NextRequest) {
       'Authorization': `Token ${apiKey}`,
       'Content-Type': 'application/zip',
       'Content-Disposition': 'attachment; filename="training_images.zip"',
+      'Content-Length': zip.length.toString(),
     },
-    body: zip as unknown as BodyInit,
+    body: new Uint8Array(zip),
   })
   if (!fileRes.ok) {
     const err = await fileRes.json()
