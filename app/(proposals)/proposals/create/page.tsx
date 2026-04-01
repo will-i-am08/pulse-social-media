@@ -255,7 +255,7 @@ export default function CreateProposalPage() {
               onClick={generate}
               disabled={generating || !clientName.trim()}
               className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white transition-all"
-              style={{ background: 'linear-gradient(135deg, #10b981 0%, #6ee7b7 100%)', opacity: generating ? 0.7 : 1 }}
+              style={{ background: 'linear-gradient(135deg, #10b981 0%, #6ee7b7 100%)', opacity: (generating || !clientName.trim()) ? 0.4 : 1, cursor: !clientName.trim() ? 'not-allowed' : 'pointer' }}
             >
               {generating ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <SparklesIcon className="w-4 h-4" />}
               {generating ? 'Generating…' : 'Generate with AI'}
