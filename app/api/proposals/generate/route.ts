@@ -62,7 +62,7 @@ ${customInstructions ? `Additional Instructions: ${customInstructions}` : ''}
 Generate exactly 6 sections (keep content concise — 2-4 sentences per section):
 1. heading: "Service Agreement"
 2. text: "Scope of Services" — what is being delivered
-3. services: "Deliverables & Pricing" — 2-4 line items with quantities and pricing
+3. services: "Monthly Fees" — exactly 1 line item (the total monthly retainer, quantity 1)
 4. text: "Terms & Conditions" — duration, payment, termination, confidentiality
 5. terms: "General Terms" — IP, liability, dispute resolution (2-3 sentences each)
 6. signature: "Signatures" — signature block`
@@ -77,13 +77,12 @@ ${startDate ? `Proposed Start: ${startDate}` : ''}
 ${endDate ? `Proposed End: ${endDate}` : ''}
 ${customInstructions ? `Additional Instructions: ${customInstructions}` : ''}
 
-Generate exactly 6 sections (keep content concise — 2-4 sentences per section):
+Generate exactly 5 sections (keep content concise — 2-4 sentences per section):
 1. heading: "Proposal"
 2. text: "Introduction" — warm intro addressing the client and their needs
 3. text: "Scope of Work" — what will be delivered
-4. services: "Services & Monthly Fees" — 2-4 line items with quantities and pricing
-5. terms: "Terms & Next Steps" — payment terms, timeline, how to proceed
-6. signature: "Agreement" — signature block`
+4. services: "Monthly Fees" — exactly 1 line item (the total monthly fee, quantity 1)
+5. terms: "Terms & Next Steps" — payment terms, timeline, how to proceed`
   }
 
   try {
