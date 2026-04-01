@@ -418,6 +418,41 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
             </div>
           ) : null
         })()}
+
+      {/* Photo Library Picker Modal */}
+      {showLibrary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setShowLibrary(false)}>
+          <div className="card p-5 max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-[#e6e1e1] flex items-center gap-2">
+                <PhotoIcon className="w-5 h-5 text-[#ff5473]" /> Photo Library
+              </h3>
+              <button onClick={() => setShowLibrary(false)} className="text-[#5a4042] hover:text-[#e6e1e1]">
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <input className="inp mb-3" placeholder="Search by name or tag..." value={librarySearch} onChange={e => setLibrarySearch(e.target.value)} />
+            <div className="flex-1 overflow-y-auto">
+              {filteredLibrary.length === 0 ? (
+                <p className="text-center text-[#5a4042] py-10">No photos found</p>
+              ) : (
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                  {filteredLibrary.map(photo => (
+                    <button key={photo.id} onClick={() => pickFromLibrary(photo.url)}
+                      className="group relative rounded-lg overflow-hidden border border-transparent hover:border-[#ff5473] transition-colors">
+                      <img src={photo.url} alt={photo.name} className="w-full h-20 object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <PlusIcon className="w-6 h-6 text-white" />
+                      </div>
+                      <p className="text-[10px] text-[#e1bec0] truncate px-1 py-0.5">{photo.name}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     )
   }
