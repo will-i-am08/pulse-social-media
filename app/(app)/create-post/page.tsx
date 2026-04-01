@@ -102,6 +102,7 @@ Brand guidelines: ${brand.brand_guidelines || 'N/A'}
 Platforms: ${platforms.join(', ') || 'instagram'}
 ${hashtags}
 ${emojis}${goalsSection}
+${brand.posting_instructions ? 'Custom brand instructions (MUST follow): ' + brand.posting_instructions : ''}
 ${customPrompt ? 'Additional instructions: ' + customPrompt : ''}
 ${images.length > 0 ? 'The caption MUST be specifically about the content shown in the attached image.' : 'Write an engaging caption that reflects the brand voice.'}`
 
@@ -177,6 +178,7 @@ Guidelines: ${bb.brand_guidelines || 'N/A'}
 Platforms: ${bulkPlatforms.join(', ') || 'instagram'}
 ${bb.include_hashtags !== false ? 'Include hashtags.' : 'No hashtags.'}
 ${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}${bulkGoals}
+${bb.posting_instructions ? 'Custom brand instructions (MUST follow): ' + bb.posting_instructions : ''}
 ${row.prompt ? 'Additional instructions: ' + row.prompt : ''}
 ${row.image ? 'The caption MUST be specifically about the content shown in the attached image.' : ''}`
       const content = row.image ? buildImageContent(row.image, textPrompt) : textPrompt

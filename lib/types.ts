@@ -17,6 +17,7 @@ export interface Brand {
   tone: 'professional' | 'casual' | 'playful' | 'luxury' | 'inspirational' | 'friendly'
   output_length: 'short' | 'medium' | 'long'
   brand_guidelines?: string
+  posting_instructions?: string
   include_hashtags: boolean
   include_emojis: boolean
   social_handles?: {
@@ -118,6 +119,7 @@ export interface WorkspaceBrand {
   blogPath: string
   // Brand voice & content
   brandVoice: string
+  postingInstructions: string
   tone: 'professional' | 'casual' | 'playful' | 'luxury' | 'inspirational' | 'friendly'
   outputLength: 'short' | 'medium' | 'long'
   focusAreas: string[]

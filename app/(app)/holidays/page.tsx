@@ -32,7 +32,8 @@ export default function HolidaysPage() {
 Tone: ${brand.tone || 'professional'}
 Guidelines: ${brand.brand_guidelines || 'N/A'}
 ${brand.include_hashtags !== false ? 'Include relevant holiday hashtags.' : 'No hashtags.'}
-${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emojis.'}`
+${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emojis.'}
+${brand.posting_instructions ? 'Custom brand instructions (MUST follow): ' + brand.posting_instructions : ''}`
     const result = await callClaude(sys, prompt, 400)
     if (result) {
       setCaptions(prev => ({ ...prev, [holiday.name]: result }))
@@ -51,7 +52,8 @@ ${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emoji
 Tone: ${brand.tone || 'professional'}
 Guidelines: ${brand.brand_guidelines || 'N/A'}
 ${brand.include_hashtags !== false ? 'Include relevant holiday hashtags.' : 'No hashtags.'}
-${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emojis.'}`
+${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emojis.'}
+${brand.posting_instructions ? 'Custom brand instructions (MUST follow): ' + brand.posting_instructions : ''}`
       const result = await callClaude(sys, prompt, 400)
       if (result) setCaptions(prev => ({ ...prev, [holiday.name]: result }))
     }

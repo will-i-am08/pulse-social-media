@@ -35,7 +35,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 const EMPTY_BRAND: Partial<WorkspaceBrand> = {
   name: '', tagline: '', businessName: '', industry: '', location: '', website: '',
   primaryColor: '#8b5cf6', logoUrl: '', authorName: '', blogPath: '/blog',
-  brandVoice: '', tone: 'professional', outputLength: 'medium', focusAreas: [],
+  brandVoice: '', postingInstructions: '', tone: 'professional', outputLength: 'medium', focusAreas: [],
   includeHashtags: true, includeEmojis: false, socialHandles: {},
   platforms: [], bufferChannels: [], mission: '', values: '',
   targetAudience: '', uniqueValueProp: '', competitors: '', keyMessages: [],
@@ -211,8 +211,14 @@ function BrandForm({
           <div className="space-y-4">
             <div>
               <label className="lbl">Brand Voice Guidelines</label>
-              <textarea className="ta" rows={6} value={form.brandVoice || ''} onChange={e => set('brandVoice', e.target.value)}
+              <textarea className="ta" rows={4} value={form.brandVoice || ''} onChange={e => set('brandVoice', e.target.value)}
                 placeholder="Describe your brand's writing style, personality, and communication approach..." />
+            </div>
+            <div>
+              <label className="lbl">Custom Posting Instructions</label>
+              <textarea className="ta" rows={4} value={form.postingInstructions || ''} onChange={e => set('postingInstructions', e.target.value)}
+                placeholder="e.g. Always end with a call to action. Mention our website. Never use competitor names. Use formal English only." />
+              <p className="text-xs text-[#6b7280] mt-1">These instructions are included in every AI-generated caption for this brand.</p>
             </div>
             <div>
               <label className="lbl">Key Messages</label>
