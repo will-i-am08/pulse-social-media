@@ -130,9 +130,16 @@ export async function POST(request: NextRequest) {
   }
   const fileData = await fileRes.json()
   const zipUrl = fileData.urls?.get
+  if (!zipUrl) {
+    return NextResponse.json({ error: `File upload succeeded but no URL returned. Response: ${JSON.stringify(fileData)}` }, { status: 500 })
+  }
 
   // Get latest flux-dev-lora-trainer version
   const trainerRes = await fetch(`${REPLICATE_API}/models/ostris/flux-dev-lora-trainer`, { headers })
+  if (!trainerRes.ok) {
+    const err = await trainerRes.json().catch(() => ({}))
+    return NextResponse.json({ error: err.detail || 'Failed to fetch trainer model' }, { status: 500 })
+  }
   const trainer = await trainerRes.json()
   const trainerVersion = trainer.latest_version?.id
   if (!trainerVersion) return NextResponse.json({ error: 'Could not fetch trainer version' }, { status: 500 })
@@ -151,13 +158,12 @@ export async function POST(request: NextRequest) {
     }),
   })
 
-  // Start training
-  const trainRes = await fetch(`${REPLICATE_API}/trainings`, {
+  // Start training via the trainer model's endpoint
+  const trainRes = await fetch(`${REPLICATE_API}/models/ostris/flux-dev-lora-trainer/versions/${trainerVersion}/trainings`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
       destination: `${username}/${modelName}`,
-      version: `ostris/flux-dev-lora-trainer:${trainerVersion}`,
       input: {
         input_images: zipUrl,
         trigger_word: triggerWord,
@@ -167,7 +173,7 @@ export async function POST(request: NextRequest) {
   })
   const training = await trainRes.json()
   if (!trainRes.ok) {
-    return NextResponse.json({ error: training.detail || 'Failed to start training' }, { status: 500 })
+    return NextResponse.json({ error: training.detail || JSON.stringify(training) || 'Failed to start training' }, { status: 500 })
   }
 
   return NextResponse.json({ trainingId: training.id })
