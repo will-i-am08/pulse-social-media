@@ -82,9 +82,8 @@ export async function POST(req: NextRequest) {
   const results = await Promise.all(
     profileIds.map(async (channelId: string) => {
       const input: Record<string, unknown> = {
-        channelId,
+        channels: [{ id: channelId }],
         text,
-        schedulingType: 'automatic',
       }
       if (media?.photo) {
         input.media = { photo: media.photo }
