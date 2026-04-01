@@ -138,6 +138,7 @@ export default function PostsPage() {
     setBulkSending(true)
     let sent = 0
     let failed = 0
+    let lastError = ''
 
     for (const post of approved) {
       try {
@@ -151,20 +152,23 @@ export default function PostsPage() {
           }),
         })
         const data = await res.json()
-        if (data.success) {
+        const anySuccess = data.success || data.results?.some((r: { success: boolean }) => r.success)
+        if (anySuccess) {
           sent++
           changeStatus(post.id, 'published')
         } else {
           failed++
+          lastError = data.results?.find((r: { success: boolean; error?: string }) => r.error)?.error || data.error || 'Unknown error'
         }
-      } catch {
+      } catch (e: unknown) {
         failed++
+        lastError = e instanceof Error ? e.message : 'Request failed'
       }
     }
 
     setBulkSending(false)
     if (sent > 0) toast.success(`${sent} post${sent !== 1 ? 's' : ''} added to Buffer queue!`)
-    if (failed > 0) toast.error(`${failed} post${failed !== 1 ? 's' : ''} failed to send`)
+    if (failed > 0) toast.error(`${failed} post${failed !== 1 ? 's' : ''} failed: ${lastError}`)
   }
 
   async function scheduleDrafts() {
