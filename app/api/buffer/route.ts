@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       const input: Record<string, unknown> = {
         channelId,
         text,
+        schedulingType: 'AUTOMATIC',
       }
       if (media?.photo) {
         input.media = { photo: media.photo }
