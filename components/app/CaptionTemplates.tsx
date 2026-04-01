@@ -8,6 +8,7 @@ import {
   ClipboardDocumentIcon,
   XMarkIcon,
 } from '@heroicons/react/16/solid'
+import { createClient } from '@/lib/supabase/client'
 
 interface Template {
   id: string
@@ -16,18 +17,6 @@ interface Template {
   caption: string
   brandId: string
   createdAt: string
-}
-
-const STORAGE_KEY = 'pulse_caption_templates'
-
-function loadTemplates(): Template[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-  } catch { return [] }
-}
-
-function saveTemplates(templates: Template[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(templates))
 }
 
 interface Props {
@@ -44,14 +33,27 @@ export default function CaptionTemplates({ onUseCaption, onUsePrompt, currentCap
   const [templates, setTemplates] = useState<Template[]>([])
   const [saveName, setSaveName] = useState('')
   const [showSave, setShowSave] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    setTemplates(loadTemplates())
+    if (!isOpen) return
+    const sb = createClient()
+    sb.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      setUserId(user.id)
+      sb.from('caption_templates')
+        .select('data')
+        .eq('user_id', user.id)
+        .then(({ data }) => {
+          if (data) setTemplates(data.map((r: { data: Template }) => r.data))
+        })
+    })
   }, [isOpen])
 
-  function saveAsTemplate() {
+  async function saveAsTemplate() {
     if (!saveName.trim()) { toast.error('Enter a name for this template'); return }
     if (!currentCaption && !currentPrompt) { toast.error('Nothing to save — generate a caption or enter a prompt first'); return }
+    if (!userId) { toast.error('Not logged in'); return }
     const newTemplate: Template = {
       id: crypto.randomUUID(),
       name: saveName.trim(),
@@ -60,18 +62,20 @@ export default function CaptionTemplates({ onUseCaption, onUsePrompt, currentCap
       brandId: brandId || '',
       createdAt: new Date().toISOString(),
     }
-    const updated = [newTemplate, ...templates]
-    saveTemplates(updated)
-    setTemplates(updated)
+    const sb = createClient()
+    const { error } = await sb.from('caption_templates').insert({ id: newTemplate.id, user_id: userId, data: newTemplate })
+    if (error) { toast.error('Failed to save template'); return }
+    setTemplates(prev => [newTemplate, ...prev])
     setSaveName('')
     setShowSave(false)
     toast.success('Template saved!')
   }
 
-  function deleteTemplate(id: string) {
-    const updated = templates.filter(t => t.id !== id)
-    saveTemplates(updated)
-    setTemplates(updated)
+  async function deleteTemplate(id: string) {
+    const sb = createClient()
+    const { error } = await sb.from('caption_templates').delete().eq('id', id)
+    if (error) { toast.error('Failed to delete template'); return }
+    setTemplates(prev => prev.filter(t => t.id !== id))
     toast.success('Template deleted')
   }
 

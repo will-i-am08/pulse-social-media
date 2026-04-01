@@ -2,7 +2,19 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDecryptedBufferToken } from '@/lib/account/getAccountSettings'
 
-const BUFFER_API = 'https://api.bufferapp.com/1'
+const BUFFER_API = 'https://api.buffer.com'
+
+async function gql(token: string, query: string, variables?: Record<string, unknown>) {
+  const res = await fetch(BUFFER_API, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ query, variables }),
+  })
+  return res.json()
+}
 
 export async function GET() {
   const supabase = await createClient()
@@ -13,15 +25,44 @@ export async function GET() {
   if (!token) return NextResponse.json({ error: 'No Buffer token configured. Add it in Account Settings.' }, { status: 400 })
 
   try {
-    const res = await fetch(`${BUFFER_API}/profiles.json?access_token=${token}`)
-    if (!res.ok) {
-      const err = await res.text()
-      return NextResponse.json({ error: `Buffer API error: ${err}` }, { status: res.status })
+    // Step 1: get organization ID
+    const orgRes = await gql(token, `query { account { organizations { id } } }`)
+    if (orgRes.errors) {
+      return NextResponse.json({ error: orgRes.errors[0]?.message || 'Failed to fetch Buffer account' }, { status: 400 })
     }
-    const profiles = await res.json()
+    const orgId = orgRes.data?.account?.organizations?.[0]?.id
+    if (!orgId) return NextResponse.json({ error: 'No Buffer organization found' }, { status: 400 })
+
+    // Step 2: get channels
+    const channelsRes = await gql(token, `
+      query GetChannels($input: ChannelsInput!) {
+        channels(input: $input) {
+          id
+          service
+          name
+          displayName
+          avatar
+        }
+      }
+    `, { input: { organizationId: orgId } })
+
+    if (channelsRes.errors) {
+      return NextResponse.json({ error: channelsRes.errors[0]?.message || 'Failed to fetch Buffer channels' }, { status: 400 })
+    }
+
+    const channels = channelsRes.data?.channels || []
+    const profiles = channels.map((c: { id: string; service: string; name: string; displayName?: string; avatar: string }) => ({
+      id: c.id,
+      service: c.service,
+      formatted_service: c.service.charAt(0).toUpperCase() + c.service.slice(1),
+      formatted_username: c.displayName || c.name,
+      avatar_https: c.avatar,
+    }))
+
     return NextResponse.json({ profiles })
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 })
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Unknown error'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
 
@@ -35,36 +76,49 @@ export async function POST(req: NextRequest) {
 
   const { profileIds, text, media } = await req.json()
 
-  if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer profile' }, { status: 400 })
+  if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer channel' }, { status: 400 })
   if (!text?.trim()) return NextResponse.json({ error: 'Post text is required' }, { status: 400 })
 
   const results = await Promise.all(
-    profileIds.map(async (profileId: string) => {
-      const params = new URLSearchParams()
-      params.append('access_token', token)
-      params.append('profile_ids[]', profileId)
-      params.append('text', text)
-      if (media?.link) params.append('media[link]', media.link)
-      if (media?.photo) params.append('media[photo]', media.photo)
+    profileIds.map(async (channelId: string) => {
+      const input: Record<string, unknown> = {
+        channelId,
+        text,
+        schedulingType: 'automatic',
+        mode: 'addToQueue',
+      }
+      if (media?.photo) {
+        input.assets = { images: [{ url: media.photo }] }
+      }
 
       try {
-        const res = await fetch(`${BUFFER_API}/updates/create.json`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: params.toString(),
-        })
-        const data = await res.json()
-        if (data.success) {
-          return { profileId, success: true }
-        } else {
-          return { profileId, success: false, error: data.message || 'Unknown error' }
+        const data = await gql(token, `
+          mutation CreatePost($input: CreatePostInput!) {
+            createPost(input: $input) {
+              ... on PostActionSuccess {
+                post { id }
+              }
+              ... on MutationError {
+                message
+              }
+            }
+          }
+        `, { input })
+
+        if (data.errors) {
+          return { profileId: channelId, success: false, error: data.errors[0]?.message || 'Unknown error' }
         }
-      } catch (e: any) {
-        return { profileId, success: false, error: e.message }
+        const result = data.data?.createPost
+        if (result?.post) {
+          return { profileId: channelId, success: true }
+        }
+        return { profileId: channelId, success: false, error: result?.message || 'Post creation failed' }
+      } catch (e: unknown) {
+        return { profileId: channelId, success: false, error: e instanceof Error ? e.message : 'Unknown error' }
       }
     })
   )
 
-  const allOk = results.every(r => r.success)
+  const allOk = results.every((r: { success: boolean }) => r.success)
   return NextResponse.json({ success: allOk, results }, { status: allOk ? 200 : 207 })
 }

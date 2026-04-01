@@ -29,18 +29,23 @@ export async function POST(req: NextRequest) {
 
   const row: Record<string, unknown> = { user_id: user.id, updated_at: new Date().toISOString() }
 
-  if (claudeKey) {
-    const { enc, iv, tag } = encrypt(claudeKey)
-    row.claude_key_enc = enc
-    row.claude_key_iv = iv
-    row.claude_key_tag = tag
-  }
+  try {
+    if (claudeKey) {
+      const { enc, iv, tag } = encrypt(claudeKey)
+      row.claude_key_enc = enc
+      row.claude_key_iv = iv
+      row.claude_key_tag = tag
+    }
 
-  if (bufferToken) {
-    const { enc, iv, tag } = encrypt(bufferToken)
-    row.buffer_token_enc = enc
-    row.buffer_token_iv = iv
-    row.buffer_token_tag = tag
+    if (bufferToken) {
+      const { enc, iv, tag } = encrypt(bufferToken)
+      row.buffer_token_enc = enc
+      row.buffer_token_iv = iv
+      row.buffer_token_tag = tag
+    }
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Encryption failed'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 
   const { error } = await supabase

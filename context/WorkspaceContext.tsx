@@ -42,12 +42,6 @@ type Action =
   | { type: 'SET_SETTINGS'; payload: Partial<Settings> }
   | { type: 'SET_PROFILE'; payload: { name: string; email: string } }
 
-const STORAGE_FOLDERS_KEY = 'cc_folders'
-
-function getLocalFolders(): Folder[] {
-  if (typeof window === 'undefined') return []
-  try { return JSON.parse(localStorage.getItem(STORAGE_FOLDERS_KEY) || '[]') } catch { return [] }
-}
 
 const initialState: WorkspaceState = {
   brands: [],
@@ -168,7 +162,8 @@ export function WorkspaceProvider({
         email: profileData?.email || '',
         role: profileData?.role,
       }
-      const folders: Folder[] = getLocalFolders()
+      const foldersR = await sb.from('folders').select('data').eq('workspace_id', workspaceId)
+      const folders: Folder[] = (foldersR.data || []).map((r: { data: Folder }) => r.data)
 
       dispatch({
         type: 'LOAD_SUCCESS',
@@ -265,10 +260,8 @@ export function WorkspaceProvider({
 
   const saveFolders = useCallback((v: Folder[]) => {
     dispatch({ type: 'SET_FOLDERS', payload: v })
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_FOLDERS_KEY, JSON.stringify(v))
-    }
-  }, [])
+    syncTable('folders', v)
+  }, [workspaceId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const saveSettings = useCallback((v: Partial<Settings>) => {
     dispatch({ type: 'SET_SETTINGS', payload: v })
