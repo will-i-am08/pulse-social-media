@@ -45,6 +45,7 @@ export default function CreatePostPage() {
   const [scheduledAt, setScheduledAt] = useState('')
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [sendingBuffer, setSendingBuffer] = useState(false)
 
   // Bulk state
   const [bulkBrandId, setBulkBrandId] = useState('')
@@ -156,6 +157,53 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
     savePosts([newPost, ...posts])
     toast.success(status === 'draft' ? 'Draft saved!' : 'Post scheduled!')
     router.push('/posts')
+  }
+
+  async function sendToBuffer() {
+    if (!brandId) { toast.error('Select a brand first'); return }
+    if (!caption.trim()) { toast.error('Add a caption first'); return }
+    const profileIds = brand?.buffer_profile_ids || []
+    if (!profileIds.length) { toast.error('Configure Buffer profiles for this brand in Settings first'); return }
+    setSendingBuffer(true)
+    try {
+      const res = await fetch('/api/buffer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profileIds,
+          text: caption,
+          media: images[0] ? { photo: images[0] } : undefined,
+        }),
+      })
+      const data = await res.json()
+      const anySuccess = data.success || data.results?.some((r: { success: boolean }) => r.success)
+      if (anySuccess) {
+        const newPost: Post = {
+          id: uid(),
+          brand_profile_id: brandId,
+          image_url: images[0] || null,
+          image_urls: [...images],
+          caption,
+          platforms: [...platforms],
+          status: 'published',
+          scheduled_at: null,
+          created_date: new Date().toISOString(),
+          client_visible: false,
+          client_approved: false,
+          aspect_ratio: aspectRatio || null,
+        }
+        savePosts([newPost, ...posts])
+        toast.success('Post added to Buffer queue!')
+        router.push('/posts')
+      } else {
+        const err = data.results?.find((r: { success: boolean; error?: string }) => r.error)?.error || data.error || 'Unknown error'
+        toast.error(`Buffer error: ${err}`)
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Failed to send to Buffer')
+    } finally {
+      setSendingBuffer(false)
+    }
   }
 
   // Bulk helpers
@@ -672,6 +720,14 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
             <button className="btn btn-p w-full flex items-center justify-center gap-2" disabled={saving || !brandId || !caption} onClick={() => savePost('scheduled')}>
               {saving ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Saving...</> : <><CalendarIcon className="w-4 h-4" /> Save as Scheduled</>}
             </button>
+            {brand?.buffer_profile_ids?.length ? (
+              <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-white transition-opacity disabled:opacity-40"
+                style={{ background: 'linear-gradient(135deg, #10b981 0%, #6ee7b7 100%)' }}
+                disabled={sendingBuffer || !caption.trim()}
+                onClick={sendToBuffer}>
+                {sendingBuffer ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Sending...</> : <><PaperAirplaneIcon className="w-4 h-4" /> Send to Buffer</>}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
