@@ -59,18 +59,13 @@ End Date: ${endDate || 'TBD'}
 Renewal Date: ${renewalDate || 'Same as end date'}
 ${customInstructions ? `Additional Instructions: ${customInstructions}` : ''}
 
-Generate these sections:
+Generate exactly 6 sections (keep content concise — 2-4 sentences per section):
 1. heading: "Service Agreement"
-2. text: "Parties" — identify both parties
-3. text: "Scope of Services" — detailed description
-4. services: "Deliverables" — with line items, quantities, and pricing
-5. pricing: "Payment Terms" — payment schedule and total
-6. text: "Duration & Renewal" — contract period and renewal terms
-7. text: "Termination" — termination clauses
-8. text: "Confidentiality" — NDA clause
-9. text: "Limitation of Liability"
-10. terms: "General Terms & Conditions"
-11. signature: "Signatures" — signature block text`
+2. text: "Scope of Services" — what is being delivered
+3. services: "Deliverables & Pricing" — 2-4 line items with quantities and pricing
+4. text: "Terms & Conditions" — duration, payment, termination, confidentiality
+5. terms: "General Terms" — IP, liability, dispute resolution (2-3 sentences each)
+6. signature: "Signatures" — signature block`
   } else {
     userPrompt = `Generate a professional service proposal with these details:
 
@@ -82,17 +77,13 @@ ${startDate ? `Proposed Start: ${startDate}` : ''}
 ${endDate ? `Proposed End: ${endDate}` : ''}
 ${customInstructions ? `Additional Instructions: ${customInstructions}` : ''}
 
-Generate these sections:
+Generate exactly 6 sections (keep content concise — 2-4 sentences per section):
 1. heading: "Proposal"
-2. text: "Cover Letter" — warm, professional intro addressing the client
-3. text: "About Us" — brief company overview
-4. text: "Scope of Work" — what we'll deliver
-5. services: "Services & Deliverables" — with line items and pricing
-6. pricing: "Investment" — pricing summary with total
-7. timeline: "Timeline" — project phases and milestones
-8. terms: "Terms & Conditions" — payment terms, revisions, IP
-9. text: "Next Steps" — clear CTA to proceed
-10. signature: "Agreement" — signature block`
+2. text: "Introduction" — warm intro addressing the client and their needs
+3. text: "Scope of Work" — what will be delivered
+4. services: "Services & Investment" — 2-4 line items with quantities and pricing
+5. terms: "Terms & Next Steps" — payment terms, timeline, how to proceed
+6. signature: "Agreement" — signature block`
   }
 
   try {
@@ -105,7 +96,7 @@ Generate these sections:
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
+        max_tokens: 1800,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
