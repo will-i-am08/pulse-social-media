@@ -81,7 +81,7 @@ Generate exactly 6 sections (keep content concise — 2-4 sentences per section)
 1. heading: "Proposal"
 2. text: "Introduction" — warm intro addressing the client and their needs
 3. text: "Scope of Work" — what will be delivered
-4. services: "Services & Investment" — 2-4 line items with quantities and pricing
+4. services: "Services & Monthly Fees" — 2-4 line items with quantities and pricing
 5. terms: "Terms & Next Steps" — payment terms, timeline, how to proceed
 6. signature: "Agreement" — signature block`
   }
