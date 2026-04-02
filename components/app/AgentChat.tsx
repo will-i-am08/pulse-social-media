@@ -159,7 +159,7 @@ export default function AgentChat() {
         }
       }
     } catch {
-      const errMsg: Message = { role: 'assistant', content: 'Network error — please try again.' }
+      const errMsg: Message = { role: 'assistant', content: 'This task took too long to complete. Try breaking it into smaller steps, or ask me to do one thing at a time.' }
       const updated = [...newMessages, errMsg]
       setMessages(updated)
       persistMessages(updated)
