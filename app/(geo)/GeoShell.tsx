@@ -5,6 +5,7 @@ import GeoSidebar from './GeoSidebar'
 import {
   Bars3Icon,
 } from '@heroicons/react/16/solid'
+import AgentChat from '@/components/app/AgentChat'
 
 interface GeoShellProps {
   userId: string
@@ -35,6 +36,7 @@ export default function GeoShell({ userId, children }: GeoShellProps) {
           {children}
         </main>
       </div>
+      <AgentChat />
     </div>
   )
 }

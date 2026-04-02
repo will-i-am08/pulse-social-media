@@ -4,6 +4,7 @@ import { useState, createContext, useContext } from 'react'
 import { Bars3Icon } from '@heroicons/react/16/solid'
 import BlogSidebar from './BlogSidebar'
 import { BlogProvider } from '@/context/BlogContext'
+import AgentChat from '@/components/app/AgentChat'
 
 // Tab context so child pages can read/set the active tab
 interface TabCtx { activeTab: string; setActiveTab: (t: string) => void }
@@ -48,6 +49,7 @@ export default function BlogShell({ userId: _userId, children }: BlogShellProps)
           </div>
         </div>
       </TabContext.Provider>
+      <AgentChat />
     </BlogProvider>
   )
 }

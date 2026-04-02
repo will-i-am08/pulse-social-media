@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Sidebar from '@/components/app/Sidebar'
+import AgentChat from '@/components/app/AgentChat'
 import type { Role } from '@/lib/types'
 
 export default function AppShell({ children, role }: { children: React.ReactNode; role: Role }) {
@@ -25,6 +26,7 @@ export default function AppShell({ children, role }: { children: React.ReactNode
 
         {children}
       </main>
+      <AgentChat />
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import AutomationsSidebar from './AutomationsSidebar'
 import { Bars3Icon } from '@heroicons/react/16/solid'
+import AgentChat from '@/components/app/AgentChat'
 
 export default function AutomationsShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -27,6 +28,7 @@ export default function AutomationsShell({ children }: { children: React.ReactNo
           {children}
         </main>
       </div>
+      <AgentChat />
     </div>
   )
 }

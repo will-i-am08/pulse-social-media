@@ -1,9 +1,15 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import AgentChat from '@/components/app/AgentChat'
 
 export default async function HubLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-  return <>{children}</>
+  return (
+    <>
+      {children}
+      <AgentChat />
+    </>
+  )
 }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import BrandResearchSidebar from './BrandResearchSidebar'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/16/solid'
 import Link from 'next/link'
+import AgentChat from '@/components/app/AgentChat'
 
 export default function BrandResearchShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -50,6 +51,7 @@ export default function BrandResearchShell({ children }: { children: React.React
         {/* Page content */}
         <main className="flex-1 overflow-auto">{children}</main>
       </div>
+      <AgentChat />
     </div>
   )
 }

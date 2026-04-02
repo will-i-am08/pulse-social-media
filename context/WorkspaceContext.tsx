@@ -233,6 +233,7 @@ export function WorkspaceProvider({
         socialHandles: brand.social_handles || {},
         platforms: brand.platforms || [],
         bufferChannels: brand.buffer_channels || [],
+        bufferProfileIds: brand.buffer_profile_ids || [],
         keyMessages: brand.key_messages || [],
         replicateModelVersion: brand.replicateModelVersion || '',
         trainingStatus: brand.trainingStatus || 'idle',
@@ -313,4 +314,8 @@ export function useWorkspace() {
   const ctx = useContext(WorkspaceContext)
   if (!ctx) throw new Error('useWorkspace must be used within WorkspaceProvider')
   return ctx
+}
+
+export function useWorkspaceOptional() {
+  return useContext(WorkspaceContext)
 }
