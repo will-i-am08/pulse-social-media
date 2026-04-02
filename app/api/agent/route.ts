@@ -1336,7 +1336,7 @@ Write a caption for ${platformStr}. Return only the caption text.`
       const { data: auto } = await supabase.from('automations').select('*').eq('id', automation_id).eq('user_id', userId).single()
       if (!auto) return { result: { error: 'Automation not found' }, workspaceChanged, clientActions }
       try {
-        const result = await executeAutomation(auto, '')
+        const result = await executeAutomation(automation_id, userId, 'manual', '')
         return { result: { success: true, automation: auto.name, result }, workspaceChanged, clientActions }
       } catch (e) {
         return { result: { error: String(e) }, workspaceChanged, clientActions }
