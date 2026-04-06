@@ -178,22 +178,25 @@ export default function ServicesPage() {
           <div className="rounded-xl p-10 flex flex-col md:flex-row items-center gap-10" style={{ border: DIVIDER }}>
             <div className="flex-shrink-0 max-w-xs">
               <h3 className="text-2xl font-black text-[#0a0a0a] mb-2">The Data Backs It Up</h3>
-              <p className="text-[#6b7280] text-sm leading-relaxed">Research across thousands of marketers confirms what effective social media management delivers.</p>
+              <p className="text-[#6b7280] text-sm leading-relaxed">Social Media Examiner&apos;s annual industry report, surveying thousands of marketers, shows what consistent social media management actually delivers.</p>
             </div>
             <div className="h-px md:h-16 w-full md:w-px flex-shrink-0" style={{ background: 'rgba(0,0,0,0.08)' }} />
-            <div className="flex flex-wrap md:flex-nowrap gap-10 flex-1 justify-around text-center">
-              {[
-                { stat: '92%', label: 'Increased brand exposure' },
-                { stat: '80%', label: 'Increased website traffic' },
-                { stat: '66%', label: 'Generated new leads' },
-                { stat: '58%', label: 'Grew business partnerships' },
-                { stat: '40%', label: 'Improved sales' },
-              ].map((item, i) => (
-                <div key={i}>
-                  <div className="text-3xl font-black text-[#ff5473] mb-1">{item.stat}</div>
-                  <div className="text-xs text-[#6b7280] uppercase tracking-[0.12em] font-bold leading-snug">{item.label}</div>
-                </div>
-              ))}
+            <div className="flex flex-col flex-1 gap-6">
+              <div className="flex flex-wrap md:flex-nowrap gap-10 justify-around text-center">
+                {[
+                  { stat: '92%', label: 'Increased brand exposure' },
+                  { stat: '80%', label: 'Increased website traffic' },
+                  { stat: '66%', label: 'Generated new leads' },
+                  { stat: '58%', label: 'Grew business partnerships' },
+                  { stat: '40%', label: 'Improved sales' },
+                ].map((item, i) => (
+                  <div key={i}>
+                    <div className="text-3xl font-black text-[#ff5473] mb-1">{item.stat}</div>
+                    <div className="text-xs text-[#6b7280] uppercase tracking-[0.12em] font-bold leading-snug">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-[#c4c9d4] text-right tracking-wide">Source: Social Media Examiner Industry Report</p>
             </div>
           </div>
         </AnimateOnScroll>
