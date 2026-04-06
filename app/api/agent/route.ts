@@ -372,34 +372,6 @@ const TOOLS = [
     },
   },
 
-  // ── AUTOMATIONS ──
-  {
-    name: 'list_automations',
-    description: 'List all automations in the workspace.',
-    input_schema: { type: 'object', properties: {}, required: [] },
-  },
-  {
-    name: 'run_automation',
-    description: 'Execute an automation by ID immediately.',
-    input_schema: {
-      type: 'object',
-      properties: { automation_id: { type: 'string', description: 'Automation ID to run' } },
-      required: ['automation_id'],
-    },
-  },
-  {
-    name: 'toggle_automation',
-    description: 'Enable or disable an automation.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        automation_id: { type: 'string', description: 'Automation ID' },
-        enabled: { type: 'boolean', description: 'true to enable, false to disable' },
-      },
-      required: ['automation_id', 'enabled'],
-    },
-  },
-
   // ── NOTIFICATIONS ──
   {
     name: 'get_notifications',
