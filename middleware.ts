@@ -53,8 +53,10 @@ export async function middleware(request: NextRequest) {
   const isAppRoute = APP_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
 
   // Gate /login to desktop app only (identified by PulseDesktop user-agent)
+  // Localhost is also allowed for local testing
   const userAgent = request.headers.get('user-agent') ?? ''
-  if (pathname === '/login' && !userAgent.includes('PulseDesktop')) {
+  const isLocalhost = request.nextUrl.hostname === 'localhost'
+  if (pathname === '/login' && !userAgent.includes('PulseDesktop') && !isLocalhost) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)
