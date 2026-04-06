@@ -20,7 +20,7 @@ export default function MarketingNav() {
     <nav className="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-xl border-b border-black/5 h-16 animate-[fadeSlideDown_0.5s_ease-out]">
       <div className="max-w-7xl mx-auto px-8 flex justify-between items-center h-full">
         <Link href="/" className="flex items-center gap-2.5 cursor-pointer">
-          <Image src="/logo.png" alt="Pulse" width={32} height={32} className="w-8 h-8" />
+          <Image src="/logo.png" alt="Pulse" width={40} height={40} className="w-10 h-10" style={{ mixBlendMode: 'multiply' }} />
           <span className="text-[#0a0a0a] font-semibold text-sm tracking-tight">Pulse</span>
         </Link>
 
