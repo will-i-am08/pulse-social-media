@@ -97,6 +97,31 @@ function createWindow() {
   // Disable right-click context menu
   win.webContents.on('context-menu', (event) => event.preventDefault())
 
+  // Inject a transparent drag region along the top so the window can be moved.
+  // pointer-events: none lets clicks pass through to nav elements below.
+  // -webkit-app-region: drag is handled at the OS level so dragging still works.
+  win.webContents.on('did-finish-load', () => {
+    win.webContents.insertCSS(`
+      #pulse-drag-region {
+        position: fixed;
+        top: 0;
+        left: ${process.platform === 'darwin' ? '80px' : '0'};
+        right: 0;
+        height: 40px;
+        -webkit-app-region: drag;
+        pointer-events: none;
+        z-index: 2147483647;
+      }
+    `)
+    win.webContents.executeJavaScript(`
+      if (!document.getElementById('pulse-drag-region')) {
+        const el = document.createElement('div');
+        el.id = 'pulse-drag-region';
+        document.body.appendChild(el);
+      }
+    `)
+  })
+
   // Load straight into the app (middleware redirects to /login if not authenticated)
   win.loadURL(APP_URL)
 
