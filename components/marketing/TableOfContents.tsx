@@ -61,7 +61,7 @@ export default function TableOfContents({ headings }: Props) {
       <div className="xl:hidden mb-8">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-[#6b7280] hover:text-[#ff5473] transition-colors"
         >
           <span className="material-symbols-outlined text-base">toc</span>
           Table of Contents
@@ -70,7 +70,7 @@ export default function TableOfContents({ headings }: Props) {
           </span>
         </button>
         {isOpen && (
-          <nav className="mt-4 pl-2 border-l-2 border-outline-variant/20">
+          <nav className="mt-4 pl-2" style={{ borderLeft: '2px solid rgba(0,0,0,0.08)' }}>
             <ul className="space-y-2">
               {headings.map(h => (
                 <li key={h.id} style={{ paddingLeft: h.level === 3 ? '1rem' : '0' }}>
@@ -78,8 +78,8 @@ export default function TableOfContents({ headings }: Props) {
                     onClick={() => scrollTo(h.id)}
                     className={`text-sm text-left transition-colors ${
                       activeId === h.id
-                        ? 'text-primary font-medium'
-                        : 'text-on-surface-variant hover:text-on-surface'
+                        ? 'text-[#ff5473] font-medium'
+                        : 'text-[#6b7280] hover:text-[#0a0a0a]'
                     }`}
                   >
                     {h.text}
@@ -94,8 +94,8 @@ export default function TableOfContents({ headings }: Props) {
       {/* Desktop sidebar */}
       <aside className="hidden xl:block">
         <div className="sticky top-32">
-          <p className="font-label text-xs uppercase tracking-[0.15em] text-outline-variant mb-4">On this page</p>
-          <nav className="border-l-2 border-outline-variant/20 pl-4">
+          <p className="mono-label text-[#9ca3af] mb-4">On this page</p>
+          <nav className="pl-4" style={{ borderLeft: '2px solid rgba(0,0,0,0.08)' }}>
             <ul className="space-y-2.5">
               {headings.map(h => (
                 <li key={h.id} style={{ paddingLeft: h.level === 3 ? '0.75rem' : '0' }}>
@@ -103,8 +103,8 @@ export default function TableOfContents({ headings }: Props) {
                     onClick={() => scrollTo(h.id)}
                     className={`text-[13px] leading-snug text-left transition-colors ${
                       activeId === h.id
-                        ? 'text-primary font-medium'
-                        : 'text-on-surface-variant/70 hover:text-on-surface'
+                        ? 'text-[#ff5473] font-medium'
+                        : 'text-[#9ca3af] hover:text-[#0a0a0a]'
                     }`}
                   >
                     {h.text}

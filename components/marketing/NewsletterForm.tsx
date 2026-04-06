@@ -23,8 +23,8 @@ export default function NewsletterForm() {
   if (submitted) {
     return (
       <div className="flex items-center gap-3 py-4">
-        <span className="material-symbols-outlined text-primary">check_circle</span>
-        <span className="text-on-surface font-medium">You&apos;re subscribed! See you Tuesday.</span>
+        <span className="material-symbols-outlined text-[#ff5473]">check_circle</span>
+        <span className="text-[#0a0a0a] font-medium">You&apos;re subscribed! See you Tuesday.</span>
       </div>
     )
   }
@@ -36,12 +36,16 @@ export default function NewsletterForm() {
         name="email"
         required
         type="email"
-        className="bg-surface-container border-none rounded px-6 py-4 flex-grow focus:ring-1 focus:ring-primary text-on-surface placeholder:text-outline transition-all outline-none"
+        className="bg-white flex-grow px-6 py-4 rounded-lg text-[#0a0a0a] placeholder:text-[#9ca3af] outline-none transition-all"
+        style={{ border: '1px solid rgba(0,0,0,0.1)' }}
+        onFocus={e => { e.target.style.borderColor = '#ff5473'; e.target.style.boxShadow = '0 0 0 3px rgba(255,84,115,0.1)' }}
+        onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,0.1)'; e.target.style.boxShadow = 'none' }}
         placeholder="Your email address"
       />
       <button
         type="submit"
-        className="bg-primary-container text-on-primary-container px-10 py-4 rounded font-bold uppercase tracking-widest text-sm hover:shadow-[0_0_20px_rgba(255,84,115,0.4)] transition-all"
+        className="px-10 py-4 rounded-lg font-bold uppercase tracking-widest text-sm text-white transition-opacity hover:opacity-90"
+        style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
       >
         Subscribe
       </button>

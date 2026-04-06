@@ -1,299 +1,251 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
-import StaggerChildren from '@/components/marketing/StaggerChildren'
 
 export const metadata: Metadata = {
   title: 'Pulse Digital Agency | Social Media That Works',
   description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and content that connects with your audience.',
 }
 
+const FEATURES = [
+  'AI Content Strategy',
+  'Brand Scheduling',
+  'Buffer Publishing',
+  'Real-Time Analytics',
+  'Community Management',
+  'Social Automation',
+]
+
+const STATS = [
+  { number: '2.4B', label: 'Impressions Generated' },
+  { number: '98%', label: 'Client Retention' },
+  { number: '150+', label: 'Global Partners' },
+  { number: 'Live', label: 'Always-On Monitoring' },
+]
+
+const SERVICES = [
+  {
+    title: 'AI-Powered Strategy',
+    description: 'We use AI to understand what your audience cares about — delivering the right content at the right time, across every platform.',
+  },
+  {
+    title: 'Community Engagement',
+    description: 'Active social media management that keeps your community growing and turns followers into loyal brand advocates.',
+  },
+  {
+    title: 'Real Analytics',
+    description: 'Beyond vanity metrics. We measure what actually drives growth and use that data to sharpen every decision.',
+  },
+  {
+    title: 'Content That Connects',
+    description: 'High-quality creative content that cuts through the noise and resonates with the people who matter most to your brand.',
+  },
+]
+
+const DIVIDER = '1px solid rgba(0,0,0,0.08)'
+
 export default function HomePage() {
   return (
-    <main>
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-[radial-gradient(circle_at_center,_rgba(255,84,115,0.08)_0%,_transparent_50%)]" />
-          <Image
-            src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1600&q=80"
-            alt="Abstract digital flow visualization"
-            fill
-            className="object-cover opacity-20 grayscale"
-            sizes="100vw"
-          />
-        </div>
-        <div className="container mx-auto px-8 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <AnimateOnScroll variant="fade-in" delay={0}>
-              <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary-container/10 border border-primary/20">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
-                </span>
-                <span className="text-primary text-xs font-bold uppercase tracking-widest">Social Media Agency</span>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.1}>
-              <h1 className="text-6xl md:text-8xl font-black tracking-tight leading-[0.9] text-on-surface">
-                The Rhythm <br />
-                <span className="thermal-gradient-text">of Growth</span>
-              </h1>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.2}>
-              <p className="text-on-surface-variant text-xl max-w-lg leading-relaxed">
-                We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects with your audience.
-              </p>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.3}>
-              <div className="flex items-center gap-6 pt-4">
-                <Link href="/contact" className="bg-primary-container text-on-primary-container px-8 py-4 rounded-lg font-bold text-lg hover:shadow-[0_0_20px_rgba(255,84,115,0.4)] transition-all">
-                  Ignite Your Brand
-                </Link>
-                <Link href="/services" className="flex items-center gap-2 text-on-surface font-semibold hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">play_circle</span>
-                  Our Services
-                </Link>
-              </div>
-            </AnimateOnScroll>
-          </div>
-          <AnimateOnScroll variant="slide-right" delay={0.2} className="relative hidden lg:block">
-            <div className="absolute -inset-4 thermal-gradient blur-3xl opacity-10 rounded-full" />
-            <div className="relative bg-surface-container rounded-2xl p-8 border border-outline-variant/20 shadow-2xl">
-              <Image
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"
-                alt="Professional data analytics dashboard"
-                width={600}
-                height={400}
-                className="rounded-lg w-full grayscale contrast-125"
-                priority
-                sizes="100vw"
-              />
-              <div className="absolute -bottom-10 -left-10 glass-card p-6 rounded-xl w-64">
-                <div className="text-primary text-4xl font-black">+142%</div>
-                <div className="text-on-surface-variant text-sm font-medium">Conversion Growth</div>
-              </div>
+    <main style={{ background: '#ffffff', color: '#0a0a0a' }}>
+
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-screen flex flex-col justify-center pt-16 overflow-hidden">
+        {/* Subtle rose glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(255,84,115,0.05) 0%, transparent 70%)',
+          }}
+        />
+
+        <div className="max-w-7xl mx-auto px-8 md:px-16 py-32 relative z-10">
+          <AnimateOnScroll variant="fade-in" delay={0}>
+            <p className="mono-label text-[#ff5473] mb-10">Social Media Management Platform</p>
+          </AnimateOnScroll>
+
+          <AnimateOnScroll variant="fade-up" delay={0.1}>
+            <h1
+              className="display-text text-[#0a0a0a] mb-8"
+              style={{ fontSize: 'clamp(56px, 10vw, 120px)' }}
+            >
+              Built for<br />
+              Brands That<br />
+              <span style={{ color: '#ff5473' }}>Move Fast.</span>
+            </h1>
+          </AnimateOnScroll>
+
+          <AnimateOnScroll variant="fade-up" delay={0.2}>
+            <p className="text-[#6b7280] text-lg md:text-xl max-w-xl mb-12 leading-relaxed font-light">
+              We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects with your audience.
+            </p>
+          </AnimateOnScroll>
+
+          <AnimateOnScroll variant="fade-up" delay={0.3}>
+            <div className="flex items-center gap-8">
+              <Link
+                href="/contact"
+                className="inline-flex items-center px-8 py-4 rounded-full text-white font-semibold text-sm transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
+              >
+                Start the Project
+              </Link>
+              <Link
+                href="/services"
+                className="text-sm font-medium text-[#9ca3af] hover:text-[#0a0a0a] transition-colors flex items-center gap-2"
+              >
+                See Our Work <span>→</span>
+              </Link>
             </div>
           </AnimateOnScroll>
         </div>
+
+        {/* Bottom divider */}
+        <div className="absolute bottom-0 left-8 right-8 h-px" style={{ background: 'rgba(0,0,0,0.06)' }} />
       </section>
 
-      {/* Services Section */}
-      <section className="py-32 bg-surface">
-        <div className="container mx-auto px-8">
+      {/* ── Feature Keywords ─────────────────────────────────────────────────── */}
+      <section className="py-24" style={{ borderBottom: DIVIDER }}>
+        <div className="max-w-7xl mx-auto px-8 md:px-16">
           <AnimateOnScroll variant="fade-up">
-            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
-              <div className="max-w-2xl">
-                <h2 className="text-primary text-sm font-bold uppercase tracking-[0.3em] mb-4">Our Expertise</h2>
-                <h3 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight">What We Do <span className="italic text-outline">Best</span></h3>
-              </div>
-              <p className="text-on-surface-variant max-w-sm">We create thoughtful, high-quality digital experiences that stand out and drive real results.</p>
-            </div>
+            <p className="mono-label text-[#9ca3af] mb-12">What we do</p>
           </AnimateOnScroll>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-auto md:h-[600px]">
-            <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-2 group relative overflow-hidden rounded-xl bg-surface-container-low p-12 flex flex-col justify-end transition-all hover:bg-surface-container">
-              <div className="absolute top-12 right-12 opacity-10 group-hover:opacity-20 transition-opacity">
-                <span className="material-symbols-outlined text-9xl">psychology</span>
-              </div>
-              <h4 className="text-3xl font-bold text-on-surface mb-4">AI-Powered Strategy</h4>
-              <p className="text-on-surface-variant max-w-md mb-8">Using AI to understand what your audience cares about and deliver the right content at the right time, across every platform.</p>
-              <div className="flex gap-4">
-                <span className="px-3 py-1 bg-surface-variant text-on-surface text-xs rounded-full">Smart Targeting</span>
-                <span className="px-3 py-1 bg-surface-variant text-on-surface text-xs rounded-full">Predictive Analytics</span>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.1} className="group bg-primary-container p-12 rounded-xl flex flex-col justify-between hover:scale-[1.02] transition-transform">
-              <span className="material-symbols-outlined text-on-primary-container text-5xl">share</span>
-              <div>
-                <h4 className="text-3xl font-bold text-on-primary-container mb-4">Community Engagement</h4>
-                <p className="text-on-primary-container/80 text-sm">Active social media management that keeps your community engaged and turns followers into loyal fans.</p>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.15} className="group bg-surface-container-high p-12 rounded-xl flex flex-col justify-between border border-outline-variant/10">
-              <span className="material-symbols-outlined text-primary text-5xl">monitoring</span>
-              <div>
-                <h4 className="text-2xl font-bold text-on-surface mb-2">Real Analytics</h4>
-                <p className="text-on-surface-variant text-sm">Going beyond vanity metrics to measure what actually matters for your growth.</p>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.2} className="md:col-span-2 relative overflow-hidden rounded-xl">
-              <Image
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
-                alt="High-tech circuit board with glowing warm light paths"
-                fill
-                className="object-cover grayscale opacity-40"
-                sizes="100vw"
-              />
-              <div className="relative h-full p-12 flex flex-col justify-center bg-gradient-to-r from-surface-container-lowest to-transparent">
-                <h4 className="text-3xl font-bold text-on-surface mb-4">Content That Connects</h4>
-                <p className="text-on-surface-variant max-w-sm">High-quality creative content that cuts through the noise and resonates with your audience.</p>
-              </div>
-            </AnimateOnScroll>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-24 bg-surface-container-lowest relative overflow-hidden">
-        <div className="container mx-auto px-8 relative z-10">
-          <AnimateOnScroll variant="scale-up">
-            <div className="bg-surface p-12 rounded-2xl shadow-2xl border border-outline-variant/10 grid md:grid-cols-4 gap-12 text-center">
-              <div>
-                <div className="text-5xl font-black text-primary mb-2">2.4B</div>
-                <div className="text-xs uppercase tracking-[0.2em] text-on-surface-variant font-bold">Impressions Generated</div>
-              </div>
-              <div>
-                <div className="text-5xl font-black text-on-surface mb-2">98<span className="text-primary">%</span></div>
-                <div className="text-xs uppercase tracking-[0.2em] text-on-surface-variant font-bold">Client Retention</div>
-              </div>
-              <div>
-                <div className="text-5xl font-black text-on-surface mb-2">150<span className="text-primary">+</span></div>
-                <div className="text-xs uppercase tracking-[0.2em] text-on-surface-variant font-bold">Global Partners</div>
-              </div>
-              <div>
-                <div className="text-5xl font-black text-primary mb-2">Live</div>
-                <div className="flex justify-center items-center gap-2 mt-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ borderBottom: DIVIDER }}>
+            {FEATURES.map((feature, i) => (
+              <AnimateOnScroll key={feature} variant="fade-up" delay={i * 0.05}>
+                <div
+                  className="py-10 px-6"
+                  style={{
+                    borderTop: DIVIDER,
+                    borderRight: i % 3 !== 2 ? DIVIDER : 'none',
+                  }}
+                >
+                  <span
+                    className="text-2xl md:text-3xl font-light text-[#0a0a0a]"
+                    style={{ letterSpacing: '-0.02em' }}
+                  >
+                    {feature}
                   </span>
-                  <div className="text-xs uppercase tracking-[0.2em] text-on-surface-variant font-bold">Always-On Monitoring</div>
                 </div>
-              </div>
-            </div>
-          </AnimateOnScroll>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-      </section>
-
-      {/* Why Social Media Matters */}
-      <section className="py-32 bg-surface-container-lowest">
-        <div className="container mx-auto px-8">
-          <AnimateOnScroll variant="fade-up">
-            <div className="text-center max-w-3xl mx-auto mb-20">
-              <h2 className="text-primary text-sm font-bold uppercase tracking-[0.3em] mb-4">The Research Is Clear</h2>
-              <h3 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight mb-6">Why Social Media Is <span className="thermal-gradient-text">Non-Negotiable</span></h3>
-              <p className="text-on-surface-variant text-lg leading-relaxed">
-                Social media is the modern-day linchpin in brand building. Its ability to engage, foster loyalty, and enhance authenticity makes it not merely advantageous — but imperative for contemporary brand success.
-              </p>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Research Stats */}
-          <AnimateOnScroll variant="scale-up">
-            <div className="bg-surface p-10 rounded-2xl border border-outline-variant/10 mb-16">
-              <p className="text-center text-xs uppercase tracking-[0.3em] text-on-surface-variant font-bold mb-8">Marketers who reported measurable results from social media</p>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-center">
-                {[
-                  { stat: '92%', label: 'Increased Brand Exposure' },
-                  { stat: '80%', label: 'Increased Website Traffic' },
-                  { stat: '72%', label: 'Developed Loyal Fans' },
-                  { stat: '66%', label: 'Generated New Leads' },
-                  { stat: '61%', label: 'Improved Search Rankings' },
-                ].map((item, i) => (
-                  <div key={i}>
-                    <div className="text-4xl font-black text-primary mb-2">{item.stat}</div>
-                    <div className="text-xs uppercase tracking-[0.15em] text-on-surface-variant font-bold leading-snug">{item.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Reasons Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-2 bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
-              <span className="material-symbols-outlined text-primary text-4xl mb-6">visibility</span>
-              <div>
-                <h4 className="text-2xl font-bold text-on-surface mb-3">Brand Visibility at Scale</h4>
-                <p className="text-on-surface-variant leading-relaxed">Social media platforms provide a global stage for brands to showcase their products, services, and values. Creating and sharing content consistently reaches a vast, diverse audience — instrumental in building recognition and awareness far beyond traditional advertising channels.</p>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.1} className="bg-primary-container rounded-xl p-10 flex flex-col justify-between">
-              <span className="material-symbols-outlined text-on-primary-container text-4xl mb-6">forum</span>
-              <div>
-                <h4 className="text-2xl font-bold text-on-primary-container mb-3">Direct Engagement</h4>
-                <p className="text-on-primary-container/80 leading-relaxed text-sm">Social media enables brands to respond to comments, answer questions, and engage in real-time. This two-way interaction humanizes the brand and fosters genuine connection and trust with customers.</p>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.15} className="bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
-              <span className="material-symbols-outlined text-primary text-4xl mb-6">group</span>
-              <div>
-                <h4 className="text-2xl font-bold text-on-surface mb-3">Community Building</h4>
-                <p className="text-on-surface-variant leading-relaxed text-sm">Brands can create communities around their products and services, encouraging like-minded individuals to connect and share experiences. This sense of community is one of the most powerful drivers of long-term brand loyalty.</p>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.2} className="bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
-              <span className="material-symbols-outlined text-primary text-4xl mb-6">target</span>
-              <div>
-                <h4 className="text-2xl font-bold text-on-surface mb-3">Precise Targeting</h4>
-                <p className="text-on-surface-variant leading-relaxed text-sm">Social platforms collect rich user data, enabling brands to create personalized content and advertisements that cater to specific demographics, interests, and behaviours — ensuring every dollar of spend reaches the right person.</p>
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.25} className="md:col-span-2 bg-surface-container-low rounded-xl p-10 flex flex-col justify-between">
-              <span className="material-symbols-outlined text-primary text-4xl mb-6">monitoring</span>
-              <div>
-                <h4 className="text-2xl font-bold text-on-surface mb-3">Data-Driven Decisions</h4>
-                <p className="text-on-surface-variant leading-relaxed">Social media platforms provide robust analytics — tracking engagement rates, audience demographics, and conversion rates. Brands that use this data to continuously refine their strategy gain a compounding competitive advantage over those still guessing.</p>
-              </div>
-            </AnimateOnScroll>
+              </AnimateOnScroll>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-32 bg-surface">
-        <div className="container mx-auto px-8">
-          <AnimateOnScroll variant="fade-up">
-            <div className="text-center max-w-3xl mx-auto mb-20">
-              <h2 className="text-primary text-sm font-bold uppercase tracking-[0.3em] mb-4">What Our Clients Say</h2>
-              <h3 className="text-4xl md:text-5xl font-black text-on-surface tracking-tight">Real Results, Real Words</h3>
-            </div>
-          </AnimateOnScroll>
-          <StaggerChildren staggerDelay={0.15} className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { quote: "Pulse Digital didn't just manage our social; they completely redefined our digital identity. Their AI-driven approach gave us insights we didn't know were possible.", name: 'Alexander Vane', role: 'CMO, Vesper Global', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80', border: 'border-primary' },
-              { quote: "The level of sophistication in their creative work is unmatched. It feels less like marketing and more like storytelling with a clear purpose.", name: 'Elena Rodriguez', role: 'Founder, Aura Collective', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80', border: 'border-outline-variant' },
-              { quote: "The data-driven approach they used on our funnel helped us find friction points we'd been overlooking for years. Game changer.", name: 'Silas Vance', role: 'Director, Kinetic Labs', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80', border: 'border-primary' },
-            ].map((t, i) => (
-              <div key={i} className={`p-8 rounded-xl bg-surface-container-low border-l-4 ${t.border}`}>
-                <div className="mb-6 flex gap-1">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <span key={j} className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  ))}
-                </div>
-                <p className="text-on-surface italic leading-relaxed mb-8">&ldquo;{t.quote}&rdquo;</p>
-                <div className="flex items-center gap-4">
-                  <Image src={t.img} alt={t.name} width={48} height={48} className="w-12 h-12 rounded-full grayscale" sizes="48px" />
-                  <div>
-                    <div className="font-bold text-on-surface">{t.name}</div>
-                    <div className="text-xs text-on-surface-variant uppercase tracking-widest">{t.role}</div>
+      {/* ── Stats Strip ──────────────────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: '#f5f5f5', borderBottom: DIVIDER }}>
+        <div className="max-w-7xl mx-auto px-8 md:px-16">
+          <div className="grid grid-cols-2 md:grid-cols-4">
+            {STATS.map((stat, i) => (
+              <AnimateOnScroll key={stat.label} variant="fade-up" delay={i * 0.08}>
+                <div
+                  className="py-10 px-6"
+                  style={{
+                    borderRight: i < 3 ? DIVIDER : 'none',
+                  }}
+                >
+                  <div
+                    className="display-text text-[#0a0a0a] mb-3"
+                    style={{ fontSize: 'clamp(40px, 5vw, 72px)' }}
+                  >
+                    {stat.number}
                   </div>
+                  <p className="mono-label text-[#9ca3af]" style={{ letterSpacing: '0.12em' }}>{stat.label}</p>
                 </div>
-              </div>
+              </AnimateOnScroll>
             ))}
-          </StaggerChildren>
+          </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24">
-        <div className="container mx-auto px-8">
-          <AnimateOnScroll variant="scale-up">
-            <div className="relative thermal-gradient p-16 rounded-3xl overflow-hidden text-center flex flex-col items-center">
-              <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
-              <div className="relative z-10 max-w-2xl">
-                <h2 className="text-4xl md:text-6xl font-black text-on-primary-container mb-6 tracking-tight">Ready to Pulse?</h2>
-                <p className="text-on-primary-container/90 text-xl mb-10 font-medium">Let&apos;s build something great together. Start your brand&apos;s next chapter today.</p>
-                <Link href="/contact" className="bg-on-primary-container text-primary-container px-12 py-5 rounded-xl font-black text-xl hover:bg-neutral-900 transition-colors shadow-2xl">
-                  Start the Project
-                </Link>
+      {/* ── Services ─────────────────────────────────────────────────────────── */}
+      <section className="py-32" style={{ borderBottom: DIVIDER }}>
+        <div className="max-w-7xl mx-auto px-8 md:px-16">
+          <div className="grid md:grid-cols-3 gap-16">
+
+            {/* Left label */}
+            <AnimateOnScroll variant="fade-up">
+              <div className="md:col-span-1">
+                <p className="mono-label text-[#9ca3af] mb-4">Our Services</p>
+                <h2
+                  className="display-text text-[#0a0a0a]"
+                  style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}
+                >
+                  What We<br />Do Best
+                </h2>
               </div>
+            </AnimateOnScroll>
+
+            {/* Right list */}
+            <div className="md:col-span-2">
+              {SERVICES.map((service, i) => (
+                <AnimateOnScroll key={service.title} variant="fade-up" delay={i * 0.08}>
+                  <div
+                    className="py-8 group"
+                    style={{ borderTop: DIVIDER }}
+                  >
+                    <div className="flex items-start justify-between gap-8">
+                      <div>
+                        <h3 className="text-xl font-semibold text-[#0a0a0a] mb-2 group-hover:text-[#ff5473] transition-colors">
+                          {service.title}
+                        </h3>
+                        <p className="text-[#6b7280] text-sm leading-relaxed max-w-lg font-light">
+                          {service.description}
+                        </p>
+                      </div>
+                      <span className="text-[#9ca3af] group-hover:text-[#ff5473] transition-colors text-xl mt-1 flex-shrink-0">→</span>
+                    </div>
+                  </div>
+                </AnimateOnScroll>
+              ))}
+              <div style={{ borderTop: DIVIDER }} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Testimonial ──────────────────────────────────────────────────────── */}
+      <section className="py-40" style={{ borderBottom: DIVIDER }}>
+        <div className="max-w-5xl mx-auto px-8 md:px-16 text-center">
+          <AnimateOnScroll variant="fade-up">
+            <p className="mono-label text-[#9ca3af] mb-12">Client Story</p>
+            <blockquote
+              className="text-[#0a0a0a] font-light italic mb-10 leading-snug"
+              style={{ fontSize: 'clamp(28px, 4vw, 44px)', letterSpacing: '-0.02em' }}
+            >
+              &ldquo;Pulse Digital didn&apos;t just manage our social — they completely redefined our digital identity. Their AI-driven approach gave us insights we didn&apos;t know were possible.&rdquo;
+            </blockquote>
+            <div>
+              <p className="text-[#0a0a0a] text-sm font-semibold">Alexander Vane</p>
+              <p className="mono-label text-[#9ca3af] mt-1">CMO, Vesper Global</p>
             </div>
           </AnimateOnScroll>
         </div>
       </section>
+
+      {/* ── CTA ──────────────────────────────────────────────────────────────── */}
+      <section className="py-40">
+        <div className="max-w-7xl mx-auto px-8 md:px-16 text-center">
+          <AnimateOnScroll variant="fade-up">
+            <p className="mono-label text-[#9ca3af] mb-10">Let&apos;s work together</p>
+            <h2
+              className="display-text text-[#0a0a0a] mb-12"
+              style={{ fontSize: 'clamp(56px, 9vw, 110px)' }}
+            >
+              Ready to<br />
+              <span style={{ color: '#ff5473' }}>Pulse?</span>
+            </h2>
+            <Link
+              href="/contact"
+              className="inline-flex items-center px-10 py-5 rounded-full text-white font-semibold text-base transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
+            >
+              Start the Project
+            </Link>
+          </AnimateOnScroll>
+        </div>
+      </section>
+
     </main>
   )
 }

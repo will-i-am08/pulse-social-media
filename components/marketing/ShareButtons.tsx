@@ -45,7 +45,8 @@ export default function ShareButtons({ title, slug }: Props) {
     <div className="flex items-center gap-3">
       <button
         onClick={copyLink}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container border border-outline-variant/20 text-sm text-on-surface-variant hover:border-primary/30 hover:text-primary transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f5f5f5] text-sm text-[#6b7280] hover:text-[#ff5473] transition-colors"
+        style={{ border: '1px solid rgba(0,0,0,0.08)' }}
       >
         <span className="material-symbols-outlined text-base">
           {copied ? 'check' : 'link'}
@@ -55,7 +56,8 @@ export default function ShareButtons({ title, slug }: Props) {
       {hasNativeShare && (
         <button
           onClick={nativeShare}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container border border-outline-variant/20 text-sm text-on-surface-variant hover:border-primary/30 hover:text-primary transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f5f5f5] text-sm text-[#6b7280] hover:text-[#ff5473] transition-colors"
+          style={{ border: '1px solid rgba(0,0,0,0.08)' }}
         >
           <span className="material-symbols-outlined text-base">share</span>
           Share

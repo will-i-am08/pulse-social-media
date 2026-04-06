@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <ReadingProgress />
-      <main className="pt-32 pb-24">
+      <main className="pt-32 pb-24" style={{ background: '#ffffff', color: '#0a0a0a' }}>
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex gap-16">
             {/* Main article column */}
@@ -77,7 +77,7 @@ export default async function BlogPostPage({ params }: Props) {
               {/* Back link */}
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-1.5 text-sm text-on-surface-variant hover:text-primary transition-colors mb-10"
+                className="inline-flex items-center gap-1.5 text-sm text-[#6b7280] hover:text-[#ff5473] transition-colors mb-10"
               >
                 <span className="material-symbols-outlined text-base">arrow_back</span>
                 All Posts
@@ -88,22 +88,22 @@ export default async function BlogPostPage({ params }: Props) {
                 {post.tags && (
                   <div className="flex flex-wrap gap-2 mb-5">
                     {post.tags.split(',').map(t => t.trim()).filter(Boolean).map(tag => (
-                      <span key={tag} className="px-3 py-1 text-xs font-medium rounded-full bg-primary-container/20 text-primary border border-primary/10">
+                      <span key={tag} className="px-3 py-1 text-xs font-medium rounded-full bg-[#fff0f2] text-[#ff5473]" style={{ border: '1px solid rgba(255,84,115,0.2)' }}>
                         {tag}
                       </span>
                     ))}
                   </div>
                 )}
-                <h1 className="font-headline text-4xl md:text-5xl font-extrabold tracking-tighter leading-[1.05] mb-6">
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter leading-[1.05] mb-6 text-[#0a0a0a]">
                   {post.title}
                 </h1>
                 {post.meta && (
-                  <p className="text-on-surface-variant text-lg leading-relaxed mb-6">{post.meta}</p>
+                  <p className="text-[#6b7280] text-lg leading-relaxed mb-6">{post.meta}</p>
                 )}
-                <div className="flex items-center gap-4 text-sm text-outline-variant flex-wrap">
-                  {post.author && <span className="text-on-surface font-medium">{post.author}</span>}
+                <div className="flex items-center gap-4 text-sm text-[#9ca3af] flex-wrap">
+                  {post.author && <span className="text-[#0a0a0a] font-medium">{post.author}</span>}
                   <span>{formatDate(post.publishedDate)}</span>
-                  <span className="inline-flex items-center gap-1 text-primary font-medium">
+                  <span className="inline-flex items-center gap-1 text-[#ff5473] font-medium">
                     <span className="material-symbols-outlined text-base">schedule</span>
                     {readTime(post.wordCount)} min read
                   </span>
@@ -122,7 +122,7 @@ export default async function BlogPostPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Mobile TOC (xl:hidden is handled inside the component) */}
+              {/* Mobile TOC */}
               <div className="xl:hidden">
                 <TableOfContents headings={headings} />
               </div>
@@ -133,13 +133,13 @@ export default async function BlogPostPage({ params }: Props) {
                   remarkPlugins={[remarkGfm]}
                   components={{
                     h1: ({ children }) => (
-                      <h1 className="font-headline text-3xl font-extrabold tracking-tight mt-12 mb-4 text-on-surface">{children}</h1>
+                      <h1 className="text-3xl font-extrabold tracking-tight mt-12 mb-4 text-[#0a0a0a]">{children}</h1>
                     ),
                     h2: ({ children }) => {
                       const text = typeof children === 'string' ? children : extractText(children)
                       const id = slugify(text)
                       return (
-                        <h2 id={id} className="font-headline text-2xl font-bold tracking-tight mt-10 mb-4 text-on-surface scroll-mt-24">
+                        <h2 id={id} className="text-2xl font-bold tracking-tight mt-10 mb-4 text-[#0a0a0a] scroll-mt-24">
                           {children}
                         </h2>
                       )
@@ -148,59 +148,59 @@ export default async function BlogPostPage({ params }: Props) {
                       const text = typeof children === 'string' ? children : extractText(children)
                       const id = slugify(text)
                       return (
-                        <h3 id={id} className="font-headline text-xl font-bold tracking-tight mt-8 mb-3 text-on-surface scroll-mt-24">
+                        <h3 id={id} className="text-xl font-bold tracking-tight mt-8 mb-3 text-[#0a0a0a] scroll-mt-24">
                           {children}
                         </h3>
                       )
                     },
                     h4: ({ children }) => (
-                      <h4 className="font-headline text-lg font-semibold mt-6 mb-2 text-on-surface">{children}</h4>
+                      <h4 className="text-lg font-semibold mt-6 mb-2 text-[#0a0a0a]">{children}</h4>
                     ),
                     p: ({ children }) => (
-                      <p className="text-on-surface-variant text-base leading-relaxed mb-5">{children}</p>
+                      <p className="text-[#374151] text-base leading-relaxed mb-5">{children}</p>
                     ),
                     a: ({ href, children }) => (
-                      <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
+                      <a href={href} className="text-[#ff5473] hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>
                     ),
                     ul: ({ children }) => (
-                      <ul className="list-disc list-outside pl-6 mb-5 space-y-1.5 text-on-surface-variant">{children}</ul>
+                      <ul className="list-disc list-outside pl-6 mb-5 space-y-1.5 text-[#374151]">{children}</ul>
                     ),
                     ol: ({ children }) => (
-                      <ol className="list-decimal list-outside pl-6 mb-5 space-y-1.5 text-on-surface-variant">{children}</ol>
+                      <ol className="list-decimal list-outside pl-6 mb-5 space-y-1.5 text-[#374151]">{children}</ol>
                     ),
                     li: ({ children }) => (
                       <li className="text-base leading-relaxed">{children}</li>
                     ),
                     blockquote: ({ children }) => (
-                      <blockquote className="border-l-4 border-primary/40 pl-5 py-1 my-6 italic text-on-surface-variant/80">{children}</blockquote>
+                      <blockquote className="border-l-4 border-[#ff5473]/40 pl-5 py-1 my-6 italic text-[#6b7280]">{children}</blockquote>
                     ),
                     code: ({ className, children }) => {
                       const isBlock = className?.includes('language-')
                       if (isBlock) {
                         return (
-                          <code className="block bg-surface-container rounded-lg p-5 my-6 text-sm font-mono overflow-x-auto text-on-surface">
+                          <code className="block bg-[#f5f5f5] rounded-lg p-5 my-6 text-sm font-mono overflow-x-auto text-[#0a0a0a]" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
                             {children}
                           </code>
                         )
                       }
                       return (
-                        <code className="bg-surface-container px-1.5 py-0.5 rounded text-sm font-mono text-primary">{children}</code>
+                        <code className="bg-[#f5f5f5] px-1.5 py-0.5 rounded text-sm font-mono text-[#ff5473]">{children}</code>
                       )
                     },
                     pre: ({ children }) => (
-                      <pre className="bg-surface-container rounded-lg p-5 my-6 overflow-x-auto">{children}</pre>
+                      <pre className="bg-[#f5f5f5] rounded-lg p-5 my-6 overflow-x-auto" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>{children}</pre>
                     ),
-                    hr: () => <hr className="border-outline-variant/20 my-10" />,
+                    hr: () => <hr className="my-10" style={{ borderColor: 'rgba(0,0,0,0.08)' }} />,
                     table: ({ children }) => (
                       <div className="overflow-x-auto my-6">
                         <table className="w-full text-sm border-collapse">{children}</table>
                       </div>
                     ),
                     th: ({ children }) => (
-                      <th className="text-left px-4 py-2 border-b border-outline-variant/30 font-semibold text-on-surface">{children}</th>
+                      <th className="text-left px-4 py-2 border-b font-semibold text-[#0a0a0a]" style={{ borderColor: 'rgba(0,0,0,0.1)' }}>{children}</th>
                     ),
                     td: ({ children }) => (
-                      <td className="px-4 py-2 border-b border-outline-variant/10 text-on-surface-variant">{children}</td>
+                      <td className="px-4 py-2 border-b text-[#6b7280]" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>{children}</td>
                     ),
                     img: ({ src, alt }) => (
                       <span className="block my-6 rounded-lg overflow-hidden">
@@ -208,7 +208,7 @@ export default async function BlogPostPage({ params }: Props) {
                         <img src={src} alt={alt || ''} className="w-full rounded-lg" />
                       </span>
                     ),
-                    strong: ({ children }) => <strong className="font-semibold text-on-surface">{children}</strong>,
+                    strong: ({ children }) => <strong className="font-semibold text-[#0a0a0a]">{children}</strong>,
                     em: ({ children }) => <em className="italic">{children}</em>,
                   }}
                 >
@@ -217,21 +217,21 @@ export default async function BlogPostPage({ params }: Props) {
               </div>
 
               {/* Share Buttons */}
-              <div className="mt-12 pt-8 border-t border-outline-variant/20">
-                <p className="text-sm text-outline-variant mb-3">Share this post</p>
+              <div className="mt-12 pt-8" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
+                <p className="text-sm text-[#9ca3af] mb-3">Share this post</p>
                 <ShareButtons title={post.title} slug={post.slug} />
               </div>
 
               {/* Author Card */}
               {post.author && (
-                <div className="mt-10 p-6 rounded-xl bg-surface-container border border-outline-variant/10">
+                <div className="mt-10 p-6 rounded-xl bg-[#f9f9f9]" style={{ border: '1px solid rgba(0,0,0,0.08)' }}>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary-container/30 flex items-center justify-center flex-shrink-0">
-                      <span className="material-symbols-outlined text-primary text-xl">person</span>
+                    <div className="w-12 h-12 rounded-full bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
+                      <span className="material-symbols-outlined text-[#ff5473] text-xl">person</span>
                     </div>
                     <div>
-                      <p className="font-medium text-on-surface">{post.author}</p>
-                      <p className="text-sm text-on-surface-variant">Pulse Digital</p>
+                      <p className="font-medium text-[#0a0a0a]">{post.author}</p>
+                      <p className="text-sm text-[#6b7280]">Pulse Digital</p>
                     </div>
                   </div>
                 </div>
@@ -239,16 +239,17 @@ export default async function BlogPostPage({ params }: Props) {
 
               {/* Related Posts */}
               {relatedPosts.length > 0 && (
-                <section className="mt-16 pt-12 border-t border-outline-variant/20">
+                <section className="mt-16 pt-12" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
                   <AnimateOnScroll variant="fade-up">
-                    <h2 className="font-headline text-2xl font-bold tracking-tight mb-8">Related Posts</h2>
+                    <h2 className="text-2xl font-bold tracking-tight mb-8 text-[#0a0a0a]">Related Posts</h2>
                   </AnimateOnScroll>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {relatedPosts.map(rp => (
                       <Link
                         key={rp.id}
                         href={`/blog/${rp.slug}`}
-                        className="group bg-surface-container rounded-xl overflow-hidden border border-outline-variant/10 hover:border-primary/20 transition-colors"
+                        className="group bg-white rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                        style={{ border: '1px solid rgba(0,0,0,0.08)' }}
                       >
                         <div className="relative aspect-[16/9] overflow-hidden">
                           <BlogImage
@@ -259,10 +260,10 @@ export default async function BlogPostPage({ params }: Props) {
                           />
                         </div>
                         <div className="p-5">
-                          <h3 className="font-headline text-base font-bold tracking-tight mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                          <h3 className="text-base font-bold tracking-tight mb-2 text-[#0a0a0a] group-hover:text-[#ff5473] transition-colors line-clamp-2">
                             {rp.title}
                           </h3>
-                          <div className="flex items-center justify-between text-xs text-outline-variant">
+                          <div className="flex items-center justify-between text-xs text-[#9ca3af]">
                             <span>{formatDate(rp.publishedDate)}</span>
                             <span>{readTime(rp.wordCount)} min</span>
                           </div>
@@ -274,10 +275,10 @@ export default async function BlogPostPage({ params }: Props) {
               )}
 
               {/* Footer nav */}
-              <div className="mt-16 pt-10 border-t border-outline-variant/20">
+              <div className="mt-16 pt-10" style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
                 <Link
                   href="/blog"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#ff5473] hover:underline"
                 >
                   <span className="material-symbols-outlined text-base">arrow_back</span>
                   Back to all posts

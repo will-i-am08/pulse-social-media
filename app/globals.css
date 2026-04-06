@@ -38,17 +38,26 @@ body {
   grid-template-columns: repeat(12, 1fr);
 }
 .nav-link {
-  color: #e1bec0;
+  color: #6b7280;
   transition: color 0.3s;
 }
 .nav-link:hover {
-  color: #ffb2b9;
+  color: #0a0a0a;
 }
 .nav-link.active {
-  color: #ffb2b9;
-  border-bottom: 2px solid #ff5473;
-  padding-bottom: 4px;
-  font-weight: 700;
+  color: #0a0a0a;
+  font-weight: 500;
+}
+.display-text {
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.mono-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 /* Policy page prose styling */

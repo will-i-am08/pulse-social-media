@@ -65,7 +65,7 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
   if (posts.length === 0) {
     return (
       <div className="text-center py-24">
-        <p className="text-on-surface-variant text-lg">No published posts yet. Check back soon.</p>
+        <p className="text-[#6b7280] text-lg">No published posts yet. Check back soon.</p>
       </div>
     )
   }
@@ -75,16 +75,22 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
       {/* Search Bar */}
       <AnimateOnScroll variant="fade-up">
         <div className="relative max-w-xl mb-10">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant text-xl">search</span>
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[#9ca3af] text-xl">search</span>
           <input
             type="text"
             placeholder="Search posts by title, description, or tags..."
             value={search}
             onChange={e => handleSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-surface-container border border-outline-variant/20 text-on-surface placeholder:text-outline-variant text-sm focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-colors"
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white text-[#0a0a0a] placeholder:text-[#9ca3af] text-sm focus:outline-none transition-colors"
+            style={{
+              border: '1px solid rgba(0,0,0,0.1)',
+              boxShadow: 'none',
+            }}
+            onFocus={e => { e.target.style.borderColor = '#ff5473' }}
+            onBlur={e => { e.target.style.borderColor = 'rgba(0,0,0,0.1)' }}
           />
           {search && (
-            <button onClick={() => handleSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline-variant hover:text-on-surface transition-colors">
+            <button onClick={() => handleSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#0a0a0a] transition-colors">
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
           )}
@@ -103,8 +109,8 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
                   onClick={() => toggleTag(tag)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-all ${
                     isActive
-                      ? 'bg-primary text-on-primary border-primary shadow-sm'
-                      : 'bg-primary-container/20 text-primary border-primary/10 hover:border-primary/30'
+                      ? 'bg-[#ff5473] text-white border-[#ff5473]'
+                      : 'bg-[#fff0f2] text-[#ff5473] border-[#ff5473]/20 hover:border-[#ff5473]/50'
                   }`}
                 >
                   {tag}
@@ -114,7 +120,7 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
             {activeTags.length > 0 && (
               <button
                 onClick={() => { setActiveTags([]); setVisibleCount(POSTS_PER_PAGE) }}
-                className="px-3 py-1.5 text-xs font-medium rounded-full text-outline-variant hover:text-on-surface transition-colors"
+                className="px-3 py-1.5 text-xs font-medium rounded-full text-[#9ca3af] hover:text-[#0a0a0a] transition-colors"
               >
                 Clear filters
               </button>
@@ -126,11 +132,11 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
       {/* Section Heading */}
       <AnimateOnScroll variant="fade-up">
         <div className="flex items-center justify-between mb-12">
-          <h2 className="font-headline text-3xl font-bold tracking-tight">
+          <h2 className="text-3xl font-bold tracking-tight text-[#0a0a0a]">
             {isFiltering ? 'Results' : 'All Articles'}
           </h2>
           {isFiltering && (
-            <span className="text-sm text-outline-variant">{filtered.length} post{filtered.length !== 1 ? 's' : ''} found</span>
+            <span className="text-sm text-[#9ca3af]">{filtered.length} post{filtered.length !== 1 ? 's' : ''} found</span>
           )}
         </div>
       </AnimateOnScroll>
@@ -143,7 +149,8 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
               <Link
                 key={post.id}
                 href={`/blog/${post.slug}`}
-                className="group bg-surface-container rounded-xl overflow-hidden border border-outline-variant/10 hover:border-primary/20 transition-colors flex flex-col"
+                className="group bg-white rounded-xl overflow-hidden flex flex-col hover:shadow-md transition-shadow"
+                style={{ border: '1px solid rgba(0,0,0,0.08)' }}
               >
                 <div className="relative aspect-[16/9] overflow-hidden flex-shrink-0">
                   <BlogImage
@@ -154,21 +161,21 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
                   />
                 </div>
                 <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="font-headline text-lg font-bold tracking-tight mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="text-lg font-bold tracking-tight mb-2 text-[#0a0a0a] group-hover:text-[#ff5473] transition-colors line-clamp-2">
                     {post.title}
                   </h3>
                   {post.meta && (
-                    <p className="text-on-surface-variant text-sm leading-relaxed line-clamp-2 mb-4">{post.meta}</p>
+                    <p className="text-[#6b7280] text-sm leading-relaxed line-clamp-2 mb-4">{post.meta}</p>
                   )}
                   <div className="mt-auto">
-                    <div className="flex items-center justify-between text-xs text-outline-variant">
+                    <div className="flex items-center justify-between text-xs text-[#9ca3af]">
                       <span>{formatDate(post.publishedDate)}</span>
                       <span>{readTime(post.wordCount)} min read</span>
                     </div>
                     {post.tags && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {post.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 3).map(tag => (
-                          <span key={tag} className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-primary-container/15 text-primary/80">{tag}</span>
+                          <span key={tag} className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-[#fff0f2] text-[#ff5473]">{tag}</span>
                         ))}
                       </div>
                     )}
@@ -182,7 +189,8 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
             <div className="text-center mt-12">
               <button
                 onClick={() => setVisibleCount(prev => prev + POSTS_PER_PAGE)}
-                className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-on-primary font-medium text-sm hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-white font-medium text-sm transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
               >
                 Load More
                 <span className="material-symbols-outlined text-base">expand_more</span>
@@ -192,11 +200,11 @@ export default function InsightsBlogGrid({ posts }: { posts: BlogPost[] }) {
         </>
       ) : (
         <div className="text-center py-16">
-          <span className="material-symbols-outlined text-5xl text-outline-variant mb-4 block">search_off</span>
-          <p className="text-on-surface-variant text-lg">No posts match your search.</p>
+          <span className="material-symbols-outlined text-5xl text-[#9ca3af] mb-4 block">search_off</span>
+          <p className="text-[#6b7280] text-lg">No posts match your search.</p>
           <button
             onClick={() => { setSearch(''); setActiveTags([]); setVisibleCount(POSTS_PER_PAGE) }}
-            className="mt-4 text-primary hover:underline text-sm"
+            className="mt-4 text-[#ff5473] hover:underline text-sm"
           >
             Clear all filters
           </button>
