@@ -7,8 +7,22 @@ import InsightsBlogGrid from './InsightsBlogGrid'
 import { getPublishedPosts } from '@/lib/blog'
 
 export const metadata: Metadata = {
-  title: 'Insights | Pulse Digital Agency',
-  description: 'Digital strategy insights, AI trends, and actionable guides from the Pulse Digital team.',
+  title: 'Insights | Digital Strategy, AI & Social Media Guides',
+  description: 'Digital strategy insights, AI trends, and actionable social media guides from the Pulse Digital team. Stay ahead of the curve.',
+  keywords: ['social media insights', 'digital marketing blog', 'AI marketing trends', 'social media tips', 'content strategy guides'],
+  openGraph: {
+    title: 'Insights | Digital Strategy, AI & Social Media Guides',
+    description: 'Digital strategy insights, AI trends, and actionable social media guides from the Pulse Digital team.',
+    url: '/insights',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Insights' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Insights | Pulse Digital Agency',
+    description: 'Digital strategy insights, AI trends, and actionable social media guides from the Pulse Digital team.',
+    images: ['/og-image.png'],
+  },
+  alternates: { canonical: '/insights' },
 }
 
 export const revalidate = 60

@@ -11,8 +11,39 @@ const plusJakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'Pulse Social Media',
-  description: 'The Emissary of Heat — AI-driven social architectures and high-thermal data strategies.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'),
+  title: {
+    default: 'Pulse Digital Agency | Social Media That Works',
+    template: '%s | Pulse Digital Agency',
+  },
+  description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and content that connects with your audience.',
+  keywords: ['social media agency', 'social media management', 'AI social media', 'content strategy', 'digital marketing agency'],
+  authors: [{ name: 'Pulse Digital Agency' }],
+  creator: 'Pulse Digital Agency',
+  openGraph: {
+    type: 'website',
+    siteName: 'Pulse Digital Agency',
+    title: 'Pulse Digital Agency | Social Media That Works',
+    description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and content that connects with your audience.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Agency' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pulse Digital Agency | Social Media That Works',
+    description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and content that connects with your audience.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

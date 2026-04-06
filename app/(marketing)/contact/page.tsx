@@ -4,8 +4,22 @@ import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 import ContactForm from '@/components/marketing/ContactForm'
 
 export const metadata: Metadata = {
-  title: 'Contact Us | Pulse Digital Agency',
-  description: 'Get in touch with Pulse Digital to discuss your brand, social media strategy, or digital growth project.',
+  title: 'Contact Pulse Digital Agency | Get in Touch',
+  description: 'Get in touch with Pulse Digital to discuss your brand, social media strategy, or digital growth project. We\'d love to hear from you.',
+  keywords: ['contact pulse digital', 'social media agency contact', 'hire social media agency', 'digital marketing enquiry'],
+  openGraph: {
+    title: 'Contact Pulse Digital Agency',
+    description: 'Get in touch to discuss your brand, social media strategy, or digital growth project.',
+    url: '/contact',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Contact Pulse Digital' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact Pulse Digital Agency',
+    description: 'Get in touch to discuss your brand, social media strategy, or digital growth project.',
+    images: ['/og-image.png'],
+  },
+  alternates: { canonical: '/contact' },
 }
 
 const DIVIDER = '1px solid rgba(0,0,0,0.08)'

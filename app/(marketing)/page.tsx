@@ -5,6 +5,20 @@ import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 export const metadata: Metadata = {
   title: 'Pulse Digital Agency | Social Media That Works',
   description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and content that connects with your audience.',
+  keywords: ['social media agency', 'social media management', 'AI content creation', 'brand growth', 'digital marketing', 'social media strategy', 'content marketing'],
+  openGraph: {
+    title: 'Pulse Digital Agency | Social Media That Works',
+    description: 'We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects.',
+    url: '/',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Agency' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pulse Digital Agency | Social Media That Works',
+    description: 'We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects.',
+    images: ['/og-image.png'],
+  },
+  alternates: { canonical: '/' },
 }
 
 const CARD = 'bg-white rounded-2xl p-6 flex flex-col gap-4 shadow-sm'
@@ -41,9 +55,40 @@ const SERVICES = [
   },
 ]
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/#organization`,
+      name: 'Pulse Digital Agency',
+      url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/logo.png`,
+      },
+      description: 'AI-powered social media agency helping brands grow through intelligent content strategy, community management, and data-driven marketing.',
+      sameAs: [],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/#website`,
+      url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au',
+      name: 'Pulse Digital Agency',
+      publisher: {
+        '@id': `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/#organization`,
+      },
+    },
+  ],
+}
+
 export default function HomePage() {
   return (
     <main style={{ color: '#0a0a0a' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">

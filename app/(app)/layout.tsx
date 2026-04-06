@@ -3,6 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import { WorkspaceProvider } from '@/context/WorkspaceContext'
 import AppShell from './AppShell'
 import type { Role } from '@/lib/types'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

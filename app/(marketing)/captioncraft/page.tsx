@@ -3,8 +3,22 @@ import Link from 'next/link'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 
 export const metadata: Metadata = {
-  title: 'CaptionCraft | Pulse Digital Agency',
+  title: 'CaptionCraft | AI Caption Generator for Social Media',
   description: 'AI-powered caption and content generation for social media. Create on-brand posts in seconds with CaptionCraft by Pulse Digital.',
+  keywords: ['AI caption generator', 'social media caption tool', 'AI content creation', 'caption writer', 'social media automation tool'],
+  openGraph: {
+    title: 'CaptionCraft | AI Caption Generator for Social Media',
+    description: 'Create on-brand social media captions in seconds with AI. CaptionCraft by Pulse Digital.',
+    url: '/captioncraft',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'CaptionCraft by Pulse Digital' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CaptionCraft | AI Caption Generator',
+    description: 'Create on-brand social media captions in seconds with AI. CaptionCraft by Pulse Digital.',
+    images: ['/og-image.png'],
+  },
+  alternates: { canonical: '/captioncraft' },
 }
 
 const DIVIDER = '1px solid rgba(0,0,0,0.08)'

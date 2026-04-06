@@ -4,8 +4,22 @@ import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 
 export const metadata: Metadata = {
-  title: 'Services | Pulse Digital Agency',
-  description: 'Social media management, AI-driven automation, analytics, and creative strategy — explore the full range of Pulse Digital services.',
+  title: 'Services | Social Media Management & AI Strategy',
+  description: 'Social media management, AI-driven content creation, analytics, and creative strategy — explore the full range of Pulse Digital services.',
+  keywords: ['social media management services', 'AI content strategy', 'social media analytics', 'community management', 'content creation agency'],
+  openGraph: {
+    title: 'Services | Social Media Management & AI Strategy',
+    description: 'Full-service social media management, AI-powered content creation, analytics, and creative strategy from Pulse Digital.',
+    url: '/services',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Services' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Services | Pulse Digital Agency',
+    description: 'Full-service social media management, AI-powered content creation, analytics, and creative strategy.',
+    images: ['/og-image.png'],
+  },
+  alternates: { canonical: '/services' },
 }
 
 const DIVIDER = '1px solid rgba(0,0,0,0.08)'

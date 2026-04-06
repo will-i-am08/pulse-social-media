@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server'
 import { WorkspaceProvider } from '@/context/WorkspaceContext'
 import CreativeStudioShell from './CreativeStudioShell'
 import type { Role } from '@/lib/types'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = { robots: { index: false, follow: false } }
 
 export default async function CreativeStudioLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

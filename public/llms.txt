@@ -1,0 +1,37 @@
+# Pulse Digital Agency
+
+> Pulse Digital is an AI-powered social media agency helping brands grow through intelligent content strategy, community management, and data-driven marketing.
+
+## What We Do
+
+Pulse Digital provides end-to-end social media management powered by AI. We combine human creativity with machine intelligence to build brands that resonate, audiences that grow, and content that converts.
+
+## Services
+
+- **Social Media Strategy**: AI-driven strategy built on audience insight and platform intelligence
+- **Content Creation**: On-brand captions, copy, and creative briefs generated at scale and reviewed by humans
+- **Community Management**: Always-on engagement that turns followers into loyal brand advocates
+- **Analytics & Reporting**: Clear performance reporting focused on what actually drives growth
+- **Scheduling & Publishing**: Full publishing pipeline from approval to posting across all platforms
+- **CaptionCraft**: AI caption and content generation tool for social media marketers
+
+## How We Use AI
+
+- Claude AI for caption generation, content briefs, and copy creation
+- Predictive analytics to identify trends before they peak
+- Intelligent scheduling to post at optimal times for each audience
+- Workflow automation for approval flows, scheduling queues, and publishing pipelines
+- Machine learning to measure what content actually drives growth
+
+## Target Audience
+
+Brands, marketing teams, and agencies looking to scale their social media presence without sacrificing quality or authenticity.
+
+## Key Pages
+
+- Homepage: /
+- Services: /services
+- About: /about
+- CaptionCraft Tool: /captioncraft
+- Insights & Blog: /insights
+- Contact: /contact
