@@ -12,7 +12,7 @@ const DIVIDER = '1px solid rgba(0,0,0,0.08)'
 
 export default function ServicesPage() {
   return (
-    <main style={{ background: '#ffffff', color: '#0a0a0a' }} className="pt-32 pb-20 overflow-hidden">
+    <main style={{ color: '#0a0a0a' }} className="pt-32 pb-20 overflow-hidden">
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-8 mb-32 relative">

@@ -19,7 +19,7 @@ export default async function InsightsPage() {
   const posts = await getPublishedPosts()
 
   return (
-    <main style={{ background: '#ffffff', color: '#0a0a0a' }} className="pt-32 pb-24">
+    <main style={{ color: '#0a0a0a' }} className="pt-32 pb-24">
 
       {/* Hero Featured Article */}
       <section className="max-w-7xl mx-auto px-8 mb-32">

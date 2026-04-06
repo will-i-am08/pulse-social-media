@@ -75,7 +75,7 @@ export default function BlogListClient({ posts }: Props) {
 
   if (posts.length === 0) {
     return (
-      <main className="pt-32 pb-24" style={{ background: '#ffffff', color: '#0a0a0a' }}>
+      <main className="pt-32 pb-24" style={{ color: '#0a0a0a' }}>
         <section className="max-w-7xl mx-auto px-8 text-center">
           <AnimateOnScroll variant="fade-up">
             <h1 className="display-text text-[#0a0a0a] mb-6" style={{ fontSize: 'clamp(56px, 10vw, 100px)' }}>
@@ -92,7 +92,7 @@ export default function BlogListClient({ posts }: Props) {
   const isFiltering = search.trim() !== '' || activeTags.length > 0
 
   return (
-    <main style={{ background: '#ffffff', color: '#0a0a0a' }} className="pt-32 pb-24">
+    <main style={{ color: '#0a0a0a' }} className="pt-32 pb-24">
       {/* Hero Featured Post */}
       {!isFiltering && (
         <section className="max-w-7xl mx-auto px-8 mb-24">

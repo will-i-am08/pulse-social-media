@@ -12,7 +12,7 @@ const DIVIDER = '1px solid rgba(0,0,0,0.08)'
 
 export default function ContactPage() {
   return (
-    <main style={{ background: '#ffffff', color: '#0a0a0a' }} className="pt-32 pb-20 px-6 max-w-7xl mx-auto overflow-hidden">
+    <main style={{ color: '#0a0a0a' }} className="pt-32 pb-20 px-6 max-w-7xl mx-auto overflow-hidden">
 
       {/* Hero Header */}
       <section className="mb-20 ml-0 md:ml-12 lg:ml-24">

@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: Props) {
   return (
     <>
       <ReadingProgress />
-      <main className="pt-32 pb-24" style={{ background: '#ffffff', color: '#0a0a0a' }}>
+      <main className="pt-32 pb-24" style={{ color: '#0a0a0a' }}>
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex gap-16">
             {/* Main article column */}
