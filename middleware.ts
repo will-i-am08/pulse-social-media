@@ -52,6 +52,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const isAppRoute = APP_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
 
+  // Gate /login to desktop app only (identified by PulseDesktop user-agent)
+  const userAgent = request.headers.get('user-agent') ?? ''
+  if (pathname === '/login' && !userAgent.includes('PulseDesktop')) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
   // Unauthenticated → redirect to /login
   if (!user && isAppRoute) {
     const url = request.nextUrl.clone()

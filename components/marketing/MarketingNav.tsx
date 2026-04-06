@@ -44,12 +44,6 @@ export default function MarketingNav() {
             )
           })}
         </div>
-        <Link
-          href="/dashboard"
-          className="bg-primary-container text-on-primary-container px-6 py-2.5 rounded hover:bg-rose-500/10 transition-all duration-300 active:scale-95 font-medium text-sm"
-        >
-          Login
-        </Link>
       </div>
     </nav>
   )
