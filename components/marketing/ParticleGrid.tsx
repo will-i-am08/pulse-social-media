@@ -6,10 +6,11 @@ export default function ParticleGrid() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    if (!canvasRef.current) return
+    const canvasEl: HTMLCanvasElement = canvasRef.current
+    const ctx2d = canvasEl.getContext('2d')
+    if (!ctx2d) return
+    const ctx: CanvasRenderingContext2D = ctx2d
 
     let animationId: number
     let mouseX = -9999
@@ -33,7 +34,7 @@ export default function ParticleGrid() {
     function buildGrid() {
       particles = []
       gridPageHeight = document.documentElement.scrollHeight
-      const cols = Math.ceil(canvas.width  / SPACING) + 1
+      const cols = Math.ceil(canvasEl.width  / SPACING) + 1
       const rows = Math.ceil(gridPageHeight / SPACING) + 1
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -45,13 +46,13 @@ export default function ParticleGrid() {
     }
 
     function resize() {
-      canvas.width  = window.innerWidth
-      canvas.height = window.innerHeight
+      canvasEl.width  = window.innerWidth
+      canvasEl.height = window.innerHeight
       buildGrid()
     }
 
     function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height)
 
       // Mouse in page space (add scrollY to convert from viewport to page coords)
       const mousePageY = mouseY + scrollY
@@ -61,7 +62,7 @@ export default function ParticleGrid() {
         const screenY = p.y - scrollY
 
         // Skip particles outside visible area (with buffer)
-        if (screenY < -SPACING * 2 || screenY > canvas.height + SPACING * 2) continue
+        if (screenY < -SPACING * 2 || screenY > canvasEl.height + SPACING * 2) continue
 
         // Distance in page space
         const dx = p.ox - mouseX
