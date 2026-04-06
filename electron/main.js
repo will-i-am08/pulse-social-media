@@ -5,6 +5,23 @@ const APP_NAME = 'Pulse Social Media'
 const APP_URL = 'https://pulsesocialmedia.com.au/apps'
 const APP_ORIGIN = 'https://pulsesocialmedia.com.au'
 
+// Routes that belong to the app — everything else is the marketing site
+const APP_ROUTE_PREFIXES = [
+  '/apps', '/dashboard', '/create-post', '/posts', '/calendar', '/brands',
+  '/photos', '/analytics', '/clients', '/team', '/holidays', '/settings',
+  '/profile', '/account', '/automations', '/creative-studio', '/blog-engine',
+  '/brand-research', '/geo', '/proposals', '/login', '/auth', '/api',
+]
+
+function isAppRoute(url) {
+  try {
+    const pathname = new URL(url).pathname
+    return APP_ROUTE_PREFIXES.some(p => pathname === p || pathname.startsWith(p + '/'))
+  } catch {
+    return false
+  }
+}
+
 // Set app name before anything else so it propagates everywhere
 app.setName(APP_NAME)
 
@@ -96,6 +113,12 @@ function createWindow() {
     if (!url.startsWith(APP_ORIGIN)) {
       event.preventDefault()
       shell.openExternal(url)
+      return
+    }
+    // Block navigation to marketing pages — keep user inside the app
+    if (!isAppRoute(url)) {
+      event.preventDefault()
+      win.loadURL(APP_URL)
     }
   })
 }
