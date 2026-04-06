@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { headers } from 'next/headers'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 
 export const metadata: Metadata = {
@@ -146,12 +145,10 @@ const jsonLd = {
   ],
 }
 
-export default async function HomePage() {
-  const nonce = (await headers()).get('x-nonce') ?? ''
+export default function HomePage() {
   return (
     <main style={{ color: '#0a0a0a' }}>
       <script
-        nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />

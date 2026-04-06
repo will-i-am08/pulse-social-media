@@ -24,29 +24,7 @@ const APP_ROUTES = [
   '/proposals',
 ]
 
-function buildCsp(nonce: string): string {
-  const directives = [
-    `default-src 'self'`,
-    // 'strict-dynamic' trusts scripts loaded by a nonced script (Next.js chunks etc.)
-    // 'nonce-...' trusts only scripts that carry this per-request token
-    `script-src 'nonce-${nonce}' 'strict-dynamic'`,
-    `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
-    `font-src 'self' https://fonts.gstatic.com data:`,
-    `img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://lh3.googleusercontent.com https://*.supabase.in`,
-    `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.supabase.in wss://*.supabase.in`,
-    `frame-ancestors 'self'`,
-    `base-uri 'self'`,
-    `form-action 'self'`,
-    `object-src 'none'`,
-    `upgrade-insecure-requests`,
-  ]
-  return directives.join('; ')
-}
-
 export async function middleware(request: NextRequest) {
-  // Generate a fresh cryptographic nonce for every request
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
-
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -96,10 +74,6 @@ export async function middleware(request: NextRequest) {
     url.pathname = '/apps'
     return NextResponse.redirect(url)
   }
-
-  // Attach nonce + CSP to response headers
-  supabaseResponse.headers.set('x-nonce', nonce)
-  supabaseResponse.headers.set('Content-Security-Policy', buildCsp(nonce))
 
   return supabaseResponse
 }

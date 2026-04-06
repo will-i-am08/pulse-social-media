@@ -33,5 +33,6 @@
     # HSTS — force HTTPS for 1 year (enable once you're confident SSL is stable)
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-    # Content-Security-Policy is set dynamically per-request in middleware.ts
-    # using a cryptographic nonce — this avoids the unsafe-inline warning.
+    # CSP: unsafe-inline is required for Next.js hydration scripts (__NEXT_DATA__ etc.)
+    # unsafe-inline in style-src is also needed for Tailwind/inline styles.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://lh3.googleusercontent.com https://*.supabase.in; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.supabase.in wss://*.supabase.in; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
