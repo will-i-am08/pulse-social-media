@@ -39,6 +39,7 @@ const TOOL_LABELS: Record<string, string> = {
   list_automations: 'Fetching automations',
   toggle_automation: 'Toggling automation',
   run_automation: 'Running automation',
+  call_api: 'Working on it…',
 }
 
 export default function AgentChat() {

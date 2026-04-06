@@ -100,9 +100,14 @@ export default function PostsPage() {
   }
 
   async function sendToBuffer(post: Post) {
-    if (bufferProfiles.length === 0) { toast.error('Connect Buffer in Account Settings first'); return }
-    const profileIds = Array.from(selectedProfiles)
-    if (profileIds.length === 0) { toast.error('Select at least one Buffer profile'); return }
+    const brand = brands.find(b => b.id === post.brand_profile_id)
+    const profileIds = brand?.buffer_profile_ids?.length
+      ? brand.buffer_profile_ids
+      : Array.from(selectedProfiles)
+    if (profileIds.length === 0) {
+      toast.error('No Buffer profiles configured for this brand. Go to Settings to set them up.')
+      return
+    }
     setSendingId(post.id)
     try {
       const res = await fetch('/api/buffer', {
@@ -119,7 +124,7 @@ export default function PostsPage() {
         changeStatus(post.id, 'published')
         toast.success('Added to Buffer queue!')
       } else {
-        toast.error(data.results?.find((r: any) => !r.success)?.error || 'Failed to send to Buffer')
+        toast.error(data.results?.find((r: { success: boolean; error?: string }) => !r.success)?.error || 'Failed to send to Buffer')
       }
     } catch {
       toast.error('Failed to send to Buffer')
@@ -131,17 +136,20 @@ export default function PostsPage() {
   async function sendAllApproved() {
     const approved = posts.filter(p => p.status === 'approved' || p.status === 'scheduled')
     if (approved.length === 0) { toast.error('No approved/scheduled posts to send'); return }
-    if (bufferProfiles.length === 0) { toast.error('Connect Buffer in Account Settings first'); return }
-    const profileIds = Array.from(selectedProfiles)
-    if (profileIds.length === 0) { toast.error('Select at least one Buffer profile'); return }
 
     setBulkSending(true)
     let sent = 0
     let failed = 0
     let lastError = ''
 
-    for (const post of approved) {
-      if (sent + failed > 0) await new Promise(r => setTimeout(r, 1500))
+    const results = await Promise.all(approved.map(async (post) => {
+      const brand = brands.find(b => b.id === post.brand_profile_id)
+      const profileIds = brand?.buffer_profile_ids?.length
+        ? brand.buffer_profile_ids
+        : Array.from(selectedProfiles)
+      if (profileIds.length === 0) {
+        return { post, success: false, error: `No Buffer profiles configured for brand "${brand?.name || 'Unknown'}"` }
+      }
       try {
         const res = await fetch('/api/buffer', {
           method: 'POST',
@@ -155,15 +163,22 @@ export default function PostsPage() {
         const data = await res.json()
         const anySuccess = data.success || data.results?.some((r: { success: boolean }) => r.success)
         if (anySuccess) {
-          sent++
-          changeStatus(post.id, 'published')
+          return { post, success: true }
         } else {
-          failed++
-          lastError = data.results?.find((r: { success: boolean; error?: string }) => r.error)?.error || data.error || 'Unknown error'
+          return { post, success: false, error: data.results?.find((r: { success: boolean; error?: string }) => r.error)?.error || data.error || 'Unknown error' }
         }
       } catch (e: unknown) {
+        return { post, success: false, error: e instanceof Error ? e.message : 'Request failed' }
+      }
+    }))
+
+    for (const result of results) {
+      if (result.success) {
+        sent++
+        changeStatus(result.post.id, 'published')
+      } else {
         failed++
-        lastError = e instanceof Error ? e.message : 'Request failed'
+        lastError = result.error || 'Unknown error'
       }
     }
 
@@ -434,7 +449,7 @@ export default function PostsPage() {
     return (
       <div key={post.id}>
         <div
-          className="flex items-center gap-3 p-4 cursor-pointer hover:bg-[rgba(255,84,115,0.04)] transition-colors"
+          className="group flex items-center gap-3 p-4 cursor-pointer hover:bg-[rgba(255,84,115,0.04)] transition-colors"
           onClick={() => setExpandedId(isExpanded ? null : post.id)}
         >
           <input
@@ -473,6 +488,13 @@ export default function PostsPage() {
                         {PLATFORM_ICONS[p] || p}
                       </span>
                     ))}
+                    <button
+                      onClick={e => { e.stopPropagation(); setConfirmDelete(post.id) }}
+                      className="btn btn-d btn-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Delete post"
+                    >
+                      <TrashIcon className="w-3 h-3" />
+                    </button>
                   </div>
                 </div>
 
@@ -525,32 +547,11 @@ export default function PostsPage() {
                         </button>
                       ))}
                     </div>
-                    {/* Buffer profile selector */}
-                    {(post.status === 'approved' || post.status === 'scheduled') && bufferProfiles.length > 0 && (
-                      <div className="p-3 bg-[#211f1f] rounded-lg">
-                        <label className="text-xs font-medium text-[#e1bec0] mb-1.5 block">Send to Buffer profiles:</label>
-                        <div className="flex flex-wrap gap-2">
-                          {bufferProfiles.map(p => (
-                            <label key={p.id} className="flex items-center gap-1.5 cursor-pointer text-sm">
-                              <input
-                                type="checkbox"
-                                className="w-3.5 h-3.5 accent-[#ff5473]"
-                                checked={selectedProfiles.has(p.id)}
-                                onChange={() => toggleProfile(p.id)}
-                              />
-                              <span className="text-[#e6e1e1]">
-                                {bufferServiceIcon(p.service)} {p.formatted_username || p.formatted_service}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                     <div className="flex gap-2 flex-wrap">
                       {(post.status === 'approved' || post.status === 'scheduled') && (
                         <button
                           onClick={() => sendToBuffer(post)}
-                          disabled={sendingId === post.id || selectedProfiles.size === 0}
+                          disabled={sendingId === post.id}
                           className="btn btn-p btn-sm flex items-center gap-1"
                         >
                           {sendingId === post.id

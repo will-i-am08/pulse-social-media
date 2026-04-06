@@ -136,16 +136,32 @@ export function WorkspaceProvider({
     }
   }
 
+  const cacheKey = `workspace_cache_${workspaceId}`
+
   const load = useCallback(async () => {
-    dispatch({ type: 'LOAD_START' })
+    // Show cached data instantly if available — no loading spinner on repeat visits
     try {
-      const [brandsRes, postsR, photosR, clientsR, settingsR, profileR] = await Promise.all([
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        dispatch({ type: 'LOAD_SUCCESS', payload: { ...parsed, loading: false } })
+      } else {
+        dispatch({ type: 'LOAD_START' })
+      }
+    } catch {
+      dispatch({ type: 'LOAD_START' })
+    }
+
+    // Always fetch fresh data in the background
+    try {
+      const [brandsRes, postsR, photosR, clientsR, settingsR, profileR, foldersR] = await Promise.all([
         fetch('/api/brands'),
         sb.from('posts').select('data').eq('workspace_id', workspaceId),
         sb.from('photos').select('data').eq('workspace_id', workspaceId),
         sb.from('clients').select('data').eq('workspace_id', workspaceId),
         sb.from('settings').select('data').eq('workspace_id', workspaceId).single(),
         sb.from('profiles').select('*').eq('id', userId).single(),
+        sb.from('folders').select('data').eq('workspace_id', workspaceId),
       ])
 
       const wbBrands: WorkspaceBrand[] = brandsRes.ok ? await brandsRes.json() : []
@@ -164,13 +180,13 @@ export function WorkspaceProvider({
         email: profileData?.email || '',
         role: profileData?.role,
       }
-      const foldersR = await sb.from('folders').select('data').eq('workspace_id', workspaceId)
       const folders: Folder[] = (foldersR.data || []).map((r: { data: Folder }) => r.data)
 
-      dispatch({
-        type: 'LOAD_SUCCESS',
-        payload: { brands, posts, photos, clients, settings, profile, folders, loading: false, workspaceId, role },
-      })
+      const fresh = { brands, posts, photos, clients, settings, profile, folders }
+      dispatch({ type: 'LOAD_SUCCESS', payload: { ...fresh, loading: false, workspaceId, role } })
+
+      // Update cache for next mount
+      try { localStorage.setItem(cacheKey, JSON.stringify(fresh)) } catch { /* quota */ }
     } catch (e) {
       console.error('WorkspaceProvider load error:', e)
       toast.error('Failed to load workspace data')
@@ -183,6 +199,7 @@ export function WorkspaceProvider({
   async function syncTable(table: string, rows: unknown[]) {
     if (!workspaceId) return
     try {
+      localStorage.removeItem(cacheKey)
       await sb.from(table).delete().eq('workspace_id', workspaceId)
       if (rows.length) {
         const toInsert = rows.map((r: unknown) => {

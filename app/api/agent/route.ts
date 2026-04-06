@@ -606,6 +606,43 @@ const TOOLS = [
       required: ['path'],
     },
   },
+  {
+    name: 'call_api',
+    description: `Call any internal API route to perform an action not covered by the other tools. Always prefer specific tools when they exist. Use this for anything else.
+
+Key available routes:
+- POST /api/claude — general-purpose AI (body: { prompt, systemPrompt?, brandId? })
+- POST /api/generate-image — generate an image (body: { prompt, brandId?, aspectRatio? })
+- GET /api/buffer — get Buffer profiles
+- POST /api/buffer — send a post to Buffer (body: { profileIds, text, media? })
+- GET/POST /api/proposals — list or create proposals
+- GET/POST/PUT/DELETE /api/proposals/[id] — manage a specific proposal
+- POST /api/proposals/generate — AI-generate proposal content (body: { brandId, clientName, services, budget? })
+- POST /api/brands/autofill — auto-fill brand details from website (body: { website })
+- POST /api/brands/research — deep brand/competitor research (body: { brandId, query })
+- POST /api/blog/generate-ideas — generate blog ideas (body: { brandId, count?, focusArea? })
+- POST /api/blog/generate-post — write a full blog post (body: { brandId, title, tags?, postType? })
+- POST /api/blog/check-draft — review/improve a draft (body: { content, brandId })
+- POST /api/blog/brand-polish — polish blog post to match brand voice (body: { content, brandId })
+- POST /api/blog/optimize-title — suggest better titles (body: { title, content? })
+- GET/POST /api/blog/posts — list or upsert blog posts
+- GET/POST /api/automations — list or create automations
+- POST /api/automations/[id]/run — run a specific automation
+- POST /api/seo-keywords — keyword research (body: { brandId, seed })
+- POST /api/seo-onpage — on-page SEO audit (body: { url })
+- POST /api/seo-technical — technical SEO audit (body: { url })
+- GET /api/notifications — list notifications`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: 'API route path starting with /api/, e.g. /api/claude. For routes with IDs use the actual ID, e.g. /api/proposals/abc123.' },
+        method: { type: 'string', enum: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], description: 'HTTP method' },
+        body: { type: 'object', description: 'Request body as JSON (for POST/PUT/PATCH)' },
+        query_params: { type: 'object', description: 'Query string params as key/value (for GET/DELETE filters)' },
+      },
+      required: ['path', 'method'],
+    },
+  },
 ]
 
 // ─── Tool executor ────────────────────────────────────────────────────────────
@@ -616,6 +653,8 @@ async function executeTool(
   userId: string,
   workspaceId: string,
   apiKey: string,
+  origin: string,
+  cookieHeader: string,
 ): Promise<{ result: unknown; workspaceChanged: boolean; clientActions: { type: string; path?: string }[] }> {
   const supabase = await createClient()
   let workspaceChanged = false
@@ -1343,6 +1382,26 @@ Write a caption for ${platformStr}. Return only the caption text.`
       }
     }
 
+    case 'call_api': {
+      const { path, method, body, query_params } = input as { path: string; method: string; body?: Record<string, unknown>; query_params?: Record<string, string> }
+      if (!path.startsWith('/api/') || path.startsWith('/api/agent')) {
+        return { result: { error: 'Only /api/ routes (excluding /api/agent) are callable' }, workspaceChanged, clientActions }
+      }
+      let url = `${origin}${path}`
+      if (query_params && Object.keys(query_params).length) {
+        url += '?' + new URLSearchParams(query_params).toString()
+      }
+      const apiRes = await fetch(url, {
+        method,
+        headers: { 'content-type': 'application/json', 'cookie': cookieHeader },
+        body: body ? JSON.stringify(body) : undefined,
+      })
+      let apiResult: unknown
+      try { apiResult = await apiRes.json() } catch { apiResult = { status: apiRes.status, ok: apiRes.ok } }
+      if (apiRes.ok && method !== 'GET') workspaceChanged = true
+      return { result: apiResult, workspaceChanged, clientActions }
+    }
+
     default:
       return { result: { error: `Unknown tool: ${name}` }, workspaceChanged, clientActions }
   }
@@ -1403,6 +1462,9 @@ Posts: ${postCountStr}
 - Be concise and direct. You're a co-worker, not a chatbot.
 - You can navigate the user to any part of the app using the navigate tool.`
 
+  const origin = new URL(request.url).origin
+  const cookieHeader = request.headers.get('cookie') || ''
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let anthropicMessages: any[] = messages.map(m => ({ role: m.role, content: m.content }))
   let workspaceChanged = false
@@ -1430,7 +1492,7 @@ Posts: ${postCountStr}
       for (const block of data.content) {
         if (block.type !== 'tool_use') continue
         toolActivityLog.push(block.name)
-        const { result, workspaceChanged: wc, clientActions } = await executeTool(block.name, block.input, user.id, workspaceId, apiKey)
+        const { result, workspaceChanged: wc, clientActions } = await executeTool(block.name, block.input, user.id, workspaceId, apiKey, origin, cookieHeader)
         if (wc) workspaceChanged = true
         allClientActions.push(...clientActions)
         toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) })
