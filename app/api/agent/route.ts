@@ -285,6 +285,29 @@ const TOOLS = [
     },
   },
 
+  {
+    name: 'organize_photos',
+    description: 'Create folders and assign photos to them in a single batch operation. Use this to sort or reorganise the entire photo library at once — much faster than creating folders and moving photos separately.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        folders: {
+          type: 'array',
+          description: 'Folders to create with photos assigned to each',
+          items: {
+            type: 'object',
+            properties: {
+              name: { type: 'string', description: 'Folder name' },
+              photo_ids: { type: 'array', items: { type: 'string' }, description: 'IDs of photos to put in this folder' },
+            },
+            required: ['name', 'photo_ids'],
+          },
+        },
+      },
+      required: ['folders'],
+    },
+  },
+
   // ── FOLDERS ──
   {
     name: 'list_folders',
@@ -993,6 +1016,27 @@ Write a caption for ${platformStr}. Return only the caption text.`
       return { result: { moved: successCount, folder_id: fid }, workspaceChanged, clientActions }
     }
 
+    case 'organize_photos': {
+      const { folders } = input as { folders: { name: string; photo_ids: string[] }[] }
+      const results: { folder: string; id: string; photos_moved: number }[] = []
+      await Promise.all(folders.map(async ({ name, photo_ids }) => {
+        const newId = crypto.randomUUID()
+        const { error: folderErr } = await supabase
+          .from('folders')
+          .insert({ id: newId, workspace_id: workspaceId, data: { id: newId, name, brand_id: null } })
+        if (folderErr) return
+        // Move all photos to this folder in parallel
+        await Promise.all(photo_ids.map(async (photoId) => {
+          const { data: row } = await supabase.from('photos').select('data').eq('id', photoId).eq('workspace_id', workspaceId).single()
+          if (!row) return
+          await supabase.from('photos').update({ data: { ...row.data, folder_id: newId } }).eq('id', photoId)
+        }))
+        results.push({ folder: name, id: newId, photos_moved: photo_ids.length })
+      }))
+      workspaceChanged = true
+      return { result: { folders_created: results.length, results }, workspaceChanged, clientActions }
+    }
+
     // ──────────────────────────────────────────────────────────── FOLDERS ─────
 
     case 'list_folders': {
@@ -1447,7 +1491,7 @@ Posts: ${postCountStr}
     const res = await fetch(ANTHROPIC_API, {
       method: 'POST',
       headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 2048, system: systemPrompt, tools: TOOLS, messages: anthropicMessages }),
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 8192, system: systemPrompt, tools: TOOLS, messages: anthropicMessages }),
     })
     const data = await res.json()
     if (!res.ok) return NextResponse.json({ error: data.error?.message || 'Claude API error' }, { status: res.status })
