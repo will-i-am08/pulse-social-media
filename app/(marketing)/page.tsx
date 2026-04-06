@@ -3,19 +3,20 @@ import Link from 'next/link'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 
 export const metadata: Metadata = {
-  title: 'Pulse Digital Agency | Social Media That Works',
-  description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and content that connects with your audience.',
-  keywords: ['social media agency', 'social media management', 'AI content creation', 'brand growth', 'digital marketing', 'social media strategy', 'content marketing'],
+  // 54 chars — within the 50-60 char target
+  title: 'Pulse Digital | Social Media Marketing Services',
+  description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and engaging content. See results today with our expert team.',
+  keywords: ['social media agency', 'social media management', 'AI content creation', 'brand growth', 'digital marketing', 'social media strategy Australia', 'content marketing agency', 'social media marketing services'],
   openGraph: {
-    title: 'Pulse Digital Agency | Social Media That Works',
-    description: 'We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects.',
+    title: 'Pulse Digital | Social Media Marketing Services',
+    description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and engaging content. See results today with our expert team.',
     url: '/',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Agency' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pulse Digital Agency | Social Media That Works',
-    description: 'We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects.',
+    title: 'Pulse Digital | Social Media Marketing Services',
+    description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and engaging content. See results today with our expert team.',
     images: ['/og-image.png'],
   },
   alternates: { canonical: '/' },
@@ -235,7 +236,7 @@ export default function HomePage() {
             <div>
               <p className="mono-label text-[#9ca3af] mb-4">Our Services</p>
               <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-                What We<br />Do Best
+                Social Media Strategy<br />Services That Deliver
               </h2>
             </div>
           </AnimateOnScroll>
@@ -271,7 +272,7 @@ export default function HomePage() {
             <div className="mb-12">
               <p className="mono-label text-[#ff5473] mb-4">Real Results</p>
               <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-                What We&apos;ve<br />Delivered
+                Client Results &amp;<br />Case Studies
               </h2>
             </div>
           </AnimateOnScroll>
@@ -296,7 +297,7 @@ export default function HomePage() {
           <div className="mb-12">
             <p className="mono-label text-[#9ca3af] mb-4">Why Pulse</p>
             <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-              Different by<br />Design
+              Why Brands Choose<br />Pulse Digital Agency
             </h2>
           </div>
         </AnimateOnScroll>

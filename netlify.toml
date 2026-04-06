@@ -15,4 +15,28 @@
 [[headers]]
   for = "/*"
   [headers.values]
+    # Prevent MIME-type sniffing
     X-Content-Type-Options = "nosniff"
+
+    # Clickjacking protection
+    X-Frame-Options = "SAMEORIGIN"
+
+    # Legacy XSS filter (still respected by some older browsers)
+    X-XSS-Protection = "1; mode=block"
+
+    # Control referrer information sent with requests
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Restrict browser features / APIs
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+
+    # HSTS — force HTTPS for 1 year (enable once you're confident SSL is stable)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
+    # Content Security Policy
+    # - script/style unsafe-inline required for Next.js hydration and JSON-LD
+    # - fonts.googleapis.com / fonts.gstatic.com for Google Fonts + Material Symbols
+    # - images.unsplash.com + *.supabase.co for blog images
+    # - lh3.googleusercontent.com for Google OAuth avatars
+    # - wss://*.supabase.co for Supabase Realtime websockets
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://lh3.googleusercontent.com https://*.supabase.in; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.supabase.in wss://*.supabase.in; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"

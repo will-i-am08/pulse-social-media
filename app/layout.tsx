@@ -44,6 +44,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  alternates: {
+    languages: { 'en': process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au' },
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
