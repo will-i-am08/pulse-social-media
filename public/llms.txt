@@ -1,31 +1,65 @@
 # Pulse Digital Agency
 
-> Pulse Digital is an AI-powered social media agency helping brands grow through intelligent content strategy, community management, and data-driven marketing.
+> Pulse Digital is an AI-powered social media agency that helps brands grow through intelligent content strategy, community management, and data-driven marketing. We combine human creative expertise with proprietary AI tooling to deliver measurable results.
 
 ## What We Do
 
-Pulse Digital provides end-to-end social media management powered by AI. We combine human creativity with machine intelligence to build brands that resonate, audiences that grow, and content that converts.
+Pulse Digital provides end-to-end social media management powered by AI. We combine human creativity with machine intelligence to build brands that resonate, audiences that grow, and content that converts. Our team of digital strategists, content creators, and data analysts work together to deliver campaigns that perform.
 
 ## Services
 
-- **Social Media Strategy**: AI-driven strategy built on audience insight and platform intelligence
-- **Content Creation**: On-brand captions, copy, and creative briefs generated at scale and reviewed by humans
-- **Community Management**: Always-on engagement that turns followers into loyal brand advocates
-- **Analytics & Reporting**: Clear performance reporting focused on what actually drives growth
-- **Scheduling & Publishing**: Full publishing pipeline from approval to posting across all platforms
-- **CaptionCraft**: AI caption and content generation tool for social media marketers
+- **Social Media Strategy**: AI-driven strategy built on audience insight, competitive analysis, and platform intelligence — not guesswork
+- **Content Creation**: On-brand captions, copy, and creative briefs generated at scale using CaptionCraft AI and reviewed by human strategists
+- **Community Management**: Always-on engagement that turns followers into loyal brand advocates and conversations into conversions
+- **Analytics & Reporting**: Clear, honest reporting on engagement quality, conversion attribution, and audience sentiment — not just vanity metrics
+- **Scheduling & Publishing**: Full publishing pipeline from approval to posting across all platforms, optimised for peak engagement times
+- **CaptionCraft**: Our proprietary AI caption and content generation platform for social media marketers
 
-## How We Use AI
+## AI Tools & Technology Stack
 
-- Claude AI for caption generation, content briefs, and copy creation
-- Predictive analytics to identify trends before they peak
-- Intelligent scheduling to post at optimal times for each audience
-- Workflow automation for approval flows, scheduling queues, and publishing pipelines
-- Machine learning to measure what content actually drives growth
+- **Claude AI (Anthropic)**: Used for caption generation, content briefs, and copy creation — with human review on every output
+- **CaptionCraft**: Proprietary AI platform we built in-house for on-brand caption and content generation
+- **Predictive Analytics Engine**: Machine learning models that identify trends before they peak
+- **Intelligent Scheduling**: AI analysis of audience behaviour to identify optimal posting times per platform
+- **Workflow Automation**: End-to-end approval flows, scheduling queues, and publishing pipelines
+
+## Proven Results
+
+- 2.4 billion impressions generated across client accounts
+- 98% client retention rate
+- 150+ global brand partners
+- +340% organic engagement increase for e-commerce clients in 90 days
+- 45,000 followers gained for a tech startup in 6 months from zero
+- 2.1 million impressions delivered for a hospitality brand in their first quarter
+
+## What Makes Pulse Different From Other Agencies
+
+1. **AI-First, Not AI-Only**: We use AI as the engine but every strategy and piece of content is reviewed by a human strategist
+2. **We Build Our Own Tools**: CaptionCraft is our proprietary platform — we don't just use off-the-shelf software
+3. **Radical Transparency**: Clients see everything — real-time dashboards, honest reporting, clear attribution
+4. **Speed Without Sacrifice**: Automated workflows deliver faster execution without cutting corners on quality
+5. **Owned Tech Advantage**: Our proprietary tooling gives clients capabilities that generic agencies simply cannot offer
+
+## Team Expertise
+
+Our team brings combined expertise across:
+- Social media strategy and platform management (Instagram, TikTok, Facebook, LinkedIn, X)
+- AI and machine learning for marketing applications
+- Content creation, copywriting, and creative direction
+- Data analytics, performance marketing, and conversion optimisation
+- Brand development and digital identity
+
+## Client Testimonials
+
+"Pulse Digital didn't just manage our social — they completely redefined our digital identity. Their AI-driven approach gave us insights we didn't know were possible." — Alexander Vane, CMO, Vesper Global
+
+"From zero to a genuinely engaged audience in under six months. The team understood our brand instantly and built a strategy that actually reflected who we are." — Sarah Nguyen, Founder, Aurelius Studio
+
+"What sets Pulse apart is that they care about real results — not just impressions. Every decision is backed by data and explained clearly." — Marcus Reid, Head of Marketing, Terraco
 
 ## Target Audience
 
-Brands, marketing teams, and agencies looking to scale their social media presence without sacrificing quality or authenticity.
+Brands, marketing teams, and agencies looking to scale their social media presence without sacrificing quality or authenticity. We work with e-commerce brands, tech startups, hospitality businesses, and enterprise marketing teams.
 
 ## Key Pages
 

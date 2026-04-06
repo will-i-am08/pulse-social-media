@@ -36,22 +36,84 @@ const SERVICES = [
   {
     title: 'AI-Powered Strategy',
     icon: 'auto_awesome',
-    description: 'We use AI to understand what your audience cares about — delivering the right content at the right time, across every platform.',
+    description: 'We use Claude AI and proprietary audience intelligence to understand what your audience cares about — delivering the right content at the right time, across every platform.',
   },
   {
     title: 'Community Engagement',
     icon: 'groups',
-    description: 'Active social media management that keeps your community growing and turns followers into loyal brand advocates.',
+    description: 'Active social media management that keeps your community growing and turns followers into loyal brand advocates. Always-on, always human in tone.',
   },
   {
     title: 'Real Analytics',
     icon: 'analytics',
-    description: 'Beyond vanity metrics. We measure what actually drives growth and use that data to sharpen every decision.',
+    description: 'Beyond vanity metrics. We measure what actually drives growth — engagement quality, conversion attribution, and audience sentiment — then use that data to sharpen every decision.',
   },
   {
     title: 'Content That Connects',
     icon: 'edit_note',
-    description: 'High-quality creative content that cuts through the noise and resonates with the people who matter most to your brand.',
+    description: 'High-quality creative content powered by CaptionCraft, our own AI caption tool. Every output is reviewed by a human strategist before it goes anywhere near your audience.',
+  },
+]
+
+const RESULTS = [
+  {
+    label: 'E-commerce Brand',
+    metric: '+340%',
+    outcome: 'Organic engagement increase in 90 days',
+    detail: 'AI-optimised posting schedule combined with a content refresh drove consistent daily engagement across Instagram and TikTok.',
+  },
+  {
+    label: 'Tech Startup',
+    metric: '45K',
+    outcome: 'Followers gained in 6 months from zero',
+    detail: 'From brand launch to a highly engaged audience — driven by targeted community strategy and AI-generated content tested weekly.',
+  },
+  {
+    label: 'Hospitality Brand',
+    metric: '2.1M',
+    outcome: 'Impressions delivered in first quarter',
+    detail: 'A full-funnel social strategy across Facebook, Instagram and Google drove reach that converted directly to table bookings.',
+  },
+]
+
+const TESTIMONIALS = [
+  {
+    quote: 'Pulse Digital didn\'t just manage our social — they completely redefined our digital identity. Their AI-driven approach gave us insights we didn\'t know were possible.',
+    name: 'Alexander Vane',
+    role: 'CMO, Vesper Global',
+  },
+  {
+    quote: 'From zero to a genuinely engaged audience in under six months. The team at Pulse understood our brand instantly and built a strategy that actually reflected who we are.',
+    name: 'Sarah Nguyen',
+    role: 'Founder, Aurelius Studio',
+  },
+  {
+    quote: 'What sets Pulse apart is that they care about real results — not just impressions. Every decision is backed by data and explained clearly. It\'s the most transparent agency relationship I\'ve had.',
+    name: 'Marcus Reid',
+    role: 'Head of Marketing, Terraco',
+  },
+]
+
+const DIFFERENTIATORS = [
+  {
+    icon: 'memory',
+    title: 'AI-First, Not AI-Only',
+    body: 'We use Claude AI, CaptionCraft, and predictive analytics as the engine — but every strategy, caption, and campaign is reviewed and refined by a human strategist.',
+  },
+  {
+    icon: 'construction',
+    title: 'We Build Our Own Tools',
+    body: 'CaptionCraft is our proprietary AI caption and content platform. We don\'t just use off-the-shelf software — we build the tools that give our clients an edge.',
+  },
+  {
+    icon: 'bar_chart',
+    title: 'Radical Transparency',
+    body: 'You see everything. Real-time dashboards, honest reporting, and clear attribution — so you always know exactly what\'s working and why.',
+  },
+  {
+    icon: 'speed',
+    title: 'Speed Without Sacrifice',
+    body: 'Our automated workflows handle scheduling, approval flows, and publishing pipelines — meaning faster execution without cutting corners on quality.',
   },
 ]
 
@@ -193,27 +255,100 @@ export default function HomePage() {
             </AnimateOnScroll>
           ))}
         </div>
-      </section>
-
-      {/* ── Testimonial ──────────────────────────────────────────────────────── */}
-      <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
-        <AnimateOnScroll variant="fade-up">
-          <div className={CARD} style={{ border: BORDER, boxShadow: '0 2px 16px rgba(0,0,0,0.05)', padding: '48px' }}>
-            <p className="mono-label text-[#9ca3af] mb-6">Client Story</p>
-            <blockquote className="text-[#0a0a0a] font-light italic mb-8 leading-snug" style={{ fontSize: 'clamp(22px, 3vw, 36px)', letterSpacing: '-0.02em' }}>
-              &ldquo;Pulse Digital didn&apos;t just manage our social — they completely redefined our digital identity. Their AI-driven approach gave us insights we didn&apos;t know were possible.&rdquo;
-            </blockquote>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#fff0f2] flex items-center justify-center">
-                <span className="material-symbols-outlined text-[#ff5473] text-base">person</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-[#0a0a0a]">Alexander Vane</p>
-                <p className="mono-label text-[#9ca3af] mt-0.5">CMO, Vesper Global</p>
-              </div>
-            </div>
+        <AnimateOnScroll variant="fade-up" delay={0.2}>
+          <div className="mt-8 flex justify-start">
+            <Link href="/services" className="text-sm font-medium text-[#ff5473] hover:opacity-70 transition-opacity flex items-center gap-2">
+              View all services <span>→</span>
+            </Link>
           </div>
         </AnimateOnScroll>
+      </section>
+
+      {/* ── Results / Case Studies ────────────────────────────────────────────── */}
+      <section className="py-20" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
+        <div className="max-w-7xl mx-auto px-8 md:px-16">
+          <AnimateOnScroll variant="fade-up">
+            <div className="mb-12">
+              <p className="mono-label text-[#ff5473] mb-4">Real Results</p>
+              <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
+                What We&apos;ve<br />Delivered
+              </h2>
+            </div>
+          </AnimateOnScroll>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {RESULTS.map((r, i) => (
+              <AnimateOnScroll key={r.label} variant="fade-up" delay={i * 0.08}>
+                <div className="bg-white rounded-2xl p-8 flex flex-col gap-4 h-full" style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                  <p className="mono-label text-[#9ca3af]">{r.label}</p>
+                  <div className="display-text text-[#ff5473]" style={{ fontSize: 'clamp(42px, 5vw, 64px)' }}>{r.metric}</div>
+                  <p className="text-base font-semibold text-[#0a0a0a]">{r.outcome}</p>
+                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{r.detail}</p>
+                </div>
+              </AnimateOnScroll>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why Pulse ────────────────────────────────────────────────────────── */}
+      <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
+        <AnimateOnScroll variant="fade-up">
+          <div className="mb-12">
+            <p className="mono-label text-[#9ca3af] mb-4">Why Pulse</p>
+            <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
+              Different by<br />Design
+            </h2>
+          </div>
+        </AnimateOnScroll>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {DIFFERENTIATORS.map((d, i) => (
+            <AnimateOnScroll key={d.title} variant="fade-up" delay={i * 0.08}>
+              <div className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', minHeight: '160px' }}>
+                <div className="w-10 h-10 rounded-lg bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-[#ff5473]">{d.icon}</span>
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-[#0a0a0a] mb-1">{d.title}</h3>
+                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{d.body}</p>
+                </div>
+              </div>
+            </AnimateOnScroll>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Testimonials ─────────────────────────────────────────────────────── */}
+      <section className="py-20" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
+        <div className="max-w-7xl mx-auto px-8 md:px-16">
+          <AnimateOnScroll variant="fade-up">
+            <p className="mono-label text-[#ff5473] mb-12">Client Stories</p>
+          </AnimateOnScroll>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {TESTIMONIALS.map((t, i) => (
+              <AnimateOnScroll key={t.name} variant="fade-up" delay={i * 0.1}>
+                <div className="bg-white rounded-2xl p-8 flex flex-col gap-6 h-full" style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                  <div className="flex gap-1">
+                    {[...Array(5)].map((_, s) => (
+                      <span key={s} className="text-[#ff5473] text-base">★</span>
+                    ))}
+                  </div>
+                  <blockquote className="text-[#0a0a0a] font-light italic leading-relaxed flex-grow" style={{ fontSize: '0.95rem' }}>
+                    &ldquo;{t.quote}&rdquo;
+                  </blockquote>
+                  <div className="flex items-center gap-3" style={{ borderTop: DIVIDER, paddingTop: '1.25rem' }}>
+                    <div className="w-9 h-9 rounded-full bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
+                      <span className="material-symbols-outlined text-[#ff5473] text-base">person</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#0a0a0a]">{t.name}</p>
+                      <p className="mono-label text-[#9ca3af] mt-0.5">{t.role}</p>
+                    </div>
+                  </div>
+                </div>
+              </AnimateOnScroll>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── CTA ──────────────────────────────────────────────────────────────── */}

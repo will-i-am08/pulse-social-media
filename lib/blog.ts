@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { BlogPost } from '@/lib/types'
 
 export function rowToPost(row: { id: string; data: Record<string, unknown> }): BlogPost {
@@ -21,8 +21,11 @@ export function rowToPost(row: { id: string; data: Record<string, unknown> }): B
   }
 }
 
+// All public-facing functions use the admin (service role) client so they can
+// read published posts regardless of Supabase RLS policies.
+
 export async function getPublishedPosts(limit?: number, offset = 0): Promise<BlogPost[]> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   let query = supabase
     .from('posts')
     .select('id, data')
@@ -42,7 +45,7 @@ export async function getPublishedPosts(limit?: number, offset = 0): Promise<Blo
 }
 
 export async function getRelatedPosts(currentSlug: string, tags: string, limit = 3): Promise<BlogPost[]> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('posts')
     .select('id, data')
@@ -50,7 +53,7 @@ export async function getRelatedPosts(currentSlug: string, tags: string, limit =
     .eq('data->>status', 'published')
     .neq('data->>slug', currentSlug)
     .order('data->>published_date', { ascending: false })
-    .limit(limit * 3) // fetch a small pool to score by tag overlap
+    .limit(limit * 3)
 
   if (error || !data) return []
 
@@ -71,7 +74,7 @@ export async function getRelatedPosts(currentSlug: string, tags: string, limit =
 }
 
 export async function getPublishedPostBySlug(slug: string): Promise<BlogPost | null> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { data, error } = await supabase
     .from('posts')
     .select('id, data')
