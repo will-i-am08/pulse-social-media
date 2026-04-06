@@ -27,10 +27,10 @@ const BORDER = '1px solid rgba(0,0,0,0.07)'
 const DIVIDER = '1px solid rgba(0,0,0,0.08)'
 
 const STATS = [
-  { number: '2.4B', label: 'Impressions Generated' },
-  { number: '98%', label: 'Client Retention' },
-  { number: '150+', label: 'Global Partners' },
-  { number: 'Live', label: 'Always-On Monitoring' },
+  { number: '5.24B', label: 'Social media users worldwide' },
+  { number: '2h 20m', label: 'Average daily time spent on social' },
+  { number: '80%', label: 'Of consumers follow brands on social' },
+  { number: '73%', label: 'Of marketers say social works' },
 ]
 
 const SERVICES = [
@@ -56,42 +56,45 @@ const SERVICES = [
   },
 ]
 
-const RESULTS = [
+const SOCIAL_IMPACT = [
   {
-    label: 'E-commerce Brand',
-    metric: '+340%',
-    outcome: 'Organic engagement increase in 90 days',
-    detail: 'AI-optimised posting schedule combined with a content refresh drove consistent daily engagement across Instagram and TikTok.',
+    icon: 'storefront',
+    stat: '92%',
+    headline: 'Increased brand exposure',
+    body: 'Brands that actively post on social media report up to 92% increased exposure — giving you a global stage that traditional advertising simply can\'t match.',
+    source: 'Social Media Examiner',
   },
   {
-    label: 'Tech Startup',
-    metric: '45K',
-    outcome: 'Followers gained in 6 months from zero',
-    detail: 'From brand launch to a highly engaged audience — driven by targeted community strategy and AI-generated content tested weekly.',
+    icon: 'shopping_cart',
+    stat: '78%',
+    headline: 'Of purchases influenced by social',
+    body: 'Nearly 4 in 5 consumers say social media posts from brands influence their buying decisions. Your presence on social isn\'t optional — it\'s where decisions get made.',
+    source: 'Forbes / Sprout Social',
   },
   {
-    label: 'Hospitality Brand',
-    metric: '2.1M',
-    outcome: 'Impressions delivered in first quarter',
-    detail: 'A full-funnel social strategy across Facebook, Instagram and Google drove reach that converted directly to table bookings.',
+    icon: 'groups',
+    stat: '5×',
+    headline: 'Higher ROI with engaged communities',
+    body: 'Brands with actively managed, engaged social communities see up to 5× higher ROI on their content investment compared to brands that simply post and leave.',
+    source: 'HubSpot Research',
   },
 ]
 
-const TESTIMONIALS = [
+const WHY_NOW = [
   {
-    quote: 'Pulse Digital didn\'t just manage our social — they completely redefined our digital identity. Their AI-driven approach gave us insights we didn\'t know were possible.',
-    name: 'Alexander Vane',
-    role: 'CMO, Vesper Global',
+    icon: 'trending_up',
+    title: 'The window is open — but closing',
+    body: 'Organic reach is still accessible for brands that move now. Waiting means competing against more established accounts with bigger budgets. The best time to build your presence was yesterday.',
   },
   {
-    quote: 'From zero to a genuinely engaged audience in under six months. The team at Pulse understood our brand instantly and built a strategy that actually reflected who we are.',
-    name: 'Sarah Nguyen',
-    role: 'Founder, Aurelius Studio',
+    icon: 'psychology',
+    title: 'Consistency beats virality every time',
+    body: 'The brands winning on social aren\'t lucky — they\'re consistent. A structured, data-informed content strategy compounds over time in a way that one-off posts never will.',
   },
   {
-    quote: 'What sets Pulse apart is that they care about real results — not just impressions. Every decision is backed by data and explained clearly. It\'s the most transparent agency relationship I\'ve had.',
-    name: 'Marcus Reid',
-    role: 'Head of Marketing, Terraco',
+    icon: 'auto_graph',
+    title: 'AI has changed the playing field',
+    body: 'Brands using AI-assisted content strategy are producing more, testing faster, and learning quicker than those relying on manual workflows alone. This is the new competitive baseline.',
   },
 ]
 
@@ -213,7 +216,7 @@ export default function HomePage() {
       {/* ── Stats ────────────────────────────────────────────────────────────── */}
       <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
         <AnimateOnScroll variant="fade-up">
-          <p className="mono-label text-[#9ca3af] mb-8">By the numbers</p>
+          <p className="mono-label text-[#9ca3af] mb-8">Social media by the numbers</p>
         </AnimateOnScroll>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {STATS.map((stat, i) => (
@@ -265,25 +268,28 @@ export default function HomePage() {
         </AnimateOnScroll>
       </section>
 
-      {/* ── Results / Case Studies ────────────────────────────────────────────── */}
+      {/* ── Social Impact ─────────────────────────────────────────────────────── */}
       <section className="py-20" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
         <div className="max-w-7xl mx-auto px-8 md:px-16">
           <AnimateOnScroll variant="fade-up">
             <div className="mb-12">
-              <p className="mono-label text-[#ff5473] mb-4">Real Results</p>
+              <p className="mono-label text-[#ff5473] mb-4">Why Social Media</p>
               <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-                Client Results &amp;<br />Case Studies
+                The Opportunity<br />Is Real
               </h2>
             </div>
           </AnimateOnScroll>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {RESULTS.map((r, i) => (
-              <AnimateOnScroll key={r.label} variant="fade-up" delay={i * 0.08}>
+            {SOCIAL_IMPACT.map((item, i) => (
+              <AnimateOnScroll key={item.headline} variant="fade-up" delay={i * 0.08}>
                 <div className="bg-white rounded-2xl p-8 flex flex-col gap-4 h-full" style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                  <p className="mono-label text-[#9ca3af]">{r.label}</p>
-                  <div className="display-text text-[#ff5473]" style={{ fontSize: 'clamp(42px, 5vw, 64px)' }}>{r.metric}</div>
-                  <p className="text-base font-semibold text-[#0a0a0a]">{r.outcome}</p>
-                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{r.detail}</p>
+                  <div className="w-10 h-10 rounded-lg bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
+                    <span className="material-symbols-outlined text-[#ff5473]">{item.icon}</span>
+                  </div>
+                  <div className="display-text text-[#ff5473]" style={{ fontSize: 'clamp(42px, 5vw, 64px)' }}>{item.stat}</div>
+                  <p className="text-base font-semibold text-[#0a0a0a]">{item.headline}</p>
+                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{item.body}</p>
+                  <p className="mono-label text-[#c4c9d4] mt-auto">Source: {item.source}</p>
                 </div>
               </AnimateOnScroll>
             ))}
@@ -318,37 +324,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Testimonials ─────────────────────────────────────────────────────── */}
-      <section className="py-20" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
-        <div className="max-w-7xl mx-auto px-8 md:px-16">
-          <AnimateOnScroll variant="fade-up">
-            <p className="mono-label text-[#ff5473] mb-12">Client Stories</p>
-          </AnimateOnScroll>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {TESTIMONIALS.map((t, i) => (
-              <AnimateOnScroll key={t.name} variant="fade-up" delay={i * 0.1}>
-                <div className="bg-white rounded-2xl p-8 flex flex-col gap-6 h-full" style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                  <div className="flex gap-1">
-                    {[...Array(5)].map((_, s) => (
-                      <span key={s} className="text-[#ff5473] text-base">★</span>
-                    ))}
-                  </div>
-                  <blockquote className="text-[#0a0a0a] font-light italic leading-relaxed flex-grow" style={{ fontSize: '0.95rem' }}>
-                    &ldquo;{t.quote}&rdquo;
-                  </blockquote>
-                  <div className="flex items-center gap-3" style={{ borderTop: DIVIDER, paddingTop: '1.25rem' }}>
-                    <div className="w-9 h-9 rounded-full bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
-                      <span className="material-symbols-outlined text-[#ff5473] text-base">person</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#0a0a0a]">{t.name}</p>
-                      <p className="mono-label text-[#9ca3af] mt-0.5">{t.role}</p>
-                    </div>
-                  </div>
-                </div>
-              </AnimateOnScroll>
-            ))}
+      {/* ── Why Now ──────────────────────────────────────────────────────────── */}
+      <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
+        <AnimateOnScroll variant="fade-up">
+          <div className="mb-12">
+            <p className="mono-label text-[#9ca3af] mb-4">The case for acting now</p>
+            <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
+              Why Now Is the<br />Right Time
+            </h2>
           </div>
+        </AnimateOnScroll>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {WHY_NOW.map((item, i) => (
+            <AnimateOnScroll key={item.title} variant="fade-up" delay={i * 0.08}>
+              <div className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', minHeight: '200px' }}>
+                <div className="w-10 h-10 rounded-lg bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-[#ff5473]">{item.icon}</span>
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-[#0a0a0a] mb-2">{item.title}</h3>
+                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{item.body}</p>
+                </div>
+              </div>
+            </AnimateOnScroll>
+          ))}
         </div>
       </section>
 
