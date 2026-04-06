@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, type ReactNode } from 'react'
+import React, { useRef, type ReactNode } from 'react'
 import { motion, type Variants } from 'framer-motion'
 
 type Variant = 'fade-up' | 'fade-in' | 'slide-left' | 'slide-right' | 'scale-up'
@@ -34,6 +34,7 @@ interface Props {
   delay?: number
   duration?: number
   className?: string
+  style?: React.CSSProperties
   once?: boolean
 }
 
@@ -43,6 +44,7 @@ export default function AnimateOnScroll({
   delay = 0,
   duration = 0.6,
   className,
+  style,
   once = true,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null)
@@ -57,6 +59,7 @@ export default function AnimateOnScroll({
       variants={v}
       transition={{ duration, delay, ease: [0.25, 0.4, 0, 1] }}
       className={className}
+      style={style}
     >
       {children}
     </motion.div>
