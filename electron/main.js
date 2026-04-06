@@ -100,8 +100,8 @@ function createWindow() {
   // Inject a transparent drag region along the top so the window can be moved.
   // pointer-events: none lets clicks pass through to nav elements below.
   // -webkit-app-region: drag is handled at the OS level so dragging still works.
-  win.webContents.on('did-finish-load', () => {
-    win.webContents.insertCSS(`
+  win.webContents.on('did-finish-load', async () => {
+    await win.webContents.insertCSS(`
       #pulse-drag-region {
         position: fixed;
         top: 0;
@@ -113,12 +113,37 @@ function createWindow() {
         z-index: 2147483647;
       }
     `)
-    win.webContents.executeJavaScript(`
+    await win.webContents.executeJavaScript(`
       if (!document.getElementById('pulse-drag-region')) {
         const el = document.createElement('div');
         el.id = 'pulse-drag-region';
         document.body.appendChild(el);
       }
+    `)
+  })
+
+  // Show a friendly retry page if the network is unavailable
+  win.webContents.on('did-fail-load', (event, errorCode) => {
+    if (errorCode === -3) return // -3 = ERR_ABORTED (our own navigation prevention)
+    win.webContents.loadURL(`data:text/html,
+      <html>
+        <head><style>
+          body { margin: 0; background: #0f0e0e; color: #e6e1e1; font-family: sans-serif;
+                 display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+          h2 { margin: 0 0 8px; font-size: 20px; }
+          p  { margin: 0 0 20px; color: #a08082; font-size: 14px; }
+          button { background: #ff5473; color: #fff; border: none; padding: 10px 24px;
+                   border-radius: 6px; font-size: 14px; cursor: pointer; }
+          button:hover { background: #e04060; }
+        </style></head>
+        <body>
+          <div>
+            <h2>No connection</h2>
+            <p>Check your internet and try again.</p>
+            <button onclick="window.location.href='${APP_URL}'">Retry</button>
+          </div>
+        </body>
+      </html>
     `)
   })
 
@@ -141,6 +166,19 @@ function createWindow() {
       return
     }
     // Block navigation to marketing pages — keep user inside the app
+    if (!isAppRoute(url)) {
+      event.preventDefault()
+      win.loadURL(APP_URL)
+    }
+  })
+
+  // Also catch server-side 3xx redirects to marketing pages
+  win.webContents.on('will-redirect', (event, url) => {
+    if (!url.startsWith(APP_ORIGIN)) {
+      event.preventDefault()
+      shell.openExternal(url)
+      return
+    }
     if (!isAppRoute(url)) {
       event.preventDefault()
       win.loadURL(APP_URL)

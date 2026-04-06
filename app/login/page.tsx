@@ -63,15 +63,6 @@ export default function LoginPage() {
               <div className="text-xs text-[#5a4042]">Agency Content Platform</div>
             </div>
           </div>
-          <Link
-            href="/"
-            className="flex items-center gap-1 text-xs text-[#e1bec0] hover:text-[#ffb2b9] transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Back
-          </Link>
         </div>
 
         {screen === 'login' && (

@@ -1,6 +1,8 @@
 {
   "name": "pulse-captioncraft",
   "version": "1.0.0",
+  "description": "Pulse Social Media — AI-driven social media management platform",
+  "author": "Pulse Social Media",
   "private": true,
   "main": "electron/main.js",
   "scripts": {
