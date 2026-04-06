@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "au.com.pulsesocialmedia.app",
-    "productName": "Pulse",
+    "productName": "Pulse Social Media",
     "directories": {
       "output": "dist"
     },
