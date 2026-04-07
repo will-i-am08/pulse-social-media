@@ -22,6 +22,12 @@ interface Brand {
   name: string
 }
 
+interface Folder {
+  id: string
+  name: string
+  brand_id?: string | null
+}
+
 function uid() {
   return Math.random().toString(36).slice(2, 10)
 }
@@ -31,6 +37,7 @@ function StepCard({
   index,
   total,
   brands,
+  folders,
   onUpdate,
   onRemove,
   onMove,
@@ -39,6 +46,7 @@ function StepCard({
   index: number
   total: number
   brands: Brand[]
+  folders: Folder[]
   onUpdate: (s: AutomationStep) => void
   onRemove: () => void
   onMove: (dir: -1 | 1) => void
@@ -278,6 +286,87 @@ function StepCard({
           </>
         )}
 
+        {step.actionType === 'create-posts-from-folder' && (
+          <>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Photo Folder</label>
+              <select
+                className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-lg text-sm text-slate-300 px-3 py-2 outline-none"
+                value={(step.config.folderId as string) || ''}
+                onChange={e => updateConfig('folderId', e.target.value)}
+              >
+                <option value="">Select a folder…</option>
+                {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Brand</label>
+              <select
+                className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-lg text-sm text-slate-300 px-3 py-2 outline-none"
+                value={(step.config.brandId as string) || ''}
+                onChange={e => updateConfig('brandId', e.target.value)}
+              >
+                <option value="">Select a brand…</option>
+                {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Number of Posts to Create</label>
+              <input
+                type="number" min={1} max={10}
+                className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-lg text-sm text-white px-3 py-2 outline-none"
+                value={(step.config.count as number) || 1}
+                onChange={e => updateConfig('count', parseInt(e.target.value) || 1)}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Platforms</label>
+              <div className="flex gap-2">
+                {['instagram', 'facebook', 'linkedin', 'tiktok'].map(p => {
+                  const selected = ((step.config.platforms as string[]) || ['instagram']).includes(p)
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        const current = (step.config.platforms as string[]) || ['instagram']
+                        updateConfig('platforms', selected ? current.filter(x => x !== p) : [...current, p])
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                        selected ? 'bg-sky-500/20 text-sky-400' : 'bg-[rgba(255,255,255,0.04)] text-slate-500'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Status</label>
+              <select
+                className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-lg text-sm text-slate-300 px-3 py-2 outline-none"
+                value={(step.config.status as string) || 'draft'}
+                onChange={e => updateConfig('status', e.target.value)}
+              >
+                <option value="draft">Draft</option>
+                <option value="approved">Approved</option>
+                <option value="scheduled">Scheduled</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500 block mb-1">Caption Instructions (optional)</label>
+              <textarea
+                className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] rounded-lg text-sm text-white px-3 py-2 outline-none resize-none"
+                rows={2}
+                placeholder="e.g. Focus on the lifestyle angle, always include a CTA"
+                value={(step.config.prompt as string) || ''}
+                onChange={e => updateConfig('prompt', e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
         {step.actionType === 'send-notification' && (
           <div>
             <label className="text-xs text-slate-500 block mb-1">Message</label>
@@ -343,18 +432,23 @@ export default function EditAutomationPage() {
   const [eventType, setEventType] = useState('')
   const [steps, setSteps] = useState<AutomationStep[]>([])
   const [brands, setBrands] = useState<Brand[]>([])
+  const [folders, setFolders] = useState<Folder[]>([])
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(!isNew)
 
   useEffect(() => {
-    async function loadBrands() {
+    async function loadData() {
       const sb = createClient()
       const { data: { user } } = await sb.auth.getUser()
       if (!user) return
-      const { data } = await sb.from('workspace_brands').select('id, name').eq('user_id', user.id)
-      if (data) setBrands(data)
+      const [brandsRes, foldersRes] = await Promise.all([
+        sb.from('workspace_brands').select('id, name').eq('user_id', user.id),
+        sb.from('folders').select('data').eq('workspace_id', user.id),
+      ])
+      if (brandsRes.data) setBrands(brandsRes.data)
+      if (foldersRes.data) setFolders(foldersRes.data.map((r: { data: Folder }) => r.data))
     }
-    loadBrands()
+    loadData()
   }, [])
 
   useEffect(() => {
@@ -545,6 +639,7 @@ export default function EditAutomationPage() {
               index={i}
               total={steps.length}
               brands={brands}
+              folders={folders}
               onUpdate={s => updateStep(i, s)}
               onRemove={() => removeStep(i)}
               onMove={dir => moveStep(i, dir)}

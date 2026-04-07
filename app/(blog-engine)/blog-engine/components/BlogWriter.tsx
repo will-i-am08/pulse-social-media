@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { useBlog } from '@/context/BlogContext'
 import { BlogPost } from '@/lib/types'
 import { slugify, wordCount, computeGeoScore } from './utils'
+import { uploadImage } from '@/lib/supabase/storage'
 import GeoStars from './GeoStars'
 import toast from 'react-hot-toast'
 import {
@@ -142,6 +143,7 @@ export default function WriterTab({
   const [titleSuggestions, setTitleSuggestions] = useState<Array<{ title: string; reason: string }>>([])
   const [showPreview, setShowPreview] = useState(false)
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [currentDraftId, setCurrentDraftId] = useState<string | null>(initialDraftId)
   const contentRef = useRef<HTMLTextAreaElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
@@ -387,12 +389,20 @@ export default function WriterTab({
     setTimeout(() => { el.selectionStart = el.selectionEnd = s + text.length; el.focus() }, 0)
   }
 
-  function handleFeaturedImage(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFeaturedImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    const reader = new FileReader()
-    reader.onload = ev => setFeaturedImage(ev.target?.result as string)
-    reader.readAsDataURL(file)
+    setUploadingImage(true)
+    try {
+      const url = await uploadImage(file)
+      setFeaturedImage(url)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Image upload failed')
+    } finally {
+      setUploadingImage(false)
+      // Reset file input so the same file can be re-selected if needed
+      if (imageInputRef.current) imageInputRef.current.value = ''
+    }
   }
 
   function exportPost(format: 'md' | 'html' | 'txt') {
@@ -520,8 +530,8 @@ export default function WriterTab({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={() => imageInputRef.current?.click()} className="btn btn-sm flex items-center gap-1 text-slate-400 border-dashed">
-                  <ArrowUpTrayIcon className="w-3 h-3" /> Upload Image
+                <button onClick={() => imageInputRef.current?.click()} disabled={uploadingImage} className="btn btn-sm flex items-center gap-1 text-slate-400 border-dashed disabled:opacity-50">
+                  <ArrowUpTrayIcon className="w-3 h-3" /> {uploadingImage ? 'Uploading...' : 'Upload Image'}
                 </button>
                 {photos.length > 0 && (
                   <button

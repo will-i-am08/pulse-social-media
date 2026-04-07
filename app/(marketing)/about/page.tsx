@@ -42,7 +42,7 @@ export default function AboutPage() {
             </AnimateOnScroll>
             <AnimateOnScroll variant="fade-up" delay={0.2}>
               <p className="text-xl md:text-2xl text-[#6b7280] max-w-xl leading-relaxed font-light">
-                We bridge the gap between technology and real human connection. At Pulse Digital, we build digital experiences that feel natural, engaging, and meaningful.
+                We exist to help brands show up consistently, connect authentically, and grow their audience on social media. Not just posts — real strategy, real management, real results.
               </p>
             </AnimateOnScroll>
           </div>
@@ -69,16 +69,16 @@ export default function AboutPage() {
               <div className="max-w-2xl">
                 <p className="mono-label text-[#9ca3af] mb-4">Our Vision</p>
                 <h2 className="display-text text-[#0a0a0a] mb-6" style={{ fontSize: 'clamp(36px, 4vw, 52px)' }}>
-                  Shaping the Future of <span className="italic">Digital</span>
+                  A New Kind of <span className="italic">Social Media Agency</span>
                 </h2>
                 <p className="text-[#6b7280] text-lg font-light">
-                  We believe technology should feel effortless. Our goal is to create warm, intuitive experiences that empower both creators and their audiences.
+                  We combine human creativity with AI-powered tools to help brands grow faster than they could with traditional agencies alone — without losing the authenticity that builds real communities.
                 </p>
               </div>
               <div className="p-8 bg-white rounded-lg max-w-xs" style={{ border: DIVIDER }}>
-                <span className="material-symbols-outlined text-[#ff5473] mb-4 text-4xl block">auto_awesome</span>
-                <h3 className="text-[#0a0a0a] font-bold text-lg mb-2">Thoughtful Design</h3>
-                <p className="text-[#6b7280] text-sm">Visual systems built with purpose and attention to detail.</p>
+                <span className="material-symbols-outlined text-[#ff5473] mb-4 text-4xl block">groups</span>
+                <h3 className="text-[#0a0a0a] font-bold text-lg mb-2">Human-Led, AI-Powered</h3>
+                <p className="text-[#6b7280] text-sm">Every strategy and piece of content is reviewed by a real social media strategist.</p>
               </div>
             </div>
           </AnimateOnScroll>

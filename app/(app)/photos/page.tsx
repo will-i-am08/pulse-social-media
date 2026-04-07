@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import ConfirmDialog from '@/components/app/ConfirmDialog'
 import Modal from '@/components/app/Modal'
 import { uid } from '@/lib/utils'
 import { uploadImage } from '@/lib/supabase/storage'
+import { createClient } from '@/lib/supabase/client'
 import type { Photo, Folder } from '@/lib/types'
 import {
   FolderIcon,
@@ -17,11 +18,63 @@ import {
   EyeIcon,
   TrashIcon,
   ArrowPathIcon,
-  PlusIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/16/solid'
 
 export default function PhotosPage() {
-  const { photos, savePhotos, folders, saveFolders, brands } = useWorkspace()
+  const { photos, savePhotos, folders, saveFolders, brands, posts } = useWorkspace()
+  const [blogImageUrls, setBlogImageUrls] = useState<Set<string>>(new Set())
+
+  // Fetch blog post featured images once
+  useEffect(() => {
+    const sb = createClient()
+    sb.from('posts')
+      .select('data')
+      .eq('data->>type', 'blog')
+      .then(({ data }) => {
+        if (!data) return
+        const urls = new Set<string>()
+        for (const row of data) {
+          const img = row.data?.featured_image
+          if (img) urls.add(img)
+        }
+        setBlogImageUrls(urls)
+      })
+  }, [])
+
+  // Build set of all image URLs used in posts
+  const postImageUrls = useMemo(() => {
+    const urls = new Set<string>()
+    for (const p of posts) {
+      if (p.image_url) urls.add(p.image_url)
+      if (p.image_urls) p.image_urls.forEach(u => urls.add(u))
+    }
+    return urls
+  }, [posts])
+
+  // All used URLs combined
+  const allUsedUrls = useMemo(() => new Set([...postImageUrls, ...blogImageUrls]), [postImageUrls, blogImageUrls])
+
+  // Build set of photo names that are used (for duplicate detection)
+  const usedPhotoNames = useMemo(() => {
+    const names = new Set<string>()
+    for (const photo of photos) {
+      if (allUsedUrls.has(photo.url)) {
+        names.add(photo.name?.toLowerCase().trim())
+      }
+    }
+    return names
+  }, [photos, allUsedUrls])
+
+  // Determine if a photo is used (directly or as a duplicate by name)
+  function getUsageType(photo: Photo): 'post' | 'blog' | 'duplicate' | null {
+    if (postImageUrls.has(photo.url)) return 'post'
+    if (blogImageUrls.has(photo.url)) return 'blog'
+    // Check if a duplicate (same name as a used photo, but different URL)
+    const name = photo.name?.toLowerCase().trim()
+    if (name && usedPhotoNames.has(name) && !allUsedUrls.has(photo.url)) return 'duplicate'
+    return null
+  }
   const [filter, setFilter] = useState('')
   const [folderId, setFolderId] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -105,6 +158,28 @@ export default function PhotosPage() {
     toast.success('Folder deleted')
   }
 
+  function renameFolder(id: string, name: string) {
+    if (!name.trim()) return
+    saveFolders(folders.map(f => f.id === id ? { ...f, name: name.trim() } : f))
+  }
+
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null)
+  const [editingFolderName, setEditingFolderName] = useState('')
+  const [folderSettingsId, setFolderSettingsId] = useState<string | null>(null)
+  const [folderSettingsBrandId, setFolderSettingsBrandId] = useState('')
+
+  function openFolderSettings(f: Folder) {
+    setFolderSettingsId(f.id)
+    setFolderSettingsBrandId(f.brand_id || '')
+  }
+
+  function saveFolderSettings() {
+    if (!folderSettingsId) return
+    saveFolders(folders.map(f => f.id === folderSettingsId ? { ...f, brand_id: folderSettingsBrandId || null } : f))
+    setFolderSettingsId(null)
+    toast.success('Folder updated')
+  }
+
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -136,12 +211,30 @@ export default function PhotosPage() {
           </button>
           {folders.map(f => {
             const fb = f.brand_id ? brands.find(b => b.id === f.brand_id) : null
+            const isEditing = editingFolderId === f.id
             return (
-              <button key={f.id} onClick={() => setFolderId(f.id)} className={`btn btn-sm flex items-center gap-1 ${folderId === f.id ? 'btn-p' : 'btn-o'}`}>
-                <FolderIcon className="w-4 h-4" /> {f.name}
+              <div key={f.id} className={`btn btn-sm flex items-center gap-1 cursor-pointer ${folderId === f.id ? 'btn-p' : 'btn-o'}`} onClick={() => { if (!isEditing) setFolderId(f.id) }}>
+                <FolderIcon className="w-4 h-4 flex-shrink-0" />
+                {isEditing ? (
+                  <input
+                    autoFocus
+                    className="bg-transparent outline-none w-24 text-xs"
+                    value={editingFolderName}
+                    onChange={e => setEditingFolderName(e.target.value)}
+                    onClick={e => e.stopPropagation()}
+                    onBlur={() => { renameFolder(f.id, editingFolderName); setEditingFolderId(null) }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { renameFolder(f.id, editingFolderName); setEditingFolderId(null) }
+                      if (e.key === 'Escape') setEditingFolderId(null)
+                    }}
+                  />
+                ) : (
+                  <span onDoubleClick={e => { e.stopPropagation(); setEditingFolderId(f.id); setEditingFolderName(f.name) }}>{f.name}</span>
+                )}
                 {fb && <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: fb.color || '#ff5473' }} title={fb.name} />}
-                <span onClick={e => { e.stopPropagation(); deleteFolder(f.id) }} className="ml-1 text-[#f87171] hover:text-red-400">×</span>
-              </button>
+                <span onClick={e => { e.stopPropagation(); openFolderSettings(f) }} className="ml-1 text-[#5a4042] hover:text-[#e1bec0]"><Cog6ToothIcon className="w-3 h-3" /></span>
+                <span onClick={e => { e.stopPropagation(); deleteFolder(f.id) }} className="text-[#f87171] hover:text-red-400">×</span>
+              </div>
             )
           })}
         </div>
@@ -161,6 +254,7 @@ export default function PhotosPage() {
         <div className="photo-grid">
           {filtered.map(photo => {
             const folder = folders.find(f => f.id === photo.folder_id)
+            const usageType = getUsageType(photo)
             return (
               <div key={photo.id} className="card overflow-hidden group">
                 <div className="relative">
@@ -173,6 +267,17 @@ export default function PhotosPage() {
                       <TrashIcon className="w-3 h-3" />
                     </button>
                   </div>
+                  {usageType && (
+                    <div className="absolute top-1.5 left-1.5">
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        usageType === 'post' ? 'bg-[#ff5473] text-white' :
+                        usageType === 'blog' ? 'bg-purple-500 text-white' :
+                        'bg-amber-500 text-white'
+                      }`}>
+                        {usageType === 'post' ? 'Used in post' : usageType === 'blog' ? 'Used in blog' : 'Duplicate'}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-2">
                   <input
@@ -240,6 +345,32 @@ export default function PhotosPage() {
           </div>
         </Modal>
       )}
+
+      {/* Folder settings modal */}
+      {folderSettingsId && (() => {
+        const f = folders.find(x => x.id === folderSettingsId)
+        if (!f) return null
+        return (
+          <Modal onClose={() => setFolderSettingsId(null)}>
+            <div className="modal" style={{ maxWidth: 400 }}>
+              <h3 className="text-lg font-semibold mb-1 text-[#e6e1e1]">Folder Settings</h3>
+              <p className="text-xs text-[#5a4042] mb-4">{f.name}</p>
+              <label className="text-xs text-[#e1bec0] block mb-1">Linked Brand</label>
+              <select className="sel mb-2" value={folderSettingsBrandId} onChange={e => setFolderSettingsBrandId(e.target.value)}>
+                <option value="">No brand linked</option>
+                {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+              <p className="text-xs text-[#5a4042] mb-6">
+                Linking a brand lets you use this folder in automations to auto-generate posts on a schedule.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button className="btn btn-o" onClick={() => setFolderSettingsId(null)}>Cancel</button>
+                <button className="btn btn-p" onClick={saveFolderSettings}>Save</button>
+              </div>
+            </div>
+          </Modal>
+        )
+      })()}
 
       {confirmDelete && (
         <ConfirmDialog

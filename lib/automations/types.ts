@@ -9,6 +9,7 @@ export type ActionType =
   | 'generate-image'
   | 'generate-social-caption'
   | 'create-social-post'
+  | 'create-posts-from-folder'
   | 'send-notification'
   | 'ai-prompt'
 
@@ -70,6 +71,7 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   'generate-image': 'Generate Image',
   'generate-social-caption': 'Generate Social Caption',
   'create-social-post': 'Create Social Post',
+  'create-posts-from-folder': 'Create Posts from Folder',
   'send-notification': 'Send Notification',
   'ai-prompt': 'Custom AI Prompt',
 }

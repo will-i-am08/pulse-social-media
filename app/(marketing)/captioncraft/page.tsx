@@ -47,7 +47,7 @@ export default function CaptionCraftPromoPage() {
           </AnimateOnScroll>
           <AnimateOnScroll variant="fade-up" delay={0.2}>
             <p className="text-[#6b7280] text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed mb-12 font-light">
-              Your AI-powered content studio. Generate on-brand captions, manage every client, schedule every post — all in one place.
+              Our proprietary AI content studio. The in-house tool we built and use every day to create better content, faster — for every brand we manage.
             </p>
           </AnimateOnScroll>
           <AnimateOnScroll variant="fade-up" delay={0.3}>
@@ -72,7 +72,7 @@ export default function CaptionCraftPromoPage() {
               <div>
                 <p className="mono-label text-[#ff5473] mb-4">The Old Way</p>
                 <h3 className="text-3xl md:text-4xl font-black text-[#0a0a0a] tracking-tight mb-6">
-                  Agencies waste hours they don&apos;t have.
+                  Managing social without the right tools wastes hours.
                 </h3>
                 <div className="space-y-4 text-[#6b7280]">
                   {[
@@ -90,13 +90,13 @@ export default function CaptionCraftPromoPage() {
               <div>
                 <p className="mono-label text-[#ff5473] mb-4">The CaptionCraft Way</p>
                 <h3 className="text-3xl md:text-4xl font-black text-[#0a0a0a] tracking-tight mb-6">
-                  One studio. Every brand. Zero chaos.
+                  The tool we built to manage it better.
                 </h3>
                 <div className="space-y-4 text-[#6b7280]">
                   {[
-                    'Claude AI writes polished, on-brand captions in seconds — you just review and approve.',
-                    'Every brand, post, and schedule lives in one place — no more context switching.',
-                    'Approved posts go straight to Buffer and onto your channels automatically.',
+                    'Claude AI writes polished, on-brand captions in seconds — our team reviews and refines every one.',
+                    'Every brand, post, and schedule lives in one place — no context switching, no dropped balls.',
+                    'Approved posts go straight to your social channels automatically via Buffer.',
                   ].map((text, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <span className="material-symbols-outlined text-[#ff5473] mt-0.5 text-lg">check_circle</span>
@@ -116,7 +116,7 @@ export default function CaptionCraftPromoPage() {
           <div className="mb-16 text-center">
             <p className="mono-label text-[#ff5473] mb-4">Everything You Need</p>
             <h3 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 5vw, 64px)' }}>
-              Built for agencies.<br /><span className="italic text-[#9ca3af]">Powered by AI.</span>
+              Built in-house.<br /><span className="italic text-[#9ca3af]">Used every day.</span>
             </h3>
           </div>
         </AnimateOnScroll>
@@ -257,15 +257,18 @@ export default function CaptionCraftPromoPage() {
         <AnimateOnScroll variant="fade-in">
           <div className="py-32" style={{ borderTop: DIVIDER, borderBottom: DIVIDER }}>
             <p className="mono-label text-[#9ca3af] mb-10">Get started today</p>
-            <h2 className="display-text text-[#0a0a0a] mb-12" style={{ fontSize: 'clamp(48px, 7vw, 80px)' }}>
-              Ready to craft<br /><span style={{ color: '#ff5473' }}>at scale?</span>
+            <h2 className="display-text text-[#0a0a0a] mb-6" style={{ fontSize: 'clamp(48px, 7vw, 80px)' }}>
+              Want this working<br /><span style={{ color: '#ff5473' }}>for your brand?</span>
             </h2>
+            <p className="text-[#6b7280] text-lg max-w-xl mx-auto mb-12 font-light">
+              CaptionCraft is the tool behind our social media management service. Get in touch and we&apos;ll put it to work for you.
+            </p>
             <Link
               href="/contact"
               className="inline-flex items-center px-12 py-5 rounded-full text-white font-semibold text-base transition-opacity hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
             >
-              Get Started
+              Start the Conversation
             </Link>
           </div>
         </AnimateOnScroll>

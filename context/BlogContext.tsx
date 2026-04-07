@@ -119,6 +119,14 @@ export function BlogProvider({ children }: { children: ReactNode }) {
       const idx = prev.findIndex(p => p.id === post.id)
       return idx >= 0 ? prev.map(p => p.id === post.id ? post : p) : [post, ...prev]
     })
+    // Revalidate website if post is published
+    if (post.status === 'published' && post.slug) {
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: post.slug }),
+      }).catch(() => {/* silent — revalidation is best-effort */})
+    }
     return post
   }
 
@@ -137,6 +145,14 @@ export function BlogProvider({ children }: { children: ReactNode }) {
     if (!res.ok) throw new Error(await res.text())
     const post: BlogPost = await res.json()
     setDrafts(prev => prev.map(p => p.id === id ? post : p))
+    // Immediately revalidate blog pages on the website
+    if (post.slug) {
+      fetch('/api/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: post.slug }),
+      }).catch(() => {/* silent */})
+    }
   }
 
   return (

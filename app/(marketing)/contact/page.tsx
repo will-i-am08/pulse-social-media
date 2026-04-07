@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import Image from 'next/image'
 import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 import ContactForm from '@/components/marketing/ContactForm'
 
@@ -56,14 +55,11 @@ export default function ContactPage() {
             <div className="bg-[#f9f9f9] p-6 rounded-lg" style={{ border: DIVIDER }}>
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-[#fff0f2] text-[#ff5473]">
-                  <span className="material-symbols-outlined">location_on</span>
+                  <span className="material-symbols-outlined">alternate_email</span>
                 </div>
                 <div>
-                  <h4 className="font-bold text-[#0a0a0a] text-lg">Our Office</h4>
-                  <p className="text-[#6b7280] text-sm leading-relaxed mt-1">
-                    888 Volcanic Avenue, Level 42<br />
-                    Singapore 018989
-                  </p>
+                  <h4 className="font-bold text-[#0a0a0a] text-lg">Email Us</h4>
+                  <p className="text-[#6b7280] text-sm mt-1">hello@pulsesocialmedia.com.au</p>
                 </div>
               </div>
             </div>
@@ -71,40 +67,31 @@ export default function ContactPage() {
 
           <AnimateOnScroll variant="fade-up" delay={0.3}>
             <div className="bg-[#f9f9f9] p-6 rounded-lg" style={{ border: DIVIDER }}>
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-[#fff0f2] text-[#ff5473]">
-                  <span className="material-symbols-outlined">alternate_email</span>
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#0a0a0a] text-lg">Get In Touch</h4>
-                  <p className="text-[#6b7280] text-sm mt-1">hello@pulsedigital.agency</p>
-                  <p className="text-[#6b7280] text-sm">+65 8293 0011</p>
-                </div>
-              </div>
-            </div>
-          </AnimateOnScroll>
-
-          <AnimateOnScroll variant="fade-up" delay={0.4}>
-            <div className="bg-[#f9f9f9] p-6 rounded-lg" style={{ border: DIVIDER }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-2 h-2 rounded-full bg-[#ff5473] animate-pulse"></div>
                 <span className="text-xs font-bold uppercase tracking-widest text-[#ff5473]">Response Time</span>
               </div>
               <p className="text-[#6b7280] text-sm italic">
-                We typically respond within 4 hours during business hours. We look forward to hearing from you.
+                We typically respond within one business day. We look forward to hearing about your brand.
               </p>
             </div>
           </AnimateOnScroll>
 
-          <AnimateOnScroll variant="fade-up" delay={0.5}>
-            <div className="h-[280px] w-full rounded-lg overflow-hidden grayscale contrast-[1.1] hover:grayscale-0 transition-all duration-700 relative">
-              <Image
-                src="https://images.unsplash.com/photo-1565967511849-76a60a516170?auto=format&fit=crop&w=800&q=80"
-                alt="Map of Singapore central business district"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 42vw"
-              />
+          <AnimateOnScroll variant="fade-up" delay={0.4}>
+            <div className="bg-[#f9f9f9] p-8 rounded-lg" style={{ border: DIVIDER }}>
+              <p className="mono-label text-[#9ca3af] mb-4">What happens next</p>
+              <div className="space-y-4">
+                {[
+                  { step: '01', text: 'We review your enquiry and learn about your brand' },
+                  { step: '02', text: 'We reach out to schedule a free discovery call' },
+                  { step: '03', text: 'We put together a tailored social media strategy' },
+                ].map((item) => (
+                  <div key={item.step} className="flex items-start gap-4">
+                    <span className="text-[#ff5473] font-black text-sm">{item.step}</span>
+                    <p className="text-[#6b7280] text-sm leading-relaxed">{item.text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </AnimateOnScroll>
         </div>

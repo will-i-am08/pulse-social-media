@@ -163,7 +163,7 @@ export default function HomePage() {
             {/* Left: text */}
             <div>
               <AnimateOnScroll variant="fade-in" delay={0}>
-                <p className="mono-label text-[#ff5473] mb-8">Social Media Management Platform</p>
+                <p className="mono-label text-[#ff5473] mb-8">Social Media Management Agency</p>
               </AnimateOnScroll>
               <AnimateOnScroll variant="fade-up" delay={0.1}>
                 <h1 className="display-text text-[#0a0a0a] mb-6" style={{ fontSize: 'clamp(52px, 8vw, 104px)' }}>
@@ -191,10 +191,10 @@ export default function HomePage() {
             <AnimateOnScroll variant="fade-up" delay={0.2}>
               <div className="hidden md:grid grid-cols-2 gap-4">
                 {[
-                  { icon: 'auto_awesome', label: 'AI Captions', desc: 'Claude AI writes on-brand copy in seconds' },
-                  { icon: 'calendar_month', label: 'Smart Scheduling', desc: 'Post at peak times across every channel' },
-                  { icon: 'analytics', label: 'Live Analytics', desc: 'Real data that drives real decisions' },
-                  { icon: 'bolt', label: 'Automation', desc: 'Workflows that run while you sleep' },
+                  { icon: 'strategy', label: 'Content Strategy', desc: 'Audience-led strategies built around your goals' },
+                  { icon: 'groups', label: 'Community Management', desc: 'Always-on engagement that builds real loyalty' },
+                  { icon: 'analytics', label: 'Performance Reporting', desc: 'Honest insights on what\'s actually driving growth' },
+                  { icon: 'edit_note', label: 'Content Creation', desc: 'On-brand posts, captions and copy — done for you' },
                 ].map((card) => (
                   <div key={card.label} className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
                     <div className="w-9 h-9 rounded-lg bg-[#fff0f2] flex items-center justify-center">

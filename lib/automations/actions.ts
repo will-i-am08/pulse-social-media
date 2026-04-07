@@ -57,6 +57,11 @@ export const ACTION_REGISTRY: Record<ActionType, ActionDef> = {
     method: 'POST',
     buildBody: (c) => ({ brandId: c.brandId, caption: c.caption || '', platforms: c.platforms || ['instagram'], status: c.status || 'draft', scheduledAt: c.scheduledAt || null }),
   },
+  'create-posts-from-folder': {
+    endpoint: '/api/automations/folder-posts',
+    method: 'POST',
+    buildBody: (c) => ({ folderId: c.folderId, brandId: c.brandId, platforms: c.platforms || ['instagram'], status: c.status || 'draft', count: c.count || 1, prompt: c.prompt || '' }),
+  },
   'send-notification': {
     endpoint: '__internal__',
     method: 'POST',
