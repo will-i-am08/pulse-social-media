@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, Menu } = require('electron')
+const { app, BrowserWindow, shell, Menu, session } = require('electron')
 const path = require('path')
 
 const APP_NAME = 'Pulse Social Media'
@@ -54,6 +54,9 @@ function buildMenu() {
     {
       label: 'View',
       submenu: [
+        { role: 'reload', label: 'Reload' },
+        { role: 'forceReload', label: 'Force Reload' },
+        { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
         { role: 'zoomOut' },
@@ -94,12 +97,43 @@ function createWindow() {
   const defaultUA = win.webContents.getUserAgent()
   win.webContents.setUserAgent(`${defaultUA} PulseDesktop/1.0`)
 
-  // Disable right-click context menu
-  win.webContents.on('context-menu', (event) => event.preventDefault())
+  // Right-click: show spell-check + edit context menu for editable elements,
+  // minimal copy menu for read-only selections, nothing otherwise.
+  win.webContents.on('context-menu', (event, params) => {
+    event.preventDefault()
+    const menuItems = []
 
-  // Inject a transparent drag region along the top so the window can be moved.
-  // pointer-events: none lets clicks pass through to nav elements below.
-  // -webkit-app-region: drag is handled at the OS level so dragging still works.
+    // Spell-check suggestions
+    if (params.misspelledWord) {
+      if (params.dictionarySuggestions.length) {
+        params.dictionarySuggestions.forEach(word => {
+          menuItems.push({ label: word, click: () => win.webContents.replaceMisspelling(word) })
+        })
+        menuItems.push({ type: 'separator' })
+      }
+      menuItems.push({
+        label: 'Add to Dictionary',
+        click: () => win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord),
+      })
+      menuItems.push({ type: 'separator' })
+    }
+
+    if (params.isEditable) {
+      menuItems.push(
+        { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
+        { role: 'cut' }, { role: 'copy' }, { role: 'paste' },
+        { role: 'selectAll' },
+      )
+    } else if (params.selectionText) {
+      menuItems.push({ role: 'copy' })
+    }
+
+    if (menuItems.length) Menu.buildFromTemplate(menuItems).popup()
+  })
+
+  // Inject drag region + fix for interactive elements beneath it.
+  // -webkit-app-region: drag swallows OS-level mouse events even with
+  // pointer-events: none, so interactive elements need no-drag explicitly.
   win.webContents.on('did-finish-load', async () => {
     await win.webContents.insertCSS(`
       #pulse-drag-region {
@@ -112,6 +146,16 @@ function createWindow() {
         pointer-events: none;
         z-index: 2147483647;
       }
+      /* Ensure buttons/links in the drag area still receive clicks */
+      a, button, input, select, textarea, label, [role="button"], [role="link"] {
+        -webkit-app-region: no-drag;
+      }
+      ${process.platform === 'darwin' ? `
+      /* Push sidebar top content below macOS traffic lights (~40px) */
+      #sidebar > div:first-child {
+        padding-top: 28px;
+      }
+      ` : ''}
     `)
     await win.webContents.executeJavaScript(`
       if (!document.getElementById('pulse-drag-region')) {
@@ -186,7 +230,10 @@ function createWindow() {
   })
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Clear HTTP cache on every launch so the app always loads the latest deploy
+  await session.defaultSession.clearCache()
+
   Menu.setApplicationMenu(buildMenu())
   createWindow()
 
