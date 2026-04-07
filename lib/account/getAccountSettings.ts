@@ -30,3 +30,18 @@ export async function getDecryptedBufferToken(userId: string): Promise<string | 
     return null
   }
 }
+
+export async function getDecryptedBannerbearKey(userId: string): Promise<string | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('account_settings')
+    .select('bannerbear_key_enc, bannerbear_key_iv, bannerbear_key_tag')
+    .eq('user_id', userId)
+    .single()
+  if (!data?.bannerbear_key_enc || !data.bannerbear_key_iv || !data.bannerbear_key_tag) return null
+  try {
+    return decrypt(data.bannerbear_key_enc, data.bannerbear_key_iv, data.bannerbear_key_tag)
+  } catch {
+    return null
+  }
+}

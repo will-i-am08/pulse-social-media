@@ -79,14 +79,54 @@ export async function POST(req: NextRequest) {
   if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer channel' }, { status: 400 })
   if (!text?.trim()) return NextResponse.json({ error: 'Post text is required' }, { status: 400 })
 
+  // Fetch channel service info so we can build per-platform metadata
+  const channelServiceMap: Record<string, string> = {}
+  try {
+    const orgRes = await gql(token, `query { account { organizations { id } } }`)
+    const orgId = orgRes.data?.account?.organizations?.[0]?.id
+    if (orgId) {
+      const channelsRes = await gql(token, `
+        query GetChannels($input: ChannelsInput!) {
+          channels(input: $input) { id service }
+        }
+      `, { input: { organizationId: orgId } })
+      const channels: Array<{ id: string; service: string }> = channelsRes.data?.channels || []
+      for (const c of channels) {
+        channelServiceMap[c.id] = c.service
+      }
+    }
+  } catch (e) {
+    console.error('Failed to fetch channel services:', e)
+  }
+
+  const photoUrl: string | null = media?.photo || null
+
   const results = await Promise.all(
     profileIds.map(async (channelId: string) => {
-      const input: Record<string, unknown> = {
-        channels: [{ id: channelId }],
-        text,
+      const service = (channelServiceMap[channelId] || '').toLowerCase()
+
+      // Build per-platform metadata
+      const metadata: Record<string, unknown> = {}
+      if (service === 'facebook') {
+        metadata.facebook = { type: 'post' }
+      } else if (service === 'instagram') {
+        metadata.instagram = { type: 'post', shouldShareToFeed: true }
       }
-      if (media?.photo) {
-        input.media = { photo: media.photo }
+
+      const input: Record<string, unknown> = {
+        channelId,
+        text,
+        schedulingType: 'automatic',
+        mode: 'addToQueue',
+      }
+
+      if (Object.keys(metadata).length > 0) {
+        input.metadata = metadata
+      }
+
+      // Instagram requires at least one image; other platforms benefit from it too
+      if (photoUrl) {
+        input.assets = { images: [{ url: photoUrl }] }
       }
 
       try {

@@ -2,9 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 const REPLICATE_API = 'https://api.replicate.com/v1'
-const POLL_INTERVAL_MS = 2000
-const POLL_TIMEOUT_MS = 180_000 // 3 minutes
 
+// POST — start a prediction, return predictionId immediately (client polls)
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -20,7 +19,6 @@ export async function POST(request: NextRequest) {
 
   const headers = { 'Authorization': `Token ${apiKey}`, 'Content-Type': 'application/json' }
 
-  // Create prediction
   const createRes = await fetch(`${REPLICATE_API}/predictions`, {
     method: 'POST',
     headers,
@@ -29,30 +27,45 @@ export async function POST(request: NextRequest) {
       input: { prompt, width, height, num_outputs: 1 },
     }),
   })
+
   if (!createRes.ok) {
     const err = await createRes.json()
     return NextResponse.json({ error: err.detail || 'Failed to start generation' }, { status: 500 })
   }
+
   const prediction = await createRes.json()
-  const predictionId = prediction.id
+  return NextResponse.json({ predictionId: prediction.id })
+}
 
-  // Poll until done
-  const start = Date.now()
-  while (Date.now() - start < POLL_TIMEOUT_MS) {
-    await new Promise(r => setTimeout(r, POLL_INTERVAL_MS))
+// GET — poll prediction status: ?id=predictionId
+export async function GET(request: NextRequest) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const pollRes = await fetch(`${REPLICATE_API}/predictions/${predictionId}`, { headers })
-    const data = await pollRes.json()
+  const apiKey = process.env.REPLICATE_API_KEY
+  if (!apiKey) return NextResponse.json({ error: 'REPLICATE_API_KEY not configured' }, { status: 500 })
 
-    if (data.status === 'succeeded') {
-      const imageUrl = Array.isArray(data.output) ? data.output[0] : data.output
-      return NextResponse.json({ imageUrl })
-    }
-    if (data.status === 'failed' || data.status === 'canceled') {
-      return NextResponse.json({ error: data.error || 'Generation failed' }, { status: 500 })
-    }
-    // status is 'starting' or 'processing' — keep polling
+  const id = request.nextUrl.searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+  const res = await fetch(`${REPLICATE_API}/predictions/${id}`, {
+    headers: { 'Authorization': `Token ${apiKey}` },
+  })
+
+  if (!res.ok) return NextResponse.json({ error: 'Failed to fetch prediction' }, { status: 500 })
+
+  const data = await res.json()
+
+  if (data.status === 'succeeded') {
+    const imageUrl = Array.isArray(data.output) ? data.output[0] : data.output
+    return NextResponse.json({ status: 'succeeded', imageUrl })
   }
 
-  return NextResponse.json({ error: 'Generation timed out after 3 minutes' }, { status: 504 })
+  if (data.status === 'failed' || data.status === 'canceled') {
+    return NextResponse.json({ status: data.status, error: data.error || 'Generation failed' })
+  }
+
+  // still starting / processing
+  return NextResponse.json({ status: data.status })
 }

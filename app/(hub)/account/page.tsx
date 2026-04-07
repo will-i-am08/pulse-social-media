@@ -47,12 +47,20 @@ export default function AccountPage() {
   const [bufferProfiles, setBufferProfiles] = useState<BufferProfile[]>([])
   const [bufferTestResult, setBufferTestResult] = useState<{ ok: boolean; msg: string } | null>(null)
 
+  // Bannerbear state
+  const [hasBannerbearKey, setHasBannerbearKey] = useState(false)
+  const [bannerbearKey, setBannerbearKey] = useState('')
+  const [showBannerbearKey, setShowBannerbearKey] = useState(false)
+  const [savingBannerbear, setSavingBannerbear] = useState(false)
+  const [removingBannerbear, setRemovingBannerbear] = useState(false)
+
   useEffect(() => {
     fetch('/api/account-settings')
       .then(r => r.json())
       .then(data => {
         setHasClaudeKey(data.hasClaudeKey ?? false)
         setHasBufferToken(data.hasBufferToken ?? false)
+        setHasBannerbearKey(data.hasBannerbearKey ?? false)
         setLoading(false)
         if (data.hasBufferToken) fetchBufferProfiles()
       })
@@ -171,6 +179,41 @@ export default function AccountPage() {
       setBufferTestResult({ ok: false, msg: 'Connection failed: ' + e.message })
     } finally {
       setTestingBuffer(false)
+    }
+  }
+
+
+  async function saveBannerbearKey() {
+    if (!bannerbearKey.trim()) { toast.error('Enter your Bannerbear API key'); return }
+    setSavingBannerbear(true)
+    try {
+      const res = await fetch('/api/account-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bannerbearKey: bannerbearKey.trim() }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+      setHasBannerbearKey(true)
+      setBannerbearKey('')
+      toast.success('Bannerbear API key saved!')
+    } catch (e: any) {
+      toast.error('Failed to save: ' + e.message)
+    } finally {
+      setSavingBannerbear(false)
+    }
+  }
+
+  async function removeBannerbearKey() {
+    setRemovingBannerbear(true)
+    try {
+      await fetch('/api/account-settings?field=bannerbear', { method: 'DELETE' })
+      setHasBannerbearKey(false)
+      setBannerbearKey('')
+      toast.success('Bannerbear API key removed')
+    } catch {
+      toast.error('Failed to remove key')
+    } finally {
+      setRemovingBannerbear(false)
     }
   }
 
@@ -303,6 +346,65 @@ export default function AccountPage() {
                     }
                     {testResult.msg}
                   </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bannerbear */}
+            <div className="card p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <KeyIcon className="w-4 h-4 text-[#ff5473]" />
+                <h3 className="font-semibold text-[#e6e1e1]">Bannerbear</h3>
+                {hasBannerbearKey ? (
+                  <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-[rgba(16,185,129,0.15)] text-emerald-400 border border-[rgba(16,185,129,0.3)]">
+                    Key saved ✓
+                  </span>
+                ) : (
+                  <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-[rgba(90,64,66,0.3)] text-[#e1bec0]">
+                    No key
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#e1bec0] mb-4">
+                Used for template-based marketing image generation. Get your key from{' '}
+                <a href="https://www.bannerbear.com/app/account" target="_blank" rel="noopener noreferrer" className="text-[#ffb2b9] hover:underline">
+                  bannerbear.com
+                </a>.
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="lbl">{hasBannerbearKey ? 'Replace API key' : 'API key'}</label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type={showBannerbearKey ? 'text' : 'password'}
+                        className="inp w-full pr-9"
+                        placeholder="bb_pr_..."
+                        value={bannerbearKey}
+                        onChange={e => setBannerbearKey(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && saveBannerbearKey()}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowBannerbearKey(v => !v)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5a4042] hover:text-[#e1bec0] transition-colors"
+                      >
+                        {showBannerbearKey ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <button
+                      className="btn btn-p whitespace-nowrap"
+                      disabled={savingBannerbear || !bannerbearKey.trim()}
+                      onClick={saveBannerbearKey}
+                    >
+                      {savingBannerbear ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : 'Save'}
+                    </button>
+                  </div>
+                </div>
+                {hasBannerbearKey && (
+                  <button className="btn btn-d" disabled={removingBannerbear} onClick={removeBannerbearKey}>
+                    {removingBannerbear ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : 'Remove Key'}
+                  </button>
                 )}
               </div>
             </div>

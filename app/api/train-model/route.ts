@@ -98,45 +98,15 @@ export async function POST(request: NextRequest) {
 
   const headers = { 'Authorization': `Token ${apiKey}`, 'Content-Type': 'application/json' }
 
-  // Get account username
-  const accountRes = await fetch(`${REPLICATE_API}/account`, { headers })
+  // Get account username + trainer version in parallel
+  const [accountRes, trainerRes] = await Promise.all([
+    fetch(`${REPLICATE_API}/account`, { headers }),
+    fetch(`${REPLICATE_API}/models/ostris/flux-dev-lora-trainer`, { headers }),
+  ])
+
   if (!accountRes.ok) return NextResponse.json({ error: 'Invalid Replicate API key' }, { status: 401 })
   const { username } = await accountRes.json()
 
-  // Download training images
-  const imageFiles = await Promise.all(
-    photoUrls.map(async (url: string, i: number) => {
-      const res = await fetch(url)
-      const buf = Buffer.from(await res.arrayBuffer())
-      const ext = url.split('.').pop()?.split('?')[0] || 'jpg'
-      return { name: `image_${i + 1}.${ext}`, data: buf }
-    })
-  )
-
-  // Create zip and upload to Replicate files API
-  const zip = createStoredZip(imageFiles)
-  const fileRes = await fetch(`${REPLICATE_API}/files`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Token ${apiKey}`,
-      'Content-Type': 'application/zip',
-      'Content-Disposition': 'attachment; filename="training_images.zip"',
-      'Content-Length': zip.length.toString(),
-    },
-    body: new Uint8Array(zip),
-  })
-  if (!fileRes.ok) {
-    const err = await fileRes.json()
-    return NextResponse.json({ error: err.detail || 'Failed to upload images' }, { status: 500 })
-  }
-  const fileData = await fileRes.json()
-  const zipUrl = fileData.urls?.get
-  if (!zipUrl) {
-    return NextResponse.json({ error: `File upload succeeded but no URL returned. Response: ${JSON.stringify(fileData)}` }, { status: 500 })
-  }
-
-  // Get latest flux-dev-lora-trainer version
-  const trainerRes = await fetch(`${REPLICATE_API}/models/ostris/flux-dev-lora-trainer`, { headers })
   if (!trainerRes.ok) {
     const err = await trainerRes.json().catch(() => ({}))
     return NextResponse.json({ error: err.detail || 'Failed to fetch trainer model' }, { status: 500 })
@@ -145,9 +115,47 @@ export async function POST(request: NextRequest) {
   const trainerVersion = trainer.latest_version?.id
   if (!trainerVersion) return NextResponse.json({ error: 'Could not fetch trainer version' }, { status: 500 })
 
-  // Create destination model (ignore error if already exists)
+  // Download training images in parallel (capped at 20)
+  const urls = photoUrls.slice(0, 20) as string[]
+  const imageFiles = await Promise.all(
+    urls.map(async (url: string, i: number) => {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`Failed to download image ${i + 1}: HTTP ${res.status}`)
+      const buf = Buffer.from(await res.arrayBuffer())
+      const ext = url.split('.').pop()?.split('?')[0]?.toLowerCase() || 'jpg'
+      const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? ext : 'jpg'
+      return { name: `image_${i + 1}.${safeExt}`, data: buf }
+    })
+  )
+
+  // Create zip and upload to Replicate files API using multipart form data
+  const zip = createStoredZip(imageFiles)
+  const formData = new FormData()
+  formData.append('content', new Blob([new Uint8Array(zip)], { type: 'application/zip' }), 'training_images.zip')
+
+  const fileRes = await fetch(`${REPLICATE_API}/files`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Token ${apiKey}`,
+    },
+    body: formData,
+  })
+
+  if (!fileRes.ok) {
+    const err = await fileRes.json().catch(() => ({}))
+    console.error('File upload error:', JSON.stringify(err))
+    return NextResponse.json({ error: err.detail || `File upload failed (HTTP ${fileRes.status})` }, { status: 500 })
+  }
+
+  const fileData = await fileRes.json()
+  const zipUrl = fileData.urls?.get
+  if (!zipUrl) {
+    return NextResponse.json({ error: `File upload succeeded but no URL returned. Response: ${JSON.stringify(fileData)}` }, { status: 500 })
+  }
+
+  // Create destination model (ignore 409 conflict = already exists)
   const modelName = `brand-${brandId.replace(/[^a-z0-9]/gi, '-').toLowerCase().slice(0, 20)}`
-  await fetch(`${REPLICATE_API}/models`, {
+  const modelRes = await fetch(`${REPLICATE_API}/models`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -155,25 +163,35 @@ export async function POST(request: NextRequest) {
       name: modelName,
       description: `Brand image model — trigger word: ${triggerWord}`,
       visibility: 'private',
-      hardware: 'gpu-a40-large',
+      hardware: 'gpu-l40s',
     }),
   })
+  if (!modelRes.ok && modelRes.status !== 409) {
+    const err = await modelRes.json().catch(() => ({}))
+    console.error('Model create error:', JSON.stringify(err))
+    return NextResponse.json({ error: err.detail || `Failed to create destination model (HTTP ${modelRes.status})` }, { status: 500 })
+  }
 
-  // Start training via the trainer model's endpoint
-  const trainRes = await fetch(`${REPLICATE_API}/models/ostris/flux-dev-lora-trainer/versions/${trainerVersion}/trainings`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      destination: `${username}/${modelName}`,
-      input: {
-        input_images: zipUrl,
-        trigger_word: triggerWord,
-        steps: 1000,
-      },
-    }),
-  })
+  // Start training
+  const trainRes = await fetch(
+    `${REPLICATE_API}/models/ostris/flux-dev-lora-trainer/versions/${trainerVersion}/trainings`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        destination: `${username}/${modelName}`,
+        input: {
+          input_images: zipUrl,
+          trigger_word: triggerWord,
+          steps: 6000,
+        },
+      }),
+    }
+  )
+
   const training = await trainRes.json()
   if (!trainRes.ok) {
+    console.error('Training start error:', JSON.stringify(training))
     return NextResponse.json({ error: training.detail || JSON.stringify(training) || 'Failed to start training' }, { status: 500 })
   }
 
