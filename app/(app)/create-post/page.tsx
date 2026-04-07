@@ -25,6 +25,61 @@ import CaptionTemplates from '@/components/app/CaptionTemplates'
 
 const PLATFORMS = ['instagram', 'facebook', 'linkedin']
 
+/**
+ * Center-crops an image to the given CSS aspect ratio string (e.g. "4/5")
+ * and uploads the result to Supabase, returning the new public URL.
+ * Falls back to the original URL if anything goes wrong.
+ */
+async function cropToRatio(imageUrl: string, ratio: string, upload: (f: File) => Promise<string>): Promise<string> {
+  const parts = ratio.split('/')
+  const rw = parseFloat(parts[0])
+  const rh = parseFloat(parts[1])
+  if (!rw || !rh) return imageUrl
+
+  return new Promise<string>((resolve) => {
+    const img = new window.Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const sw = img.naturalWidth
+      const sh = img.naturalHeight
+
+      // Calculate centered crop
+      let cropW = sw
+      let cropH = sw * (rh / rw)
+      if (cropH > sh) {
+        cropH = sh
+        cropW = sh * (rw / rh)
+      }
+      const cropX = (sw - cropW) / 2
+      const cropY = (sh - cropH) / 2
+
+      // Output at max 1080px wide (Instagram standard)
+      const outW = Math.min(1080, Math.round(cropW))
+      const outH = Math.round(outW * (rh / rw))
+
+      const canvas = document.createElement('canvas')
+      canvas.width = outW
+      canvas.height = outH
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(imageUrl); return }
+      ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, outW, outH)
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) { resolve(imageUrl); return }
+        try {
+          const file = new File([blob], 'cropped.jpg', { type: 'image/jpeg' })
+          const url = await upload(file)
+          resolve(url)
+        } catch {
+          resolve(imageUrl) // fall back to original on upload error
+        }
+      }, 'image/jpeg', 0.92)
+    }
+    img.onerror = () => resolve(imageUrl)
+    img.src = imageUrl
+  })
+}
+
 const ASPECT_RATIOS = [
   { label: 'Square (1:1)',    value: '1/1'  },
   { label: 'Portrait (4:5)', value: '4/5'  },
@@ -166,13 +221,21 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
     if (!profileIds.length) { toast.error('Configure Buffer profiles for this brand in Settings first'); return }
     setSendingBuffer(true)
     try {
+      // Crop image to selected aspect ratio before sending so Buffer receives the correct format
+      let photoUrl: string | null = images[0] || null
+      if (photoUrl && aspectRatio) {
+        toast.loading('Cropping image to format…', { id: 'crop' })
+        photoUrl = await cropToRatio(photoUrl, aspectRatio, uploadImage)
+        toast.dismiss('crop')
+      }
+
       const res = await fetch('/api/buffer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           profileIds,
           text: caption,
-          media: images[0] ? { photo: images[0] } : undefined,
+          media: photoUrl ? { photo: photoUrl } : undefined,
         }),
       })
       const data = await res.json()
@@ -339,13 +402,19 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
     for (const post of newPosts) {
       if (sent + (lastError ? 1 : 0) > 0) await new Promise(r => setTimeout(r, 1500))
       try {
+        // Crop image to bulk aspect ratio before sending
+        let photoUrl: string | null = post.image_url || null
+        if (photoUrl && bulkAspectRatio) {
+          photoUrl = await cropToRatio(photoUrl, bulkAspectRatio, uploadImage)
+        }
+
         const res = await fetch('/api/buffer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             profileIds,
             text: post.caption,
-            media: post.image_url ? { photo: post.image_url } : undefined,
+            media: photoUrl ? { photo: photoUrl } : undefined,
           }),
         })
         const data = await res.json()
