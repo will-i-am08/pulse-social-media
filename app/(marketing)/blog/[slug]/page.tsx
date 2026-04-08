@@ -72,8 +72,12 @@ export default async function BlogPostPage({ params }: Props) {
       <main className="pt-32 pb-24" style={{ color: '#0a0a0a' }}>
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex gap-16">
-            {/* Main article column */}
-            <article className="max-w-3xl w-full mx-auto xl:mx-0">
+            {/* Main article column — wrapped in a white "island" so the
+                background ParticleGrid dots don't sit behind the text. */}
+            <article
+              className="max-w-3xl w-full mx-auto xl:mx-0 bg-white rounded-2xl p-8 md:p-12"
+              style={{ border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
+            >
               {/* Back link */}
               <Link
                 href="/blog"
@@ -203,7 +207,11 @@ export default async function BlogPostPage({ params }: Props) {
             </article>
 
             {/* Desktop TOC sidebar */}
-            <div className="hidden xl:block w-64 flex-shrink-0" aria-label="Table of contents">
+            <div
+              className="hidden xl:block w-64 flex-shrink-0 bg-white rounded-2xl p-6 self-start sticky top-28"
+              style={{ border: '1px solid rgba(0,0,0,0.06)', boxShadow: '0 1px 2px rgba(0,0,0,0.04)' }}
+              aria-label="Table of contents"
+            >
               <TableOfContents headings={headings} />
             </div>
           </div>
