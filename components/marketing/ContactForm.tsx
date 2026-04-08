@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react'
 
-const INTENTS = ['Brand Identity', 'Social Media Management', 'Growth Strategy', 'CaptionCraft']
+const INTENTS = ['Social Media Management', 'Content Creation', 'CaptionCraft', 'Custom App Build']
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
