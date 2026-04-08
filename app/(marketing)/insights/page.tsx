@@ -31,6 +31,8 @@ const DIVIDER = '1px solid rgba(0,0,0,0.08)'
 
 export default async function InsightsPage() {
   const posts = await getPublishedPosts()
+  const latestPost = posts[0]
+  const featuredHref = latestPost ? `/blog/${latestPost.slug}` : '#blog-posts'
 
   return (
     <main style={{ color: '#0a0a0a' }} className="pt-32 pb-24">
@@ -58,7 +60,7 @@ export default async function InsightsPage() {
             </AnimateOnScroll>
             <AnimateOnScroll variant="fade-up" delay={0.3}>
               <div className="flex items-center gap-6">
-                <Link href="/blog" className="flex items-center gap-2 group">
+                <Link href={featuredHref} className="flex items-center gap-2 group">
                   <span className="text-sm font-bold uppercase tracking-widest text-[#0a0a0a] group-hover:text-[#ff5473] transition-colors">Read More</span>
                   <span className="material-symbols-outlined text-[#ff5473] group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </Link>
@@ -119,7 +121,7 @@ export default async function InsightsPage() {
       </section>
 
       {/* Blog Posts */}
-      <section className="py-32" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
+      <section id="blog-posts" className="py-32" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
         <div className="max-w-7xl mx-auto px-8">
           <InsightsBlogGrid posts={posts} />
         </div>

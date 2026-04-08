@@ -10,8 +10,10 @@ export async function POST(req: NextRequest) {
 
   const { slug } = await req.json()
 
-  // Revalidate the blog index page
+  // Revalidate every page that lists or renders blog content
   revalidatePath('/blog')
+  revalidatePath('/insights')
+  revalidatePath('/')
 
   // Revalidate the specific blog post page if slug provided
   if (slug) {

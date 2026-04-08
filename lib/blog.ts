@@ -75,15 +75,34 @@ export async function getRelatedPosts(currentSlug: string, tags: string, limit =
 
 export async function getPublishedPostBySlug(slug: string): Promise<BlogPost | null> {
   const supabase = createAdminClient()
-  const { data, error } = await supabase
+  const cleanSlug = decodeURIComponent(slug || '').trim()
+
+  // First, exact match
+  const exact = await supabase
     .from('posts')
     .select('id, data')
     .eq('data->>type', 'blog')
     .eq('data->>status', 'published')
-    .eq('data->>slug', slug)
+    .eq('data->>slug', cleanSlug)
     .limit(1)
 
-  if (error || !data || data.length === 0) return null
+  if (exact.data && exact.data.length > 0) {
+    return rowToPost(exact.data[0] as { id: string; data: Record<string, unknown> })
+  }
 
-  return rowToPost(data[0] as { id: string; data: Record<string, unknown> })
+  // Fallback: scan all published posts and match case-insensitively. Handles
+  // slug drift (renamed posts, casing differences, trailing whitespace).
+  const all = await supabase
+    .from('posts')
+    .select('id, data')
+    .eq('data->>type', 'blog')
+    .eq('data->>status', 'published')
+
+  if (!all.data) return null
+  const target = cleanSlug.toLowerCase()
+  const match = (all.data as { id: string; data: Record<string, unknown> }[]).find(r => {
+    const s = String((r.data as Record<string, unknown>).slug || '').trim().toLowerCase()
+    return s === target
+  })
+  return match ? rowToPost(match) : null
 }
