@@ -68,41 +68,23 @@ Write ONLY the email body text — no subject line, no markdown formatting. Star
     replyText = `Hi ${name.split(' ')[0]},\n\nThank you so much for reaching out! We've received your enquiry about ${intent ?? 'our services'} and Will will be in touch within one business day to chat further.\n\nFor anything urgent, feel free to email Will directly at ${OWNER_EMAIL}.\n\nLooking forward to connecting!\n\nWill & the Pulse Social Media team`
   }
 
-  // ── 2. Convert to HTML ─────────────────────────────────────────────────────
+  // ── 2. Convert to plain-looking HTML (no banners/gradients = lands in Primary) ──
   const replyHtml = replyText
     .split('\n\n')
     .filter(Boolean)
-    .map(p => `<p style="margin:0 0 16px 0;line-height:1.6;">${p.replace(/\n/g, '<br>')}</p>`)
+    .map(p => `<p style="margin:0 0 14px 0;line-height:1.7;color:#1a1a1a;">${p.replace(/\n/g, '<br>')}</p>`)
     .join('')
 
   const emailHtml = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">
-        <tr>
-          <td style="background:linear-gradient(135deg,#ffb2b9 0%,#ff5473 100%);padding:32px 40px;">
-            <span style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">Pulse Social Media</span>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:40px;color:#1a1a1a;font-size:15px;">
-            ${replyHtml}
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 40px;border-top:1px solid #e5e7eb;background:#f9f9f9;">
-            <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.5;">
-              Pulse Social Media &mdash; AI-powered social media management<br>
-              <a href="https://pulsesocialmedia.com.au" style="color:#ff5473;text-decoration:none;">pulsesocialmedia.com.au</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:15px;">
+  <div style="max-width:560px;margin:0 auto;padding:32px 16px;">
+    ${replyHtml}
+    <p style="margin:24px 0 0 0;color:#6b7280;font-size:13px;border-top:1px solid #e5e7eb;padding-top:16px;">
+      Will Calder &mdash; <a href="https://pulsesocialmedia.com.au" style="color:#6b7280;">pulsesocialmedia.com.au</a>
+    </p>
+  </div>
 </body>
 </html>`
 
@@ -115,7 +97,7 @@ Write ONLY the email body text — no subject line, no markdown formatting. Star
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: `Pulse Social Media <${FROM_EMAIL}>`,
+        from: `Will at Pulse <${FROM_EMAIL}>`,
         to: [email],
         reply_to: OWNER_EMAIL,
         subject: `Thanks for reaching out, ${name.split(' ')[0]} — we'll be in touch soon`,
