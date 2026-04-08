@@ -6,6 +6,37 @@ import { buildBrandInstructions } from '@/lib/types'
 
 export const maxDuration = 60
 
+/**
+ * Call Anthropic with automatic retry on 429 rate-limit errors.
+ * Uses Haiku for the blog draft (cheap + much higher rate limits).
+ */
+async function fetchWithRateLimitRetry(apiKey: string, prompt: string, attempt = 0): Promise<Response> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5',
+      max_tokens: 2048,
+      stream: true,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  })
+
+  // 429 = rate limited. Retry up to 3 times with exponential backoff.
+  if (res.status === 429 && attempt < 3) {
+    const retryAfter = parseInt(res.headers.get('retry-after') || '0', 10)
+    const waitMs = retryAfter > 0 ? retryAfter * 1000 : Math.min(2000 * Math.pow(2, attempt), 15000)
+    await new Promise(r => setTimeout(r, waitMs))
+    return fetchWithRateLimitRetry(apiKey, prompt, attempt + 1)
+  }
+
+  return res
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -91,25 +122,18 @@ ${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${brandRulesText ? `\nBRAND 
 Target length: 1000-1200 words. Write the blog post content only. No title heading at the top. Start with the Direct Answer paragraph.`
   }
 
-  // Stream the response
-  const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
-      stream: true,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  })
+  // Use Haiku for the heavy first draft — much higher rate limits and ~10x cheaper.
+  // The brand-voice polish step (separate route) still runs Sonnet for quality.
+  // Retry on 429 (rate limit) up to 3 times with exponential backoff so the user
+  // doesn't have to manually re-trigger after a brief throttle.
+  const anthropicRes = await fetchWithRateLimitRetry(apiKey, prompt)
 
   if (!anthropicRes.ok) {
-    const err = await anthropicRes.json()
-    return NextResponse.json({ error: err.error?.message || `API error ${anthropicRes.status}` }, { status: 500 })
+    const err = await anthropicRes.json().catch(() => ({}))
+    return NextResponse.json(
+      { error: err.error?.message || `API error ${anthropicRes.status}` },
+      { status: anthropicRes.status === 429 ? 429 : 500 }
+    )
   }
 
   // Pass through the SSE stream. The X-Accel-Buffering and no-transform

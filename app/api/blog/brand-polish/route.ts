@@ -5,6 +5,36 @@ import { buildBrandInstructions } from '@/lib/types'
 
 export const maxDuration = 60
 
+/**
+ * Call Anthropic with automatic retry on 429 rate-limit errors.
+ * Polish step uses Sonnet for higher quality voice matching.
+ */
+async function fetchWithRateLimitRetry(apiKey: string, prompt: string, attempt = 0): Promise<Response> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      stream: true,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  })
+
+  if (res.status === 429 && attempt < 3) {
+    const retryAfter = parseInt(res.headers.get('retry-after') || '0', 10)
+    const waitMs = retryAfter > 0 ? retryAfter * 1000 : Math.min(2000 * Math.pow(2, attempt), 15000)
+    await new Promise(r => setTimeout(r, waitMs))
+    return fetchWithRateLimitRetry(apiKey, prompt, attempt + 1)
+  }
+
+  return res
+}
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -48,24 +78,14 @@ Return ONLY the rewritten blog post. No preamble, no labels, no explanation.
 BLOG POST TO REWRITE:
 ${content}`
 
-  const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
-      stream: true,
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  })
+  const anthropicRes = await fetchWithRateLimitRetry(apiKey, prompt)
 
   if (!anthropicRes.ok) {
-    const err = await anthropicRes.json()
-    return NextResponse.json({ error: err.error?.message || `API error ${anthropicRes.status}` }, { status: 500 })
+    const err = await anthropicRes.json().catch(() => ({}))
+    return NextResponse.json(
+      { error: err.error?.message || `API error ${anthropicRes.status}` },
+      { status: anthropicRes.status === 429 ? 429 : 500 }
+    )
   }
 
   return new NextResponse(anthropicRes.body, {
