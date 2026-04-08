@@ -23,6 +23,7 @@ interface StockItem {
   model: string       // "iPhone 12 Pro 128gb"
   variant: string     // colour or details, e.g. "Black"
   price: string       // "465.00"
+  image_url?: string  // uploaded product photo (Supabase public URL)
 }
 
 interface RefurbForm {
@@ -93,86 +94,146 @@ async function renderViaBannerbear(form: RefurbForm, brandColor: string): Promis
 }
 
 /**
+ * Load an image with CORS enabled so it can be drawn onto canvas without tainting.
+ * Resolves to null on error so the caller can fall back to a placeholder.
+ */
+function loadImage(url: string): Promise<HTMLImageElement | null> {
+  return new Promise(resolve => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => resolve(img)
+    img.onerror = () => resolve(null)
+    img.src = url
+  })
+}
+
+/**
  * Render the refurb stock card to a 1080x1350 (4:5) PNG using canvas.
  * Returns a Blob ready for upload.
  */
-function renderRefurbImage(form: RefurbForm, brandColor: string): Promise<Blob | null> {
-  return new Promise(resolve => {
-    const W = 1080, H = 1350
-    const canvas = document.createElement('canvas')
-    canvas.width = W; canvas.height = H
-    const ctx = canvas.getContext('2d')
-    if (!ctx) { resolve(null); return }
+async function renderRefurbImage(form: RefurbForm, brandColor: string): Promise<Blob | null> {
+  const W = 1080, H = 1350
+  const canvas = document.createElement('canvas')
+  canvas.width = W; canvas.height = H
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
 
-    // Background
-    ctx.fillStyle = '#141313'
-    ctx.fillRect(0, 0, W, H)
-    // Accent bar
-    ctx.fillStyle = brandColor || '#ff5473'
-    ctx.fillRect(0, 0, W, 14)
-    ctx.fillRect(0, H - 14, W, 14)
+  // Preload all item images up front so drawing is synchronous.
+  const allItems = [...form.phones, ...form.laptops].filter(i => i.model.trim())
+  const imgCache = new Map<string, HTMLImageElement | null>()
+  await Promise.all(
+    allItems
+      .filter(i => i.image_url && !imgCache.has(i.image_url))
+      .map(async i => { imgCache.set(i.image_url!, await loadImage(i.image_url!)) })
+  )
 
-    // Title
-    ctx.fillStyle = brandColor || '#ff5473'
-    ctx.font = 'bold 64px -apple-system, Helvetica, Arial, sans-serif'
-    ctx.textAlign = 'center'
-    ctx.fillText('Current Refurb Stock!', W / 2, 130)
+  // Background
+  ctx.fillStyle = '#141313'
+  ctx.fillRect(0, 0, W, H)
+  // Accent bar
+  ctx.fillStyle = brandColor || '#ff5473'
+  ctx.fillRect(0, 0, W, 14)
+  ctx.fillRect(0, H - 14, W, 14)
 
-    let y = 220
-    const drawSection = (label: string, items: StockItem[]) => {
-      const filled = items.filter(i => i.model.trim())
-      if (!filled.length) return
-      ctx.fillStyle = '#e6e1e1'
-      ctx.font = 'bold 42px -apple-system, Helvetica, Arial, sans-serif'
-      ctx.textAlign = 'left'
-      ctx.fillText(label, 80, y)
-      y += 60
-      ctx.font = '34px -apple-system, Helvetica, Arial, sans-serif'
-      for (const it of filled) {
-        const variant = it.variant ? ` [${it.variant}]` : ''
-        const left = `${it.model}${variant}`
-        const right = it.price ? `$${it.price}` : ''
-        ctx.fillStyle = '#e6e1e1'
-        ctx.fillText(left, 100, y)
-        ctx.fillStyle = brandColor || '#ff5473'
-        ctx.textAlign = 'right'
-        ctx.fillText(right, W - 80, y)
-        ctx.textAlign = 'left'
-        y += 56
-      }
-      y += 30
-    }
+  // Title
+  ctx.fillStyle = brandColor || '#ff5473'
+  ctx.font = 'bold 64px -apple-system, Helvetica, Arial, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.fillText('Current Refurb Stock!', W / 2, 130)
 
-    drawSection('Instock Phones:', form.phones)
-    drawSection('Instock Laptops:', form.laptops)
+  const THUMB = 90
+  const ROW_H = 110
 
-    // Footer block
-    ctx.fillStyle = '#e1bec0'
-    ctx.font = '26px -apple-system, Helvetica, Arial, sans-serif'
-    ctx.textAlign = 'center'
-    const wrap = (text: string, maxWidth: number): string[] => {
-      const words = text.split(' ')
-      const lines: string[] = []
-      let line = ''
-      for (const w of words) {
-        const t = line ? line + ' ' + w : w
-        if (ctx.measureText(t).width > maxWidth) { lines.push(line); line = w }
-        else line = t
-      }
-      if (line) lines.push(line)
-      return lines
-    }
-    const warrantyLines = wrap(form.warrantyLine, W - 160)
-    let fy = H - 220
-    for (const ln of warrantyLines) { ctx.fillText(ln, W / 2, fy); fy += 36 }
-    fy += 16
+  // Draw an image with "object-fit: cover" semantics into a square box.
+  const drawCover = (img: HTMLImageElement, dx: number, dy: number, size: number) => {
+    const iw = img.naturalWidth || img.width
+    const ih = img.naturalHeight || img.height
+    if (!iw || !ih) return
+    const scale = Math.max(size / iw, size / ih)
+    const sw = size / scale
+    const sh = size / scale
+    const sx = (iw - sw) / 2
+    const sy = (ih - sh) / 2
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(dx, dy, size, size)
+    ctx.clip()
+    ctx.drawImage(img, sx, sy, sw, sh, dx, dy, size, size)
+    ctx.restore()
+  }
+
+  let y = 220
+  const drawSection = (label: string, items: StockItem[]) => {
+    const filled = items.filter(i => i.model.trim())
+    if (!filled.length) return
     ctx.fillStyle = '#e6e1e1'
-    ctx.font = 'bold 28px -apple-system, Helvetica, Arial, sans-serif'
-    ctx.fillText(form.storeAddress, W / 2, fy)
-    fy += 38
-    ctx.fillStyle = brandColor || '#ff5473'
-    ctx.fillText(form.storePhone, W / 2, fy)
+    ctx.font = 'bold 42px -apple-system, Helvetica, Arial, sans-serif'
+    ctx.textAlign = 'left'
+    ctx.fillText(label, 80, y)
+    y += 30
+    ctx.font = '34px -apple-system, Helvetica, Arial, sans-serif'
+    for (const it of filled) {
+      const rowTop = y
+      // Thumbnail slot
+      const thumbX = 100
+      const img = it.image_url ? imgCache.get(it.image_url) : null
+      if (img) {
+        drawCover(img, thumbX, rowTop, THUMB)
+      } else {
+        ctx.fillStyle = '#241f1f'
+        ctx.fillRect(thumbX, rowTop, THUMB, THUMB)
+        ctx.strokeStyle = '#3a2e30'
+        ctx.lineWidth = 2
+        ctx.strokeRect(thumbX, rowTop, THUMB, THUMB)
+      }
 
+      const variant = it.variant ? ` [${it.variant}]` : ''
+      const left = `${it.model}${variant}`
+      const right = it.price ? `$${it.price}` : ''
+      const textY = rowTop + THUMB / 2 + 12
+      ctx.fillStyle = '#e6e1e1'
+      ctx.textAlign = 'left'
+      ctx.fillText(left, thumbX + THUMB + 20, textY)
+      ctx.fillStyle = brandColor || '#ff5473'
+      ctx.textAlign = 'right'
+      ctx.fillText(right, W - 80, textY)
+      ctx.textAlign = 'left'
+      y += ROW_H
+    }
+    y += 20
+  }
+
+  drawSection('Instock Phones:', form.phones)
+  drawSection('Instock Laptops:', form.laptops)
+
+  // Footer block
+  ctx.fillStyle = '#e1bec0'
+  ctx.font = '26px -apple-system, Helvetica, Arial, sans-serif'
+  ctx.textAlign = 'center'
+  const wrap = (text: string, maxWidth: number): string[] => {
+    const words = text.split(' ')
+    const lines: string[] = []
+    let line = ''
+    for (const w of words) {
+      const t = line ? line + ' ' + w : w
+      if (ctx.measureText(t).width > maxWidth) { lines.push(line); line = w }
+      else line = t
+    }
+    if (line) lines.push(line)
+    return lines
+  }
+  const warrantyLines = wrap(form.warrantyLine, W - 160)
+  let fy = H - 220
+  for (const ln of warrantyLines) { ctx.fillText(ln, W / 2, fy); fy += 36 }
+  fy += 16
+  ctx.fillStyle = '#e6e1e1'
+  ctx.font = 'bold 28px -apple-system, Helvetica, Arial, sans-serif'
+  ctx.fillText(form.storeAddress, W / 2, fy)
+  fy += 38
+  ctx.fillStyle = brandColor || '#ff5473'
+  ctx.fillText(form.storePhone, W / 2, fy)
+
+  return await new Promise((resolve: (b: Blob | null) => void) => {
     canvas.toBlob(b => resolve(b), 'image/jpeg', 0.92)
   })
 }
@@ -216,6 +277,7 @@ export default function RefurbStockPage() {
 
   const [pasteText, setPasteText] = useState('')
   const [showPaste, setShowPaste] = useState(false)
+  const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set())
 
   // Hydrate from localStorage
   useEffect(() => {
@@ -261,6 +323,30 @@ export default function RefurbStockPage() {
   }
   function addItem(section: 'phones' | 'laptops') {
     setForm(f => ({ ...f, [section]: [...f[section], emptyItem()] }))
+  }
+  async function uploadItemPhoto(section: 'phones' | 'laptops', id: string, file: File) {
+    setUploadingIds(prev => { const n = new Set(prev); n.add(id); return n })
+    try {
+      const url = await uploadImage(file)
+      if (url) {
+        setForm(f => ({
+          ...f,
+          [section]: f[section].map(i => i.id === id ? { ...i, image_url: url } : i),
+        }))
+      } else {
+        toast.error('Upload failed')
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Upload failed')
+    } finally {
+      setUploadingIds(prev => { const n = new Set(prev); n.delete(id); return n })
+    }
+  }
+  function clearItemPhoto(section: 'phones' | 'laptops', id: string) {
+    setForm(f => ({
+      ...f,
+      [section]: f[section].map(i => i.id === id ? { ...i, image_url: undefined } : i),
+    }))
   }
   function removeItem(section: 'phones' | 'laptops', id: string) {
     setForm(f => {
@@ -464,11 +550,33 @@ Lead with one short hook line above the stock block. Keep it warm, casual, local
         </button>
       </div>
       <div className="space-y-2">
-        {form[section].map(item => (
-          <div key={item.id} className="grid grid-cols-12 gap-2">
-            <input className="inp text-sm col-span-6" placeholder="Model + storage (e.g. iPhone 12 Pro 128gb)"
+        {form[section].map(item => {
+          const uploading = uploadingIds.has(item.id)
+          return (
+          <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
+            <label className="col-span-2 relative aspect-square rounded-md border border-[#3a2e30] bg-[#241f1f] overflow-hidden cursor-pointer flex items-center justify-center text-[10px] text-[#5a4042] hover:border-[#ff5473]">
+              {item.image_url && !uploading && (
+                <img src={item.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              )}
+              {uploading && <ArrowPathIcon className="w-5 h-5 animate-spin text-[#e1bec0]" />}
+              {!item.image_url && !uploading && <span>+ Photo</span>}
+              <input type="file" accept="image/*" className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0]
+                  if (f) uploadItemPhoto(section, item.id, f)
+                  e.target.value = ''
+                }} />
+              {item.image_url && !uploading && (
+                <button type="button"
+                  onClick={(e) => { e.preventDefault(); clearItemPhoto(section, item.id) }}
+                  className="absolute top-0.5 right-0.5 bg-black/70 rounded-full p-0.5 text-white hover:bg-red-500">
+                  <XMarkIcon className="w-3 h-3" />
+                </button>
+              )}
+            </label>
+            <input className="inp text-sm col-span-5" placeholder="Model + storage (e.g. iPhone 12 Pro 128gb)"
               value={item.model} onChange={e => updateItem(section, item.id, { model: e.target.value })} />
-            <input className="inp text-sm col-span-3" placeholder="Colour"
+            <input className="inp text-sm col-span-2" placeholder="Colour"
               value={item.variant} onChange={e => updateItem(section, item.id, { variant: e.target.value })} />
             <input className="inp text-sm col-span-2" placeholder="Price"
               value={item.price} onChange={e => updateItem(section, item.id, { price: e.target.value })} />
@@ -477,7 +585,8 @@ Lead with one short hook line above the stock block. Keep it warm, casual, local
               <XMarkIcon className="w-4 h-4" />
             </button>
           </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -545,6 +654,9 @@ Lead with one short hook line above the stock block. Keep it warm, casual, local
                 onChange={e => update('bannerbearTemplateUid', e.target.value)} />
               <p className="text-[10px] text-[#5a4042] mt-1">
                 Template should have layers named: <code>title</code>, <code>phones</code>, <code>laptops</code>, <code>warranty</code>, <code>address</code>, <code>phone</code>, <code>brand_color</code>.
+              </p>
+              <p className="text-[10px] text-[#5a4042] mt-1">
+                Per-item photos only render via the built-in canvas. Leave this blank to use them.
               </p>
             </div>
           </div>

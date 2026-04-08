@@ -197,6 +197,14 @@ export function WorkspaceProvider({
 
   useEffect(() => { load() }, [load])
 
+  // Refetch when other parts of the app (e.g. brand-research) signal that
+  // brand data has changed, so caption generators always see the latest rules.
+  useEffect(() => {
+    const handler = () => { load() }
+    window.addEventListener('workspace:brands-updated', handler)
+    return () => window.removeEventListener('workspace:brands-updated', handler)
+  }, [load])
+
   async function syncTable(table: string, rows: unknown[]) {
     if (!workspaceId) return
     try {

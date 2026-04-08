@@ -917,6 +917,15 @@ export default function BrandResearchPage() {
       setBrands(prev => [...prev, saved])
       setSelectedBrand(saved)
     }
+    // Bust the WorkspaceContext localStorage cache so create-post / holidays / etc.
+    // refetch the latest brand (with new custom rules) on next mount.
+    try {
+      for (const k of Object.keys(localStorage)) {
+        if (k.startsWith('workspace_cache_')) localStorage.removeItem(k)
+      }
+      // Notify any mounted WorkspaceProvider to refetch brands immediately.
+      window.dispatchEvent(new CustomEvent('workspace:brands-updated'))
+    } catch { /* ignore quota / privacy mode errors */ }
     toast.success(isUpdate ? 'Brand updated' : 'Brand created')
   }
 
