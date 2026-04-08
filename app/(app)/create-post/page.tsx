@@ -771,19 +771,36 @@ ${row.images.length ? 'The caption MUST be specifically about the content shown 
                 <p className="text-center text-[#5a4042] py-10">No photos found</p>
               ) : (
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                  {filteredLibrary.map(photo => (
-                    <button key={photo.id} onClick={() => pickFromLibrary(photo.url)}
-                      className="group relative rounded-lg overflow-hidden border border-transparent hover:border-[#ff5473] transition-colors">
-                      <img src={photo.url} alt={photo.name} className="w-full h-20 object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <PlusIcon className="w-6 h-6 text-white" />
-                      </div>
-                      <p className="text-[10px] text-[#e1bec0] truncate px-1 py-0.5">{photo.name}</p>
-                    </button>
-                  ))}
+                  {filteredLibrary.map(photo => {
+                    const selected = librarySelection.has(photo.url)
+                    return (
+                      <button key={photo.id} onClick={() => pickFromLibrary(photo.url)}
+                        className={`group relative rounded-lg overflow-hidden border transition-colors ${selected ? 'border-[#ff5473] ring-2 ring-[#ff5473]' : 'border-transparent hover:border-[#ff5473]'}`}>
+                        <img src={photo.url} alt={photo.name} className="w-full h-20 object-cover" />
+                        <div className={`absolute inset-0 bg-black/40 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity flex items-center justify-center`}>
+                          {selected ? <span className="text-white text-lg font-bold">✓</span> : <PlusIcon className="w-6 h-6 text-white" />}
+                        </div>
+                        <p className="text-[10px] text-[#e1bec0] truncate px-1 py-0.5">{photo.name}</p>
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
+            {libraryMulti && (
+              <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-[#5a4042]/30">
+                <span className="text-xs text-[#e1bec0]">
+                  {librarySelection.size} selected {carouselMode ? '(carousel)' : '(one per post)'}
+                </span>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowLibrary(false)} className="btn btn-o text-sm">Cancel</button>
+                  <button onClick={confirmMultiSelect} disabled={librarySelection.size === 0}
+                    className="btn text-sm disabled:opacity-40">
+                    Add {librarySelection.size} photo{librarySelection.size !== 1 ? 's' : ''}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
