@@ -2,7 +2,7 @@
 
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { slugify } from './TableOfContents'
+import { slugify } from '@/lib/slugify'
 
 function extractText(node: unknown): string {
   if (typeof node === 'string') return node

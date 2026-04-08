@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { slugify } from '@/lib/slugify'
 
 interface Heading {
   id: string
@@ -12,15 +13,9 @@ interface Props {
   headings: Heading[]
 }
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim()
-}
-
+// Re-export for backwards compat with client components that still import from here.
+// Server components MUST import from '@/lib/slugify' directly — importing a non-component
+// helper from a 'use client' file produces a client reference proxy that throws at SSR.
 export { slugify }
 
 export default function TableOfContents({ headings }: Props) {
