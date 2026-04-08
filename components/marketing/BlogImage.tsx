@@ -1,4 +1,8 @@
-import Image from 'next/image'
+/* eslint-disable @next/next/no-img-element */
+// Plain <img> tag — blog featured images come from arbitrary user hosts
+// (Supabase storage, Replicate, DALL-E, brand sites, etc.) and listing every
+// possible hostname in next.config.mjs is impractical and was causing SSR
+// crashes ("Invalid src prop on next/image, hostname not configured").
 
 interface BlogImageProps {
   src?: string
@@ -20,23 +24,25 @@ export default function BlogImage({ src, alt, className, fill, width, height }: 
     )
   }
 
-  if (src.startsWith('data:')) {
-    /* eslint-disable @next/next/no-img-element */
-    return <img src={src} alt={alt} className={className} />
-  }
-
   if (fill) {
-    return <Image src={src} alt={alt} fill className={className} sizes="100vw" />
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className={`absolute inset-0 w-full h-full ${className || ''}`}
+        loading="lazy"
+      />
+    )
   }
 
   return (
-    <Image
+    <img
       src={src}
       alt={alt}
       width={width || 800}
       height={height || 450}
       className={className}
-      sizes="(max-width: 768px) 100vw, 800px"
+      loading="lazy"
     />
   )
 }
