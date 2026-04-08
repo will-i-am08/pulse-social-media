@@ -106,7 +106,9 @@ export default function CreatePostPage() {
   // Bulk state
   const [bulkBrandId, setBulkBrandId] = useState('')
   const [bulkPlatforms, setBulkPlatforms] = useState<string[]>(['instagram'])
-  const [bulkRows, setBulkRows] = useState([{ image: '', prompt: '', caption: '', status: 'idle' }])
+  const [bulkRows, setBulkRows] = useState<{ image: string; prompt: string; caption: string; status: string; category: string }[]>(
+    [{ image: '', prompt: '', caption: '', status: 'idle', category: '' }]
+  )
   const [bulkGenerating, setBulkGenerating] = useState(false)
   const [bulkScheduling, setBulkScheduling] = useState(false)
   const [activeGoals, setActiveGoals] = useState<BrandGoal[]>([])
@@ -324,6 +326,25 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
     setBulkRows([...rows])
   }
 
+  /**
+   * Assign each row a different content pillar at random (no repeats until
+   * all categories are used). Forces caption generation to follow the pillar.
+   */
+  function randomizeCategories() {
+    const ids = POST_CATEGORIES.map(c => c.id)
+    // Fisher-Yates shuffle
+    const shuffled = [...ids]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    setBulkRows(rows => rows.map((r, i) => ({
+      ...r,
+      category: shuffled[i % shuffled.length],
+    })))
+    toast.success('Randomized categories — hit Generate All to write captions')
+  }
+
   async function bulkGenerateAll() {
     const bb = brands.find(b => b.id === bulkBrandId)
     if (!bb) { toast.error('Select a brand first'); return }
@@ -332,18 +353,33 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
     const sys = 'You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations.'
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i]
-      if (!row.image && !row.prompt) continue
+      // A row is generatable if it has an image, a prompt, OR an assigned category
+      if (!row.image && !row.prompt && !row.category) continue
       rows[i] = { ...rows[i], status: 'generating' }
       setBulkRows([...rows])
       const bulkGoals = useGoals && activeGoals.length > 0
         ? `\nCurrent brand goals (align content with these):\n${activeGoals.map(g => `- [${g.period}] ${g.title}${g.description ? ' — ' + g.description : ''}`).join('\n')}\n`
+        : ''
+      const rowCategory = row.category || bulkCategory
+      const categoryGuidance: Record<string, string> = {
+        holidays:   'This post celebrates an Australian public holiday or cultural moment. Tie it to the brand naturally.',
+        happenings: "This post is about what's happening at the shop right now — new arrivals, busy days, behind the scenes vibes.",
+        repairs:    'This post showcases a specific repair type the shop offers (screen, battery, water damage, data recovery, etc).',
+        phones:     'This post features phones for sale — mention model, condition, price-style messaging without being a hard sell.',
+        laptops:    'This post features laptops/MacBooks for sale — mention model, condition, price-style messaging.',
+        team:       'This post is about the crew — introduce a team member, day-in-the-life, or a fun team moment.',
+        refurb:     'This post is a weekly refurb stock update teaser. Keep it short and inviting.',
+        blog:       'This post promotes a blog article — give a punchy hook and direct readers to the article.',
+      }
+      const catLine = rowCategory && categoryGuidance[rowCategory]
+        ? `\nContent pillar: ${POST_CATEGORIES.find(c => c.id === rowCategory)?.label}\n${categoryGuidance[rowCategory]}\n`
         : ''
       const textPrompt = `Write a ${bb.output_length || 'medium'} social media caption for "${bb.name}".
 Tone: ${bb.tone || 'professional'}
 Guidelines: ${bb.brand_guidelines || 'N/A'}
 Platforms: ${bulkPlatforms.join(', ') || 'instagram'}
 ${bb.include_hashtags !== false ? 'Include hashtags.' : 'No hashtags.'}
-${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}${bulkGoals}
+${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}${bulkGoals}${catLine}
 ${bb.posting_instructions ? 'Custom brand instructions (MUST follow): ' + bb.posting_instructions : ''}
 ${row.prompt ? 'Additional instructions: ' + row.prompt : ''}
 ${row.image ? 'The caption MUST be specifically about the content shown in the attached image.' : ''}`
@@ -377,7 +413,7 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       client_visible: false,
       client_approved: false,
       aspect_ratio: bulkAspectRatio || null,
-      category: bulkCategory || null,
+      category: r.category || bulkCategory || null,
     }))
     savePosts([...newPosts, ...posts])
     toast.success(`${toSave.length} draft${toSave.length > 1 ? 's' : ''} saved!`)
@@ -431,7 +467,7 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       client_visible: false,
       client_approved: false,
       aspect_ratio: bulkAspectRatio || null,
-      category: bulkCategory || null,
+      category: r.category || bulkCategory || null,
     }))
 
     let sent = 0
@@ -576,8 +612,16 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
                   )}
                 </div>
                 <div className="flex-1 space-y-2">
-                  <input className="inp text-sm" placeholder="Custom prompt (optional)..."
-                    value={row.prompt} onChange={e => { const r = [...bulkRows]; r[i] = { ...r[i], prompt: e.target.value }; setBulkRows(r) }} />
+                  <div className="flex gap-2 items-center">
+                    <select className="sel text-xs py-1 max-w-[180px]"
+                      value={row.category}
+                      onChange={e => { const r = [...bulkRows]; r[i] = { ...r[i], category: e.target.value }; setBulkRows(r) }}>
+                      <option value="">No category</option>
+                      {POST_CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                    </select>
+                    <input className="inp text-sm flex-1" placeholder="Custom prompt (optional)..."
+                      value={row.prompt} onChange={e => { const r = [...bulkRows]; r[i] = { ...r[i], prompt: e.target.value }; setBulkRows(r) }} />
+                  </div>
                   {row.caption && (
                     <textarea className="ta text-sm" rows={3} value={row.caption}
                       onChange={e => { const r = [...bulkRows]; r[i] = { ...r[i], caption: e.target.value }; setBulkRows(r) }} />
@@ -597,8 +641,11 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
 
         <div className="flex gap-3 flex-wrap">
           <button className="btn btn-o flex items-center gap-2" disabled={bulkRows.length >= 10}
-            onClick={() => setBulkRows(r => [...r, { image: '', prompt: '', caption: '', status: 'idle' }])}>
+            onClick={() => setBulkRows(r => [...r, { image: '', prompt: '', caption: '', status: 'idle', category: '' }])}>
             <PlusIcon className="w-4 h-4" /> Add Row{bulkRows.length >= 10 ? ' (max 10)' : ''}
+          </button>
+          <button className="btn btn-o flex items-center gap-2" onClick={randomizeCategories}>
+            <SparklesIcon className="w-4 h-4" /> Randomize Categories
           </button>
           <button className="btn btn-p flex items-center gap-2" disabled={bulkGenerating} onClick={bulkGenerateAll}>
             {bulkGenerating ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Generating...</> : <><SparklesIcon className="w-4 h-4" /> Generate All Captions</>}
