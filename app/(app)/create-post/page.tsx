@@ -9,6 +9,7 @@ import { uid } from '@/lib/utils'
 import { callClaude, buildImageContent } from '@/lib/claude'
 import { uploadImage } from '@/lib/supabase/storage'
 import type { Post, BrandGoal } from '@/lib/types'
+import { POST_CATEGORIES, detectCategory } from '@/lib/types'
 import {
   SparklesIcon,
   ArrowPathIcon,
@@ -116,6 +117,37 @@ export default function CreatePostPage() {
   const [showTemplates, setShowTemplates] = useState(false)
   const [aspectRatio, setAspectRatio] = useState('')
   const [bulkAspectRatio, setBulkAspectRatio] = useState('')
+  const [category, setCategory] = useState('')
+  const [categoryAuto, setCategoryAuto] = useState(false) // true if value was auto-detected (allows overwrite on re-detect)
+  const [bulkCategory, setBulkCategory] = useState('')
+
+  // Auto-detect category from caption when user hasn't manually picked one
+  useEffect(() => {
+    if (!caption) return
+    if (category && !categoryAuto) return // user manually set it — don't override
+    const guess = detectCategory(caption)
+    if (guess && guess !== category) {
+      setCategory(guess)
+      setCategoryAuto(true)
+    }
+  }, [caption]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Prefill from URL params (e.g. blog→social companion flow).
+  // Uses window.location directly to avoid Next 14 useSearchParams Suspense requirement.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const qp = new URLSearchParams(window.location.search)
+    const qpCaption = qp.get('caption')
+    const qpImage = qp.get('image')
+    const qpCategory = qp.get('category')
+    const qpBrand = qp.get('brand')
+    const qpAspect = qp.get('aspect')
+    if (qpCaption) setCaption(qpCaption)
+    if (qpImage) setImages([qpImage])
+    if (qpCategory) setCategory(qpCategory)
+    if (qpBrand) setBrandId(qpBrand)
+    if (qpAspect) setAspectRatio(qpAspect)
+  }, [])
 
   const brand = brands.find(b => b.id === brandId)
 
@@ -208,6 +240,7 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
       client_visible: false,
       client_approved: false,
       aspect_ratio: aspectRatio || null,
+      category: category || null,
     }
     savePosts([newPost, ...posts])
     toast.success(status === 'draft' ? 'Draft saved!' : 'Post scheduled!')
@@ -254,6 +287,7 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
           client_visible: false,
           client_approved: false,
           aspect_ratio: aspectRatio || null,
+          category: category || null,
         }
         savePosts([newPost, ...posts])
         toast.success('Post added to Buffer queue!')
@@ -343,6 +377,7 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       client_visible: false,
       client_approved: false,
       aspect_ratio: bulkAspectRatio || null,
+      category: bulkCategory || null,
     }))
     savePosts([...newPosts, ...posts])
     toast.success(`${toSave.length} draft${toSave.length > 1 ? 's' : ''} saved!`)
@@ -395,6 +430,8 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       batch_label: batchLabel,
       client_visible: false,
       client_approved: false,
+      aspect_ratio: bulkAspectRatio || null,
+      category: bulkCategory || null,
     }))
 
     let sent = 0
@@ -481,6 +518,17 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
                 <button key={r.value} onClick={() => setBulkAspectRatio(bulkAspectRatio === r.value ? '' : r.value)}
                   className={`px-3 py-1.5 rounded-lg text-xs transition-colors border ${bulkAspectRatio === r.value ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
                   {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className="lbl">Category (all rows)</label>
+            <div className="flex gap-1.5 flex-wrap">
+              {POST_CATEGORIES.map(c => (
+                <button key={c.id} type="button" onClick={() => setBulkCategory(bulkCategory === c.id ? '' : c.id)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] transition-colors border ${bulkCategory === c.id ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
+                  {c.label}
                 </button>
               ))}
             </div>
@@ -695,6 +743,21 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
                 <button key={r.value} onClick={() => setAspectRatio(aspectRatio === r.value ? '' : r.value)}
                   className={`px-3 py-1.5 rounded-lg text-xs transition-colors border ${aspectRatio === r.value ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
                   {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="lbl flex items-center gap-2">
+              Category (content pillar)
+              {categoryAuto && category && <span className="text-[9px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-full">auto</span>}
+            </label>
+            <div className="flex gap-1.5 flex-wrap">
+              {POST_CATEGORIES.map(c => (
+                <button key={c.id} type="button"
+                  onClick={() => { setCategory(category === c.id ? '' : c.id); setCategoryAuto(false) }}
+                  className={`px-2.5 py-1 rounded-full text-[11px] transition-colors border ${category === c.id ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
+                  {c.label}
                 </button>
               ))}
             </div>

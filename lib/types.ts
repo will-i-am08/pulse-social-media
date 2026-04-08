@@ -65,6 +65,38 @@ export interface Post {
   buffer_sent?: boolean
   buffer_sent_at?: string
   aspect_ratio?: string | null
+  category?: string | null
+}
+
+export const POST_CATEGORIES: { id: string; label: string }[] = [
+  { id: 'holidays',   label: 'Public Holidays' },
+  { id: 'happenings', label: 'About / Happenings' },
+  { id: 'repairs',    label: 'Repair Types' },
+  { id: 'phones',     label: 'Phone Sales' },
+  { id: 'laptops',    label: 'Laptop Sales' },
+  { id: 'team',       label: 'Team' },
+  { id: 'refurb',     label: 'Refurb Stock' },
+  { id: 'blog',       label: 'Blog Companion' },
+]
+export const POST_CATEGORY_LABELS: Record<string, string> =
+  POST_CATEGORIES.reduce((acc, c) => { acc[c.id] = c.label; return acc }, {} as Record<string, string>)
+
+/**
+ * Lightweight keyword classifier — returns a category id or null.
+ * Order matters: more specific matches first.
+ */
+export function detectCategory(text: string): string | null {
+  if (!text) return null
+  const t = text.toLowerCase()
+  if (/refurb|in ?stock|stock drop|current stock/.test(t)) return 'refurb'
+  if (/\bblog\b|read more|article|on the blog|new post/.test(t)) return 'blog'
+  if (/\b(repair|fix|cracked|battery|screen|water damage|data recovery)\b/.test(t)) return 'repairs'
+  if (/\b(macbook|laptop|dell|lenovo|surface|chromebook)\b/.test(t)) return 'laptops'
+  if (/\b(iphone|samsung|pixel|android|phone)\b/.test(t)) return 'phones'
+  if (/\b(team|crew|staff|day in the life|behind the scenes|meet )/.test(t)) return 'team'
+  if (/holiday|christmas|easter|anzac|australia day|valentine|halloween|new year|mother'?s day|father'?s day|labour day|king'?s birthday|melbourne cup/.test(t)) return 'holidays'
+  if (/\b(open|closed|today|this week|busy|new arrival|just in|shop|store)\b/.test(t)) return 'happenings'
+  return null
 }
 
 export interface Photo {

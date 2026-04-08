@@ -12,7 +12,10 @@ import {
   CheckIcon,
   ClipboardDocumentIcon,
   DocumentDuplicateIcon,
+  PaperAirplaneIcon,
 } from '@heroicons/react/16/solid'
+import { useRouter } from 'next/navigation'
+import { callClaude } from '@/lib/claude'
 
 // ===================== SORT OPTIONS =====================
 type SortKey = 'newest' | 'oldest' | 'most-words' | 'highest-geo'
@@ -35,6 +38,7 @@ function sortPosts(posts: BlogPost[], key: SortKey, brand: BlogBrand | null): Bl
 
 // ===================== POSTS TAB =====================
 export default function PostsTab({ onEdit }: { onEdit: (post: BlogPost) => void }) {
+  const router = useRouter()
   const { activeBrand, drafts, deleteDraft, markPublished, saveDraft } = useBlog()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all')
@@ -120,6 +124,39 @@ export default function PostsTab({ onEdit }: { onEdit: (post: BlogPost) => void 
     catch (e) { toast.error(e instanceof Error ? e.message : 'Failed') }
   }
 
+  async function handleCreateSocialPost(post: BlogPost) {
+    if (!activeBrand) { toast.error('No active brand'); return }
+    const tid = toast.loading('Generating companion caption...')
+    try {
+      // Build blog URL
+      const site = (activeBrand.website || '').replace(/\/$/, '')
+      const path = ((activeBrand as unknown as { blogPath?: string }).blogPath || '/blog').replace(/^\/?/, '/')
+      const url = `${site}${path}/${post.slug}`
+
+      const sys = 'You are a social media copywriter. Write ONLY the caption text — no commentary, no quotation marks.'
+      const prompt = `Write a short, punchy Instagram/Facebook caption to promote this blog post for "${activeBrand.name}".
+Brand voice: ${activeBrand.brandVoice || 'warm, casual, local'}
+Title: ${post.title}
+Meta: ${post.meta}
+Tags: ${post.tags}
+
+Lead with a hook. 2-4 sentences max. Mention there's a full article and direct readers to the link in bio (or the URL). End with 3-5 relevant hashtags. Do NOT include the URL in the caption itself — it will be appended.`
+      const generated = await callClaude(sys, prompt, 400)
+      const caption = `${(generated || post.meta).trim()}\n\nRead more: ${url}`
+
+      const params = new URLSearchParams({
+        caption,
+        category: 'blog',
+        aspect: '4/5',
+      })
+      if (post.featuredImage) params.set('image', post.featuredImage)
+      toast.success('Caption ready!', { id: tid })
+      router.push(`/create-post?${params.toString()}`)
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed', { id: tid })
+    }
+  }
+
   async function handleClone(post: BlogPost) {
     try {
       await saveDraft({
@@ -191,6 +228,11 @@ export default function PostsTab({ onEdit }: { onEdit: (post: BlogPost) => void 
           {post.status !== 'published' && (
             <button onClick={() => handlePublish(post.id)} className="btn btn-sm flex items-center gap-1 text-green-400 border-green-500/30">
               <CheckIcon className="w-3 h-3" /> Publish
+            </button>
+          )}
+          {post.status === 'published' && (
+            <button onClick={() => handleCreateSocialPost(post)} className="btn btn-sm flex items-center gap-1 text-pink-400 border-pink-500/30">
+              <PaperAirplaneIcon className="w-3 h-3" /> Create Social Post
             </button>
           )}
           <button onClick={() => handleClone(post)} className="btn btn-sm flex items-center gap-1 text-blue-400 border-blue-500/30">

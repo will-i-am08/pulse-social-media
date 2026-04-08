@@ -19,6 +19,7 @@ import {
   UserIcon,
   Cog6ToothIcon,
   Squares2X2Icon,
+  ShoppingBagIcon,
 } from '@heroicons/react/16/solid'
 
 interface NavItem {
@@ -40,6 +41,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'clients',      label: 'Clients',       icon: UsersIcon,         href: '/clients',      roles: ['admin'] },
   { id: 'team',         label: 'Team',          icon: UserGroupIcon,     href: '/team',         roles: ['admin'] },
   { id: 'holidays',     label: 'Holidays',      icon: SparklesIcon,      href: '/holidays',     roles: ['admin','team'] },
+  { id: 'refurb-stock', label: 'Refurb Stock',  icon: ShoppingBagIcon,   href: '/refurb-stock', roles: ['admin','team'] },
 ]
 
 interface SidebarProps {
