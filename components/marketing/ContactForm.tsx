@@ -18,11 +18,23 @@ export default function ContactForm() {
     const formData = new FormData(form)
     formData.set('intent', selected)
 
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const message = formData.get('message') as string
+
     try {
-      const res = await fetch('/__forms.html', {
+      // Post to Netlify Forms for dashboard record (fire-and-forget)
+      fetch('/__forms.html', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams(formData as unknown as Record<string, string>).toString(),
+      }).catch(() => {})
+
+      // Send auto-reply via API route (reliable, no event trigger needed)
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, intent: selected, message }),
       })
 
       if (res.ok) {
