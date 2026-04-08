@@ -106,9 +106,16 @@ export default function CreatePostPage() {
   // Bulk state
   const [bulkBrandId, setBulkBrandId] = useState('')
   const [bulkPlatforms, setBulkPlatforms] = useState<string[]>(['instagram'])
-  const [bulkRows, setBulkRows] = useState<{ image: string; prompt: string; caption: string; status: string; category: string }[]>(
-    [{ image: '', prompt: '', caption: '', status: 'idle', category: '' }]
+  type BulkRow = { images: string[]; prompt: string; caption: string; status: string; category: string }
+  const [bulkRows, setBulkRows] = useState<BulkRow[]>(
+    [{ images: [], prompt: '', caption: '', status: 'idle', category: '' }]
   )
+  // When ON, the photo picker adds all selected photos to a single row (carousel post).
+  // When OFF, each picked photo creates its own row (one post per photo).
+  const [carouselMode, setCarouselMode] = useState(false)
+  // Multi-select state for the library picker (used in bulk mode)
+  const [librarySelection, setLibrarySelection] = useState<Set<string>>(new Set())
+  const [libraryMulti, setLibraryMulti] = useState(false)
   const [bulkGenerating, setBulkGenerating] = useState(false)
   const [bulkScheduling, setBulkScheduling] = useState(false)
   const [activeGoals, setActiveGoals] = useState<BrandGoal[]>([])
@@ -311,19 +318,28 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
   }
 
   async function handleBulkImage(e: React.ChangeEvent<HTMLInputElement>, idx: number) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
     const rows = [...bulkRows]
     rows[idx] = { ...rows[idx], status: 'uploading' }
-    setBulkRows(rows)
+    setBulkRows([...rows])
     try {
-      const url = await uploadImage(file)
-      rows[idx] = { ...rows[idx], image: url, status: 'idle' }
+      const urls = await Promise.all(files.map(f => uploadImage(f)))
+      if (carouselMode) {
+        // Add all to this row
+        rows[idx] = { ...rows[idx], images: [...rows[idx].images, ...urls], status: 'idle' }
+        setBulkRows([...rows])
+      } else {
+        // First file goes to this row, the rest spawn new rows
+        rows[idx] = { ...rows[idx], images: [...rows[idx].images, urls[0]], status: 'idle' }
+        const extras = urls.slice(1).map(u => ({ images: [u], prompt: '', caption: '', status: 'idle', category: '' }))
+        setBulkRows([...rows, ...extras])
+      }
     } catch (e: any) {
       toast.error('Upload failed: ' + e.message)
       rows[idx] = { ...rows[idx], status: 'idle' }
+      setBulkRows([...rows])
     }
-    setBulkRows([...rows])
   }
 
   /**
@@ -354,7 +370,7 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i]
       // A row is generatable if it has an image, a prompt, OR an assigned category
-      if (!row.image && !row.prompt && !row.category) continue
+      if (!row.images.length && !row.prompt && !row.category) continue
       rows[i] = { ...rows[i], status: 'generating' }
       setBulkRows([...rows])
       const bulkGoals = useGoals && activeGoals.length > 0
@@ -362,7 +378,6 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
         : ''
       const rowCategory = row.category || bulkCategory
       const categoryGuidance: Record<string, string> = {
-        holidays:   'This post celebrates an Australian public holiday or cultural moment. Tie it to the brand naturally.',
         happenings: "This post is about what's happening at the shop right now — new arrivals, busy days, behind the scenes vibes.",
         repairs:    'This post showcases a specific repair type the shop offers (screen, battery, water damage, data recovery, etc).',
         phones:     'This post features phones for sale — mention model, condition, price-style messaging without being a hard sell.',
@@ -382,8 +397,8 @@ ${bb.include_hashtags !== false ? 'Include hashtags.' : 'No hashtags.'}
 ${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}${bulkGoals}${catLine}
 ${bb.posting_instructions ? 'Custom brand instructions (MUST follow): ' + bb.posting_instructions : ''}
 ${row.prompt ? 'Additional instructions: ' + row.prompt : ''}
-${row.image ? 'The caption MUST be specifically about the content shown in the attached image.' : ''}`
-      const content = row.image ? buildImageContent(row.image, textPrompt) : textPrompt
+${row.images.length ? 'The caption MUST be specifically about the content shown in the attached image' + (row.images.length > 1 ? 's (this is a carousel post — write a caption that works for the whole set).' : '.') : ''}`
+      const content = row.images.length ? buildImageContent(row.images[0], textPrompt) : textPrompt
       const result = await callClaude(sys, content, 400)
       rows[i] = { ...rows[i], caption: result || '', status: result ? 'done' : 'idle' }
       setBulkRows([...rows])
@@ -405,8 +420,8 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       caption: r.caption,
       platforms: [...bulkPlatforms],
       status: 'draft',
-      image_url: r.image || null,
-      image_urls: r.image ? [r.image] : [],
+      image_url: r.images[0] || null,
+      image_urls: [...r.images],
       created_date: new Date().toISOString(),
       batch_id: batchId,
       batch_label: batchLabel,
@@ -420,20 +435,59 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
     router.push('/posts')
   }
 
-  function openLibrary(target: 'single' | number) {
+  function openLibrary(target: 'single' | number, multi: boolean = false) {
     setLibraryTarget(target)
     setLibrarySearch('')
+    setLibrarySelection(new Set())
+    setLibraryMulti(multi)
     setShowLibrary(true)
   }
 
   function pickFromLibrary(url: string) {
+    if (libraryMulti) {
+      // Toggle in multi-select set
+      setLibrarySelection(prev => {
+        const next = new Set(prev)
+        if (next.has(url)) next.delete(url); else next.add(url)
+        return next
+      })
+      return
+    }
     if (libraryTarget === 'single') {
       setImages(prev => [...prev, url])
     } else {
       const r = [...bulkRows]
-      r[libraryTarget as number] = { ...r[libraryTarget as number], image: url }
+      r[libraryTarget as number] = { ...r[libraryTarget as number], images: [...r[libraryTarget as number].images, url] }
       setBulkRows(r)
     }
+    setShowLibrary(false)
+  }
+
+  /**
+   * Confirm multi-select. In carousel mode the photos all go onto the target row.
+   * In single-photo mode, each photo becomes its own row (one post per photo),
+   * starting from the target row.
+   */
+  function confirmMultiSelect() {
+    const urls = Array.from(librarySelection)
+    if (!urls.length) { setShowLibrary(false); return }
+    const idx = typeof libraryTarget === 'number' ? libraryTarget : 0
+    const rows = [...bulkRows]
+    if (carouselMode) {
+      rows[idx] = { ...rows[idx], images: [...rows[idx].images, ...urls] }
+      setBulkRows(rows)
+    } else {
+      // First photo into target row (if it's empty), the rest spawn new rows
+      const startsEmpty = rows[idx].images.length === 0 && !rows[idx].caption && !rows[idx].prompt
+      const consume = startsEmpty ? urls : urls.slice()
+      if (startsEmpty) {
+        rows[idx] = { ...rows[idx], images: [consume.shift() as string] }
+      }
+      const extras = consume.map(u => ({ images: [u], prompt: '', caption: '', status: 'idle', category: '' }))
+      setBulkRows([...rows, ...extras])
+    }
+    toast.success(`Added ${urls.length} photo${urls.length !== 1 ? 's' : ''}`)
+    setLibrarySelection(new Set())
     setShowLibrary(false)
   }
 
@@ -459,8 +513,8 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
       platforms: [...bulkPlatforms],
       status: 'published' as const,
       scheduled_at: null,
-      image_url: r.image || null,
-      image_urls: r.image ? [r.image] : [],
+      image_url: r.images[0] || null,
+      image_urls: [...r.images],
       created_date: new Date().toISOString(),
       batch_id: batchId,
       batch_label: batchLabel,
@@ -579,37 +633,55 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
               {!useGoals && <span className="text-[10px] text-[#e1bec0] bg-[#2b2a29] px-2 py-0.5 rounded-full">General posts</span>}
             </div>
           )}
+          <div className="flex items-center gap-3 mt-3 flex-wrap">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" className="w-4 h-4 accent-[#ff5473]" checked={carouselMode} onChange={e => setCarouselMode(e.target.checked)} />
+              <span className="text-sm text-[#e6e1e1]">Carousel mode (multiple photos per post)</span>
+            </label>
+            {photos.length > 0 && (
+              <button onClick={() => openLibrary(0, true)} className="btn btn-o btn-sm flex items-center gap-1 text-xs">
+                <PhotoIcon className="w-3 h-3" /> Bulk pick from Library
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="space-y-3 mb-4">
           {bulkRows.map((row, i) => (
             <div key={i} className="card p-4">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0">
-                  {row.image ? (
-                    <div className="relative w-20" style={{ aspectRatio: bulkAspectRatio || '1/1' }}>
-                      <img src={row.image} alt="" className="w-full h-full rounded-lg object-cover" />
-                      <button onClick={() => { const r = [...bulkRows]; r[i] = { ...r[i], image: '' }; setBulkRows(r) }}
-                        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                        <XMarkIcon className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-1">
-                      <label className="flex flex-col items-center justify-center w-20 h-[38px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
-                        <PaperClipIcon className="w-3 h-3" />
-                        <span>Upload</span>
-                        <input type="file" accept="image/*" className="hidden" onChange={e => handleBulkImage(e, i)} />
-                      </label>
-                      {photos.length > 0 && (
-                        <button onClick={() => openLibrary(i)}
-                          className="flex flex-col items-center justify-center w-20 h-[38px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
-                          <PhotoIcon className="w-3 h-3" />
-                          <span>Library</span>
-                        </button>
-                      )}
+                <div className="flex-shrink-0 w-24 space-y-1">
+                  {row.images.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {row.images.map((img, idx) => (
+                        <div key={idx} className="relative w-[44px] h-[44px]">
+                          <img src={img} alt="" className="w-full h-full rounded object-cover" />
+                          <button onClick={() => {
+                              const r = [...bulkRows]
+                              r[i] = { ...r[i], images: r[i].images.filter((_, k) => k !== idx) }
+                              setBulkRows(r)
+                            }}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[8px] flex items-center justify-center">
+                            <XMarkIcon className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
+                  <div className="flex flex-col gap-1">
+                    <label className="flex flex-col items-center justify-center w-full h-[34px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
+                      <PaperClipIcon className="w-3 h-3" />
+                      <span>{row.images.length ? '+ Upload' : 'Upload'}</span>
+                      <input type="file" accept="image/*" multiple={carouselMode} className="hidden" onChange={e => handleBulkImage(e, i)} />
+                    </label>
+                    {photos.length > 0 && (
+                      <button onClick={() => openLibrary(i, carouselMode)}
+                        className="flex flex-col items-center justify-center w-full h-[34px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
+                        <PhotoIcon className="w-3 h-3" />
+                        <span>Library</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex gap-2 items-center">
@@ -641,7 +713,7 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
 
         <div className="flex gap-3 flex-wrap">
           <button className="btn btn-o flex items-center gap-2" disabled={bulkRows.length >= 10}
-            onClick={() => setBulkRows(r => [...r, { image: '', prompt: '', caption: '', status: 'idle', category: '' }])}>
+            onClick={() => setBulkRows(r => [...r, { images: [], prompt: '', caption: '', status: 'idle', category: '' }])}>
             <PlusIcon className="w-4 h-4" /> Add Row{bulkRows.length >= 10 ? ' (max 10)' : ''}
           </button>
           <button className="btn btn-o flex items-center gap-2" onClick={randomizeCategories}>
@@ -929,19 +1001,40 @@ ${row.image ? 'The caption MUST be specifically about the content shown in the a
                 <p className="text-center text-[#5a4042] py-10">No photos found</p>
               ) : (
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                  {filteredLibrary.map(photo => (
-                    <button key={photo.id} onClick={() => pickFromLibrary(photo.url)}
-                      className="group relative rounded-lg overflow-hidden border border-transparent hover:border-[#ff5473] transition-colors">
-                      <img src={photo.url} alt={photo.name} className="w-full h-20 object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <PlusIcon className="w-6 h-6 text-white" />
-                      </div>
-                      <p className="text-[10px] text-[#e1bec0] truncate px-1 py-0.5">{photo.name}</p>
-                    </button>
-                  ))}
+                  {filteredLibrary.map(photo => {
+                    const selected = librarySelection.has(photo.url)
+                    return (
+                      <button key={photo.id} onClick={() => pickFromLibrary(photo.url)}
+                        className={`group relative rounded-lg overflow-hidden border transition-colors ${selected ? 'border-[#ff5473] ring-2 ring-[#ff5473]' : 'border-transparent hover:border-[#ff5473]'}`}>
+                        <img src={photo.url} alt={photo.name} className="w-full h-20 object-cover" />
+                        <div className={`absolute inset-0 bg-black/40 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity flex items-center justify-center`}>
+                          {selected ? (
+                            <span className="text-white text-lg font-bold">✓</span>
+                          ) : (
+                            <PlusIcon className="w-6 h-6 text-white" />
+                          )}
+                        </div>
+                        <p className="text-[10px] text-[#e1bec0] truncate px-1 py-0.5">{photo.name}</p>
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
+            {libraryMulti && (
+              <div className="flex items-center justify-between gap-2 pt-3 mt-3 border-t border-[#5a4042]/30">
+                <span className="text-xs text-[#e1bec0]">
+                  {librarySelection.size} selected {carouselMode ? '(carousel)' : '(one per post)'}
+                </span>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowLibrary(false)} className="btn btn-o text-sm">Cancel</button>
+                  <button onClick={confirmMultiSelect} disabled={librarySelection.size === 0}
+                    className="btn text-sm disabled:opacity-40">
+                    Add {librarySelection.size} photo{librarySelection.size !== 1 ? 's' : ''}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

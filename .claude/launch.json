@@ -5,7 +5,8 @@
       "name": "Next.js",
       "runtimeExecutable": "/private/tmp/node-v20.11.0-darwin-arm64/bin/node",
       "runtimeArgs": ["node_modules/.bin/next", "dev"],
-      "port": 3000
+      "port": 3000,
+      "autoPort": true
     }
   ]
 }

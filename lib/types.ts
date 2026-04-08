@@ -68,8 +68,9 @@ export interface Post {
   category?: string | null
 }
 
+// Note: "Public Holidays" is intentionally NOT a category here — it's owned by
+// the dedicated /holidays page and should not pollute the regular pillar mix.
 export const POST_CATEGORIES: { id: string; label: string }[] = [
-  { id: 'holidays',   label: 'Public Holidays' },
   { id: 'happenings', label: 'About / Happenings' },
   { id: 'repairs',    label: 'Repair Types' },
   { id: 'phones',     label: 'Phone Sales' },
@@ -94,7 +95,6 @@ export function detectCategory(text: string): string | null {
   if (/\b(macbook|laptop|dell|lenovo|surface|chromebook)\b/.test(t)) return 'laptops'
   if (/\b(iphone|samsung|pixel|android|phone)\b/.test(t)) return 'phones'
   if (/\b(team|crew|staff|day in the life|behind the scenes|meet )/.test(t)) return 'team'
-  if (/holiday|christmas|easter|anzac|australia day|valentine|halloween|new year|mother'?s day|father'?s day|labour day|king'?s birthday|melbourne cup/.test(t)) return 'holidays'
   if (/\b(open|closed|today|this week|busy|new arrival|just in|shop|store)\b/.test(t)) return 'happenings'
   return null
 }
