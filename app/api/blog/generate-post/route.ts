@@ -112,12 +112,15 @@ Target length: 1000-1200 words. Write the blog post content only. No title headi
     return NextResponse.json({ error: err.error?.message || `API error ${anthropicRes.status}` }, { status: 500 })
   }
 
-  // Pass through the SSE stream
+  // Pass through the SSE stream. The X-Accel-Buffering and no-transform
+  // headers tell Netlify / nginx-style proxies NOT to buffer the response —
+  // without these the user sees nothing until the whole blog post finishes.
   return new NextResponse(anthropicRes.body, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
     },
   })
 }
