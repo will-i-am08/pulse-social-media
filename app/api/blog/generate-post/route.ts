@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDecryptedClaudeKey } from '@/lib/account/getAccountSettings'
 import { getActiveGoals, goalsToPromptSection } from '@/lib/brands/getActiveGoals'
+import { buildBrandInstructions } from '@/lib/types'
 
 export const maxDuration = 60
 
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
 
   const { data: brand } = await supabase
     .from('workspace_brands')
-    .select('name, business_name, location, industry, brand_voice')
+    .select('name, business_name, location, industry, brand_voice, posting_instructions, custom_rules')
     .eq('id', brandId).eq('user_id', user.id).single()
 
   if (!brand) return NextResponse.json({ error: 'Brand not found' }, { status: 404 })
@@ -27,6 +28,10 @@ export async function POST(req: NextRequest) {
   const location = brand.location || ''
   const industry = brand.industry || ''
   const brandVoice = brand.brand_voice || ''
+  const brandRulesText = buildBrandInstructions(
+    { posting_instructions: brand.posting_instructions, custom_rules: brand.custom_rules },
+    'blog'
+  )
 
   const goals = await getActiveGoals(brandId, user.id)
   const goalsSection = goalsToPromptSection(goals)
@@ -57,7 +62,7 @@ Structure:
 6. ## Get Help from ${businessName} — friendly CTA
 7. ## Frequently Asked Questions — 4-5 Q&As (H3 questions, 2-3 sentence answers)
 
-${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${goalsSection}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
+${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${brandRulesText ? `\nBRAND RULES (MUST follow):\n${brandRulesText}\n` : ''}${goalsSection}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
 Target length: 800-1000 words. Write the blog post content only. No title heading at the top. Start with the Direct Answer paragraph.`
   } else {
     prompt = `Write an SEO-optimised blog post for ${businessName}'s blog.${location ? ` Based in ${location}.` : ''}${industry ? ` Industry: ${industry}.` : ''}
@@ -82,7 +87,7 @@ Structure:
 7. ## Get Help from ${businessName} — friendly CTA
 8. ## Frequently Asked Questions — 4-5 Q&As (### for each question, 2-3 sentence answers)
 
-${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${goalsSection}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
+${brandVoice ? `BRAND VOICE:\n${brandVoice}\n` : ''}${brandRulesText ? `\nBRAND RULES (MUST follow):\n${brandRulesText}\n` : ''}${goalsSection}${customPrompt ? `\nADDITIONAL INSTRUCTIONS:\n${customPrompt}\n` : ''}
 Target length: 1000-1200 words. Write the blog post content only. No title heading at the top. Start with the Direct Answer paragraph.`
   }
 

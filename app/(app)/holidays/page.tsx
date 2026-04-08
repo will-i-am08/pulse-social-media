@@ -7,7 +7,7 @@ import { HOLIDAYS_2026, type Holiday } from '@/lib/holidays'
 import { callClaude } from '@/lib/claude'
 import { uid } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import type { Post } from '@/lib/types'
+import { type Post, buildBrandInstructions } from '@/lib/types'
 import { SparklesIcon, ArrowPathIcon, ClipboardDocumentIcon, PlusCircleIcon, DocumentPlusIcon } from '@heroicons/react/16/solid'
 
 interface HolidayCaption {
@@ -33,7 +33,7 @@ Tone: ${brand.tone || 'professional'}
 Guidelines: ${brand.brand_guidelines || 'N/A'}
 ${brand.include_hashtags !== false ? 'Include relevant holiday hashtags.' : 'No hashtags.'}
 ${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emojis.'}
-${brand.posting_instructions ? 'Custom brand instructions (MUST follow): ' + brand.posting_instructions : ''}`
+${(() => { const i = buildBrandInstructions(brand, 'caption'); return i ? 'Custom brand instructions (MUST follow):\n' + i : '' })()}`
     const result = await callClaude(sys, prompt, 400)
     if (result) {
       setCaptions(prev => ({ ...prev, [holiday.name]: result }))
@@ -53,7 +53,7 @@ Tone: ${brand.tone || 'professional'}
 Guidelines: ${brand.brand_guidelines || 'N/A'}
 ${brand.include_hashtags !== false ? 'Include relevant holiday hashtags.' : 'No hashtags.'}
 ${brand.include_emojis !== false ? 'Use appropriate holiday emojis.' : 'No emojis.'}
-${brand.posting_instructions ? 'Custom brand instructions (MUST follow): ' + brand.posting_instructions : ''}`
+${(() => { const i = buildBrandInstructions(brand, 'caption'); return i ? 'Custom brand instructions (MUST follow):\n' + i : '' })()}`
       const result = await callClaude(sys, prompt, 400)
       if (result) setCaptions(prev => ({ ...prev, [holiday.name]: result }))
     }

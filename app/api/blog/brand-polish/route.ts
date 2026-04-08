@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDecryptedClaudeKey } from '@/lib/account/getAccountSettings'
+import { buildBrandInstructions } from '@/lib/types'
 
 export const maxDuration = 60
 
@@ -17,17 +18,21 @@ export async function POST(req: NextRequest) {
 
   const { data: brand } = await supabase
     .from('workspace_brands')
-    .select('name, business_name, brand_voice')
+    .select('name, business_name, brand_voice, posting_instructions, custom_rules')
     .eq('id', brandId).eq('user_id', user.id).single()
 
   if (!brand) return NextResponse.json({ error: 'Brand not found' }, { status: 404 })
 
   const businessName = brand.business_name || brand.name
   const brandVoice = brand.brand_voice || ''
+  const brandRulesText = buildBrandInstructions(
+    { posting_instructions: brand.posting_instructions, custom_rules: brand.custom_rules },
+    'blog'
+  )
 
   const prompt = `You are a brand voice editor for ${businessName}.
 
-${brandVoice ? `BRAND VOICE RULES:\n${brandVoice}\n\n` : ''}Rewrite this blog post to perfectly match the brand voice above.
+${brandVoice ? `BRAND VOICE RULES:\n${brandVoice}\n\n` : ''}${brandRulesText ? `BRAND RULES (MUST follow):\n${brandRulesText}\n\n` : ''}Rewrite this blog post to perfectly match the brand voice above.
 
 RULES:
 - Keep the EXACT same structure, all ## headings, all facts, all CTAs, and all contact details

@@ -9,7 +9,7 @@ import { uid } from '@/lib/utils'
 import { callClaude, buildImageContent } from '@/lib/claude'
 import { uploadImage } from '@/lib/supabase/storage'
 import type { Post, BrandGoal } from '@/lib/types'
-import { POST_CATEGORIES, detectCategory } from '@/lib/types'
+import { POST_CATEGORIES, detectCategory, buildBrandInstructions } from '@/lib/types'
 import {
   SparklesIcon,
   ArrowPathIcon,
@@ -219,7 +219,7 @@ Brand guidelines: ${brand.brand_guidelines || 'N/A'}
 Platforms: ${platforms.join(', ') || 'instagram'}
 ${hashtags}
 ${emojis}${goalsSection}
-${brand.posting_instructions ? 'Custom brand instructions (MUST follow): ' + brand.posting_instructions : ''}
+${(() => { const i = buildBrandInstructions(brand, 'caption'); return i ? 'Custom brand instructions (MUST follow):\n' + i : '' })()}
 ${customPrompt ? 'Additional instructions: ' + customPrompt : ''}
 ${images.length > 0 ? 'The caption MUST be specifically about the content shown in the attached image.' : 'Write an engaging caption that reflects the brand voice.'}`
 
@@ -395,7 +395,7 @@ Guidelines: ${bb.brand_guidelines || 'N/A'}
 Platforms: ${bulkPlatforms.join(', ') || 'instagram'}
 ${bb.include_hashtags !== false ? 'Include hashtags.' : 'No hashtags.'}
 ${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}${bulkGoals}${catLine}
-${bb.posting_instructions ? 'Custom brand instructions (MUST follow): ' + bb.posting_instructions : ''}
+${(() => { const i = buildBrandInstructions(bb, 'caption'); return i ? 'Custom brand instructions (MUST follow):\n' + i : '' })()}
 ${row.prompt ? 'Additional instructions: ' + row.prompt : ''}
 ${row.images.length ? 'The caption MUST be specifically about the content shown in the attached image' + (row.images.length > 1 ? 's (this is a carousel post — write a caption that works for the whole set).' : '.') : ''}`
       const content = row.images.length ? buildImageContent(row.images[0], textPrompt) : textPrompt

@@ -9,6 +9,41 @@ export interface Profile {
   brand_id: string | null
 }
 
+/**
+ * A single custom prompt rule that gets injected into AI generation.
+ * Multiple rules can be added per brand and they all stack on top of postingInstructions.
+ * `appliesTo` lets you target captions, blog posts, or both.
+ */
+export interface BrandRule {
+  id: string
+  label: string
+  prompt: string
+  enabled: boolean
+  appliesTo: 'caption' | 'blog' | 'both'
+}
+
+/**
+ * Build a single combined instruction string for a brand, merging
+ * legacy postingInstructions + every enabled custom rule that matches the scope.
+ * Accepts either the WorkspaceBrand (camelCase) or legacy Brand (snake_case) shape.
+ */
+export function buildBrandInstructions(
+  brand: { postingInstructions?: string; posting_instructions?: string; customRules?: BrandRule[]; custom_rules?: BrandRule[] } | null | undefined,
+  scope: 'caption' | 'blog' = 'caption'
+): string {
+  if (!brand) return ''
+  const base = (brand.postingInstructions || brand.posting_instructions || '').trim()
+  const rules = (brand.customRules || brand.custom_rules || []).filter(r =>
+    r.enabled && (r.appliesTo === 'both' || r.appliesTo === scope) && r.prompt.trim()
+  )
+  const ruleLines = rules.map(r => `- ${r.label ? r.label + ': ' : ''}${r.prompt.trim()}`)
+  if (!base && !ruleLines.length) return ''
+  const parts: string[] = []
+  if (base) parts.push(base)
+  if (ruleLines.length) parts.push(ruleLines.join('\n'))
+  return parts.join('\n')
+}
+
 export interface Brand {
   id: string
   name: string
@@ -18,6 +53,7 @@ export interface Brand {
   output_length: 'short' | 'medium' | 'long'
   brand_guidelines?: string
   posting_instructions?: string
+  custom_rules?: BrandRule[]
   include_hashtags: boolean
   include_emojis: boolean
   social_handles?: {
@@ -154,6 +190,7 @@ export interface WorkspaceBrand {
   // Brand voice & content
   brandVoice: string
   postingInstructions?: string
+  customRules?: BrandRule[]
   tone: 'professional' | 'casual' | 'playful' | 'luxury' | 'inspirational' | 'friendly'
   outputLength: 'short' | 'medium' | 'long'
   focusAreas: string[]
