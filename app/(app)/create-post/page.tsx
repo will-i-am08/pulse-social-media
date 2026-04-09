@@ -299,7 +299,8 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
         toast.dismiss('crop')
       }
 
-      const shareNow = category === 'blog'
+      const customSchedule = scheduledAt ? new Date(scheduledAt).toISOString() : null
+      const shareNow = !customSchedule && category === 'blog'
       const res = await fetch('/api/buffer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -308,6 +309,7 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
           text: caption,
           media: photoUrl ? { photo: photoUrl } : undefined,
           shareNow,
+          scheduledAt: customSchedule,
         }),
       })
       const data = await res.json()
@@ -329,7 +331,13 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
           category: category || null,
         }
         savePosts([newPost, ...posts])
-        toast.success(shareNow ? 'Blog post published now!' : 'Post added to Buffer queue!')
+        toast.success(
+          customSchedule
+            ? `Scheduled to Buffer for ${new Date(customSchedule).toLocaleString()}`
+            : shareNow
+              ? 'Blog post published now!'
+              : 'Post added to Buffer queue!'
+        )
         router.push('/posts')
       } else {
         const err = data.results?.find((r: { success: boolean; error?: string }) => r.error)?.error || data.error || 'Unknown error'

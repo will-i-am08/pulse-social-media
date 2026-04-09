@@ -74,10 +74,19 @@ export async function POST(req: NextRequest) {
   const token = await getDecryptedBufferToken(user.id)
   if (!token) return NextResponse.json({ error: 'No Buffer token configured. Add it in Account Settings.' }, { status: 400 })
 
-  const { profileIds, text, media, shareNow } = await req.json()
+  const { profileIds, text, media, shareNow, scheduledAt } = await req.json()
 
   if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer channel' }, { status: 400 })
   if (!text?.trim()) return NextResponse.json({ error: 'Post text is required' }, { status: 400 })
+
+  // Normalize scheduledAt to ISO; reject past times
+  let scheduledIso: string | null = null
+  if (scheduledAt) {
+    const d = new Date(scheduledAt)
+    if (isNaN(d.getTime())) return NextResponse.json({ error: 'Invalid scheduledAt' }, { status: 400 })
+    if (d.getTime() <= Date.now()) return NextResponse.json({ error: 'scheduledAt must be in the future' }, { status: 400 })
+    scheduledIso = d.toISOString()
+  }
 
   // Fetch channel service info so we can build per-platform metadata
   const channelServiceMap: Record<string, string> = {}
@@ -113,9 +122,12 @@ export async function POST(req: NextRequest) {
         metadata.instagram = { type: 'post', shouldShareToFeed: true }
       }
 
-      const input: Record<string, unknown> = shareNow
-        ? { channelId, text, shareNow: true }
-        : { channelId, text, schedulingType: 'automatic', mode: 'addToQueue' }
+      // Priority: custom scheduledAt > shareNow > queue
+      const input: Record<string, unknown> = scheduledIso
+        ? { channelId, text, schedulingType: 'custom', scheduledAt: scheduledIso }
+        : shareNow
+          ? { channelId, text, shareNow: true }
+          : { channelId, text, schedulingType: 'automatic', mode: 'addToQueue' }
 
       if (Object.keys(metadata).length > 0) {
         input.metadata = metadata
