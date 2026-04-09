@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
 
   const { data: brand } = await supabase
     .from('workspace_brands')
-    .select('name, brand_voice, tone, output_length, include_hashtags, include_emojis, brand_guidelines')
+    .select('name, brand_voice, tone, output_length, include_hashtags, include_emojis')
     .eq('id', brandId)
     .eq('user_id', user.id)
     .single()
@@ -129,8 +129,7 @@ export async function POST(req: NextRequest) {
 
   const userPrompt = `Write a ${length} social media caption for the brand "${brand.name}" promoting the blog post below.
 Brand tone: ${brand.tone || 'professional'}
-${brand.brand_voice ? `Brand voice: ${brand.brand_voice}` : ''}
-${brand.brand_guidelines ? `Brand guidelines: ${brand.brand_guidelines}` : ''}
+${brand.brand_voice ? `Brand voice / guidelines: ${brand.brand_voice}` : ''}
 Platforms: ${platformList}
 ${hashtags}
 ${emojis}
