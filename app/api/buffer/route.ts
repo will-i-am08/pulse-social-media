@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   const token = await getDecryptedBufferToken(user.id)
   if (!token) return NextResponse.json({ error: 'No Buffer token configured. Add it in Account Settings.' }, { status: 400 })
 
-  const { profileIds, text, media } = await req.json()
+  const { profileIds, text, media, shareNow } = await req.json()
 
   if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer channel' }, { status: 400 })
   if (!text?.trim()) return NextResponse.json({ error: 'Post text is required' }, { status: 400 })
@@ -113,12 +113,9 @@ export async function POST(req: NextRequest) {
         metadata.instagram = { type: 'post', shouldShareToFeed: true }
       }
 
-      const input: Record<string, unknown> = {
-        channelId,
-        text,
-        schedulingType: 'automatic',
-        mode: 'addToQueue',
-      }
+      const input: Record<string, unknown> = shareNow
+        ? { channelId, text, shareNow: true }
+        : { channelId, text, schedulingType: 'automatic', mode: 'addToQueue' }
 
       if (Object.keys(metadata).length > 0) {
         input.metadata = metadata
