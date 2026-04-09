@@ -102,6 +102,8 @@ export default function CreatePostPage() {
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [sendingBuffer, setSendingBuffer] = useState(false)
+  const [blogUrl, setBlogUrl] = useState('')
+  const [fetchingBlog, setFetchingBlog] = useState(false)
 
   // Bulk state
   const [bulkBrandId, setBulkBrandId] = useState('')
@@ -254,6 +256,32 @@ ${images.length > 0 ? 'The caption MUST be specifically about the content shown 
     savePosts([newPost, ...posts])
     toast.success(status === 'draft' ? 'Draft saved!' : 'Post scheduled!')
     router.push('/posts')
+  }
+
+  async function fetchFromBlogUrl() {
+    if (!brandId) { toast.error('Select a brand first'); return }
+    const trimmed = blogUrl.trim()
+    if (!/^https?:\/\//i.test(trimmed)) { toast.error('Enter a valid http(s) URL'); return }
+    setFetchingBlog(true)
+    const tid = toast.loading('Reading blog & writing caption…')
+    try {
+      const res = await fetch('/api/blog/scrape-and-caption', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: trimmed, brandId, platforms, customPrompt }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to read blog')
+      if (data.caption) setCaption(data.caption)
+      setCategory('blog')
+      setCategoryAuto(false)
+      if (data.image && images.length === 0) setImages([data.image])
+      toast.success('Caption written from blog!', { id: tid })
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Failed to read blog', { id: tid })
+    } finally {
+      setFetchingBlog(false)
+    }
   }
 
   async function sendToBuffer() {
@@ -923,6 +951,26 @@ ${row.images.length ? 'The caption MUST be specifically about the content shown 
               {!useGoals && <span className="text-[10px] text-[#e1bec0] bg-[#2b2a29] px-2 py-0.5 rounded-full">General post</span>}
             </div>
           )}
+          <div>
+            <label className="lbl">From blog URL (optional)</label>
+            <div className="flex gap-2">
+              <input
+                type="url"
+                className="inp flex-1"
+                placeholder="https://example.com/blog/post"
+                value={blogUrl}
+                onChange={e => setBlogUrl(e.target.value)}
+              />
+              <button
+                className="btn btn-o flex items-center gap-2 whitespace-nowrap"
+                disabled={!brandId || fetchingBlog || !blogUrl.trim()}
+                onClick={fetchFromBlogUrl}
+                type="button"
+              >
+                {fetchingBlog ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Reading…</> : <><PaperClipIcon className="w-4 h-4" /> Fetch & write caption</>}
+              </button>
+            </div>
+          </div>
           <div className="flex gap-2">
             <button className="btn btn-p flex-1 flex items-center justify-center gap-2" disabled={!brandId || generating} onClick={generate}>
               {generating ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Generating...</> : <><SparklesIcon className="w-4 h-4" /> Generate Caption</>}
