@@ -122,12 +122,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not extract article content' }, { status: 422 })
   }
 
-  const length = brand.output_length || 'medium'
-  const hashtags = brand.include_hashtags !== false ? 'Include relevant hashtags.' : 'Do not include hashtags.'
-  const emojis = brand.include_emojis !== false ? 'Use emojis where appropriate.' : 'Do not use emojis.'
+  // Blog captions are intentionally shorter than normal — keep the hook tight.
+  const hashtags = brand.include_hashtags !== false ? 'Include a few relevant hashtags.' : 'Do not include hashtags.'
+  const emojis = brand.include_emojis !== false ? 'Use emojis sparingly where appropriate.' : 'Do not use emojis.'
   const platformList = (platforms && platforms.length ? platforms : ['instagram']).join(', ')
 
-  const userPrompt = `Write a ${length} social media caption for the brand "${brand.name}" promoting the blog post below.
+  const userPrompt = `Write a SHORT social media caption (2–4 sentences max, tight and punchy) for the brand "${brand.name}" promoting the blog post below.
 Brand tone: ${brand.tone || 'professional'}
 ${brand.brand_voice ? `Brand voice / guidelines: ${brand.brand_voice}` : ''}
 Platforms: ${platformList}
@@ -142,7 +142,7 @@ URL: ${url}
 Excerpt:
 ${article.body}
 
-Write a caption that entices readers to click through and read the full post. Do not include the URL in the caption.`
+Write a caption that entices readers to click through. End the caption with the full blog URL on its own line so readers can click through (use exactly this URL: ${url}).`
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -161,7 +161,11 @@ Write a caption that entices readers to click through and read the full post. Do
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error?.message || 'Claude API error')
-    const caption = data.content?.[0]?.text || ''
+    let caption = (data.content?.[0]?.text || '').trim()
+    // Guarantee the blog URL is in every caption
+    if (caption && !caption.includes(url)) {
+      caption = `${caption}\n\n${url}`
+    }
     return NextResponse.json({
       caption,
       title: article.title,
