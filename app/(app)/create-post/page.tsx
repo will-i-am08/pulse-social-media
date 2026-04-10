@@ -472,40 +472,61 @@ export default function CreatePostPage() {
     if (!bb) { toast.error('Select a brand first'); return }
     setBulkGenerating(true)
     const rows = [...bulkRows]
-    const sys = 'You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations.'
+
+    // Gather recent captions for context (includes already-generated bulk rows)
+    const brandPosts = posts
+      .filter(p => p.brand_profile_id === bulkBrandId && p.caption)
+      .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
+      .slice(0, 15)
+      .map(p => ({ caption: p.caption, variationPreset: '' }))
+
+    // Category guidance for content pillars
+    const categoryGuidance: Record<string, string> = {
+      happenings: "This post is about what's happening at the shop right now — new arrivals, busy days, behind the scenes vibes.",
+      repairs:    'This post showcases a specific repair type the shop offers (screen, battery, water damage, data recovery, etc).',
+      phones:     'This post features phones for sale — mention model, condition, price-style messaging without being a hard sell.',
+      laptops:    'This post features laptops/MacBooks for sale — mention model, condition, price-style messaging.',
+      team:       'This post is about the crew — introduce a team member, day-in-the-life, or a fun team moment.',
+      refurb:     'This post is a weekly refurb stock update teaser. Keep it short and inviting.',
+      blog:       'This post promotes a blog article — give a punchy hook and direct readers to the article.',
+    }
+
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i]
-      // A row is generatable if it has an image, a prompt, OR an assigned category
       if (!row.images.length && !row.prompt && !row.category) continue
       rows[i] = { ...rows[i], status: 'generating' }
       setBulkRows([...rows])
-      const bulkGoals = useGoals && activeGoals.length > 0
-        ? `\nCurrent brand goals (align content with these):\n${activeGoals.map(g => `- [${g.period}] ${g.title}${g.description ? ' — ' + g.description : ''}`).join('\n')}\n`
-        : ''
+
+      // Build category prompt addition
       const rowCategory = row.category || bulkCategory
-      const categoryGuidance: Record<string, string> = {
-        happenings: "This post is about what's happening at the shop right now — new arrivals, busy days, behind the scenes vibes.",
-        repairs:    'This post showcases a specific repair type the shop offers (screen, battery, water damage, data recovery, etc).',
-        phones:     'This post features phones for sale — mention model, condition, price-style messaging without being a hard sell.',
-        laptops:    'This post features laptops/MacBooks for sale — mention model, condition, price-style messaging.',
-        team:       'This post is about the crew — introduce a team member, day-in-the-life, or a fun team moment.',
-        refurb:     'This post is a weekly refurb stock update teaser. Keep it short and inviting.',
-        blog:       'This post promotes a blog article — give a punchy hook and direct readers to the article.',
-      }
       const catLine = rowCategory && categoryGuidance[rowCategory]
-        ? `\nContent pillar: ${POST_CATEGORIES.find(c => c.id === rowCategory)?.label}\n${categoryGuidance[rowCategory]}\n`
+        ? `Content pillar: ${POST_CATEGORIES.find(c => c.id === rowCategory)?.label}. ${categoryGuidance[rowCategory]}`
         : ''
-      const textPrompt = `Write a ${bb.output_length || 'medium'} social media caption for "${bb.name}".
-Tone: ${bb.tone || 'professional'}
-Guidelines: ${bb.brand_guidelines || 'N/A'}
-Platforms: ${bulkPlatforms.join(', ') || 'instagram'}
-${bb.include_hashtags !== false ? 'Include hashtags.' : 'No hashtags.'}
-${bb.include_emojis !== false ? 'Use emojis.' : 'No emojis.'}${bulkGoals}${catLine}
-${(() => { const i = buildBrandInstructions(bb, 'caption'); return i ? 'Custom brand instructions (MUST follow):\n' + i : '' })()}
-${row.prompt ? 'Additional instructions: ' + row.prompt : ''}
-${row.images.length ? 'The caption MUST be specifically about the content shown in the attached image' + (row.images.length > 1 ? 's (this is a carousel post — write a caption that works for the whole set).' : '.') : ''}`
-      const content = row.images.length ? buildImageContent(row.images[0], textPrompt) : textPrompt
-      const result = await callClaude(sys, content, 400)
+
+      // Add previously generated bulk captions to context so each one is different
+      const bulkContext = rows
+        .slice(0, i)
+        .filter(r => r.caption)
+        .map(r => ({ caption: r.caption, variationPreset: '' }))
+
+      const engineOutput = buildEnhancedPrompt({
+        brand: bb,
+        platforms: bulkPlatforms.length ? bulkPlatforms : ['instagram'],
+        userPrompt: [row.prompt, catLine].filter(Boolean).join('\n') || undefined,
+        hasImage: row.images.length > 0,
+        hasMultipleImages: row.images.length > 1,
+        recentCaptions: [...bulkContext, ...brandPosts],
+        feedback: feedbackData,
+        variationMode: 'auto',
+        goals: useGoals && activeGoals.length > 0
+          ? activeGoals.map(g => ({ period: g.period, title: g.title, description: g.description }))
+          : undefined,
+      })
+
+      const content = row.images.length
+        ? buildImageContent(row.images[0], engineOutput.userPrompt)
+        : engineOutput.userPrompt
+      const result = await callClaude(engineOutput.systemPrompt, content, 768)
       rows[i] = { ...rows[i], caption: result || '', status: result ? 'done' : 'idle' }
       setBulkRows([...rows])
     }
