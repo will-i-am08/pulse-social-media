@@ -11,6 +11,13 @@ import { uploadImage } from '@/lib/supabase/storage'
 import type { Post, BrandGoal } from '@/lib/types'
 import { POST_CATEGORIES, detectCategory, buildBrandInstructions } from '@/lib/types'
 import {
+  buildEnhancedPrompt,
+  describeEngineState,
+  type CaptionFeedback as CaptionFeedbackType,
+  type VariationPreset,
+} from '@/lib/caption-engine'
+import { createClient } from '@/lib/supabase/client'
+import {
   SparklesIcon,
   ArrowPathIcon,
   BookmarkIcon,
@@ -23,6 +30,8 @@ import {
   PaperAirplaneIcon,
 } from '@heroicons/react/16/solid'
 import CaptionTemplates from '@/components/app/CaptionTemplates'
+import VariationControls from '@/components/app/VariationControls'
+import CaptionFeedback from '@/components/app/CaptionFeedback'
 
 const PLATFORMS = ['instagram', 'facebook', 'linkedin']
 
@@ -130,6 +139,13 @@ export default function CreatePostPage() {
   const [bulkAspectRatio, setBulkAspectRatio] = useState('')
   const [category, setCategory] = useState('')
   const [categoryAuto, setCategoryAuto] = useState(false) // true if value was auto-detected (allows overwrite on re-detect)
+
+  // Caption Engine v2 state
+  const [variationMode, setVariationMode] = useState<'auto' | string>('auto')
+  const [lastPreset, setLastPreset] = useState<VariationPreset | undefined>()
+  const [feedbackData, setFeedbackData] = useState<CaptionFeedbackType[]>([])
+  const [lastPostId, setLastPostId] = useState('')
+  const [engineInfo, setEngineInfo] = useState('')
   const [bulkCategory, setBulkCategory] = useState('')
 
   // Auto-detect category from caption when user hasn't manually picked one
@@ -177,6 +193,34 @@ export default function CreatePostPage() {
       .catch(() => {})
   }, [activeBrandId]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch caption feedback for the active brand (powers the feedback loop)
+  useEffect(() => {
+    if (!activeBrandId) { setFeedbackData([]); return }
+    const sb = createClient()
+    sb.from('caption_feedback')
+      .select('*')
+      .eq('brand_id', activeBrandId)
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => {
+        if (data) {
+          setFeedbackData(data.map((r: any) => ({
+            id: r.id,
+            brandId: r.brand_id,
+            postId: r.post_id,
+            captionText: r.caption_text,
+            rating: r.rating,
+            tags: r.tags || [],
+            notes: r.notes || '',
+            variationPreset: r.variation_preset || '',
+            platforms: r.platforms || [],
+            createdAt: r.created_at,
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [activeBrandId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-set aspect ratio from brand default
   useEffect(() => {
     const b = brands.find(x => x.id === brandId)
@@ -208,26 +252,48 @@ export default function CreatePostPage() {
     if (!brand) return
     setGenerating(true)
     try {
-      const length = brand.output_length || 'medium'
-      const hashtags = brand.include_hashtags !== false ? 'Include relevant hashtags.' : 'Do not include hashtags.'
-      const emojis = brand.include_emojis !== false ? 'Use emojis where appropriate.' : 'Do not use emojis.'
-      const sys = 'You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations, no quotation marks, nothing else.'
-      const goalsSection = useGoals && activeGoals.length > 0
-        ? `\nCurrent brand goals (align content with these):\n${activeGoals.map(g => `- [${g.period}] ${g.title}${g.description ? ' — ' + g.description : ''}`).join('\n')}\n`
-        : ''
-      const textPrompt = `Write a ${length} social media caption for the brand "${brand.name}".
-Brand tone: ${brand.tone || 'professional'}
-Brand guidelines: ${brand.brand_guidelines || 'N/A'}
-Platforms: ${platforms.join(', ') || 'instagram'}
-${hashtags}
-${emojis}${goalsSection}
-${(() => { const i = buildBrandInstructions(brand, 'caption'); return i ? 'Custom brand instructions (MUST follow):\n' + i : '' })()}
-${customPrompt ? 'Additional instructions: ' + customPrompt : ''}
-${images.length > 0 ? 'The caption MUST be specifically about the content shown in the attached image.' : 'Write an engaging caption that reflects the brand voice.'}`
+      // Gather recent captions for this brand (context awareness)
+      const brandPosts = posts
+        .filter(p => p.brand_profile_id === brandId && p.caption)
+        .sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
+        .slice(0, 15)
+        .map(p => ({ caption: p.caption, variationPreset: '' }))
 
-      const content = images.length > 0 ? buildImageContent(images[0], textPrompt) : textPrompt
-      const result = await callClaude(sys, content, 512)
-      if (result) { setCaption(result); toast.success('Caption generated!') }
+      // Build the enhanced prompt via the caption engine
+      const engineOutput = buildEnhancedPrompt({
+        brand,
+        platforms: platforms.length ? platforms : ['instagram'],
+        userPrompt: customPrompt || undefined,
+        hasImage: images.length > 0,
+        hasMultipleImages: images.length > 1,
+        recentCaptions: brandPosts,
+        feedback: feedbackData,
+        variationMode,
+        goals: useGoals && activeGoals.length > 0
+          ? activeGoals.map(g => ({ period: g.period, title: g.title, description: g.description }))
+          : undefined,
+      })
+
+      setLastPreset(engineOutput.selectedPreset)
+      setEngineInfo(describeEngineState({
+        brand,
+        platforms,
+        userPrompt: customPrompt,
+        hasImage: images.length > 0,
+        recentCaptions: brandPosts,
+        feedback: feedbackData,
+        variationMode,
+      }))
+
+      const content = images.length > 0
+        ? buildImageContent(images[0], engineOutput.userPrompt)
+        : engineOutput.userPrompt
+      const result = await callClaude(engineOutput.systemPrompt, content, 768)
+      if (result) {
+        setCaption(result)
+        setLastPostId(uid())
+        toast.success(`Caption generated! Style: ${engineOutput.selectedPreset.emoji} ${engineOutput.selectedPreset.name}`)
+      }
     } catch (e: any) {
       toast.error(e.message)
     } finally {
@@ -981,6 +1047,18 @@ ${row.images.length ? 'The caption MUST be specifically about the content shown 
               </button>
             </div>
           </div>
+          {/* Caption Style / Variation Controls */}
+          {brandId && (
+            <div>
+              <label className="lbl">Caption Style</label>
+              <VariationControls
+                mode={variationMode}
+                onChange={setVariationMode}
+                selectedPreset={lastPreset}
+                compact
+              />
+            </div>
+          )}
           <div className="flex gap-2">
             <button className="btn btn-p flex-1 flex items-center justify-center gap-2" disabled={!brandId || generating} onClick={generate}>
               {generating ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Generating...</> : <><SparklesIcon className="w-4 h-4" /> Generate Caption</>}
@@ -989,6 +1067,10 @@ ${row.images.length ? 'The caption MUST be specifically about the content shown 
               <BookmarkIcon className="w-4 h-4" /> Templates
             </button>
           </div>
+          {/* Engine info — shows context being used */}
+          {engineInfo && (
+            <p className="text-[10px] text-[#5a4042] italic">{engineInfo}</p>
+          )}
         </div>
 
         <CaptionTemplates
@@ -1038,6 +1120,19 @@ ${row.images.length ? 'The caption MUST be specifically about the content shown 
                 </p>
               </div>
             </div>
+            {/* Caption Feedback — rate the generated caption */}
+            {caption && lastPostId && brandId && (
+              <div className="mt-3">
+                <CaptionFeedback
+                  postId={lastPostId}
+                  brandId={brandId}
+                  captionText={caption}
+                  variationPreset={lastPreset?.id || ''}
+                  platforms={platforms}
+                  onSaved={(fb) => setFeedbackData(prev => [fb, ...prev])}
+                />
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <button className="btn btn-o w-full flex items-center justify-center gap-2" disabled={saving || !brandId} onClick={() => savePost('draft')}>

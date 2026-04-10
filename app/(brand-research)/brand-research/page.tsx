@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import type { WorkspaceBrand, BrandReport, BrandGoal, BrandRule } from '@/lib/types'
+import RuleManager from '@/components/app/RuleManager'
+import type { EnhancedBrandRule } from '@/lib/caption-engine'
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -232,89 +234,11 @@ function BrandForm({
               <p className="text-xs text-[#6b7280] mt-1">These instructions are included in every AI-generated caption for this brand.</p>
             </div>
 
-            {/* Custom Rules — stackable rules that all merge into generation */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="lbl mb-0">Custom Rules</label>
-                <button
-                  type="button"
-                  onClick={() => set('customRules', [
-                    ...(form.customRules || []),
-                    { id: Math.random().toString(36).slice(2, 10), label: '', prompt: '', enabled: true, appliesTo: 'both' as const },
-                  ])}
-                  className="text-xs px-2 py-1 rounded border border-[rgba(139,92,246,0.4)] text-[#c4b5fd] hover:bg-[rgba(139,92,246,0.1)]"
-                >+ Add rule</button>
-              </div>
-              <p className="text-xs text-[#6b7280] mb-2">Each enabled rule is added to the AI prompt on top of Posting Instructions. Use them for specific dos/don&apos;ts you want to toggle on and off.</p>
-              <div className="space-y-2">
-                {(form.customRules || []).length === 0 && (
-                  <div className="text-xs text-[#6b7280] italic px-3 py-4 rounded border border-dashed border-[rgba(90,64,66,0.4)] text-center">
-                    No custom rules yet. Click &ldquo;Add rule&rdquo; to create one.
-                  </div>
-                )}
-                {(form.customRules || []).map((rule, idx) => (
-                  <div key={rule.id} className="rounded-lg border border-[rgba(90,64,66,0.4)] bg-[#1c1b1b] p-3 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={rule.enabled}
-                        onChange={e => {
-                          const next = [...(form.customRules || [])]
-                          next[idx] = { ...rule, enabled: e.target.checked }
-                          set('customRules', next)
-                        }}
-                        className="w-4 h-4 accent-[#8b5cf6]"
-                      />
-                      <input
-                        className="inp flex-1 text-sm"
-                        placeholder="Rule label (e.g. Tone of voice)"
-                        value={rule.label}
-                        onChange={e => {
-                          const next = [...(form.customRules || [])]
-                          next[idx] = { ...rule, label: e.target.value }
-                          set('customRules', next)
-                        }}
-                      />
-                      <select
-                        className="sel text-xs"
-                        value={rule.appliesTo}
-                        onChange={e => {
-                          const next = [...(form.customRules || [])]
-                          next[idx] = { ...rule, appliesTo: e.target.value as BrandRule['appliesTo'] }
-                          set('customRules', next)
-                        }}
-                      >
-                        <option value="both">Captions + Blog</option>
-                        <option value="caption">Captions only</option>
-                        <option value="blog">Blog only</option>
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const next = (form.customRules || []).filter((_, i) => i !== idx)
-                          set('customRules', next)
-                        }}
-                        className="text-[#6b7280] hover:text-red-400 px-2"
-                        title="Delete rule"
-                      >
-                        <XMarkIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <textarea
-                      className="ta text-sm"
-                      rows={2}
-                      placeholder="Rule prompt — e.g. Always reference our 12-month warranty. Never mention pricing in captions."
-                      value={rule.prompt}
-                      onChange={e => {
-                        const next = [...(form.customRules || [])]
-                        next[idx] = { ...rule, prompt: e.target.value }
-                        set('customRules', next)
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Enhanced Rule Manager — categories, priorities, platform conditions, frequency */}
+            <RuleManager
+              rules={form.customRules || []}
+              onChange={(updatedRules: EnhancedBrandRule[]) => set('customRules', updatedRules)}
+            />
             <div>
               <label className="lbl">Key Messages</label>
               <textarea className="ta" rows={3} value={(form.keyMessages || []).join('\n')}
