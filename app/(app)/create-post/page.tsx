@@ -196,13 +196,14 @@ export default function CreatePostPage() {
   // Fetch caption feedback for the active brand (powers the feedback loop)
   useEffect(() => {
     if (!activeBrandId) { setFeedbackData([]); return }
-    const sb = createClient()
-    sb.from('caption_feedback')
-      .select('*')
-      .eq('brand_id', activeBrandId)
-      .order('created_at', { ascending: false })
-      .limit(50)
-      .then(({ data }) => {
+    async function loadFeedback() {
+      try {
+        const sb = createClient()
+        const { data } = await sb.from('caption_feedback')
+          .select('*')
+          .eq('brand_id', activeBrandId)
+          .order('created_at', { ascending: false })
+          .limit(50)
         if (data) {
           setFeedbackData(data.map((r: any) => ({
             id: r.id,
@@ -217,8 +218,9 @@ export default function CreatePostPage() {
             createdAt: r.created_at,
           })))
         }
-      })
-      .catch(() => {})
+      } catch { /* table may not exist yet */ }
+    }
+    loadFeedback()
   }, [activeBrandId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-set aspect ratio from brand default
