@@ -90,6 +90,38 @@ async function cropToRatio(imageUrl: string, ratio: string, upload: (f: File) =>
   })
 }
 
+/** Downscale an image if either dimension exceeds maxPx (Instagram caps at 5000px) */
+async function downscaleIfNeeded(imageUrl: string, upload: (f: File) => Promise<string>, maxPx = 4000): Promise<string> {
+  return new Promise<string>((resolve) => {
+    const img = new window.Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const w = img.naturalWidth
+      const h = img.naturalHeight
+      if (w <= maxPx && h <= maxPx) { resolve(imageUrl); return }
+      const scale = Math.min(maxPx / w, maxPx / h)
+      const outW = Math.round(w * scale)
+      const outH = Math.round(h * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width = outW
+      canvas.height = outH
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(imageUrl); return }
+      ctx.drawImage(img, 0, 0, outW, outH)
+      canvas.toBlob(async (blob) => {
+        if (!blob) { resolve(imageUrl); return }
+        try {
+          const file = new File([blob], 'resized.jpg', { type: 'image/jpeg' })
+          const url = await upload(file)
+          resolve(url)
+        } catch { resolve(imageUrl) }
+      }, 'image/jpeg', 0.92)
+    }
+    img.onerror = () => resolve(imageUrl)
+    img.src = imageUrl
+  })
+}
+
 const ASPECT_RATIOS = [
   { label: 'Square (1:1)',    value: '1/1'  },
   { label: 'Portrait (4:5)', value: '4/5'  },
@@ -366,6 +398,8 @@ export default function CreatePostPage() {
         photoUrl = await cropToRatio(photoUrl, aspectRatio, uploadImage)
         toast.dismiss('crop')
       }
+      // Downscale if over Instagram's 5000px limit
+      if (photoUrl) photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
 
       const customSchedule = scheduledAt ? new Date(scheduledAt).toISOString() : null
       const shareNow = !customSchedule && category === 'blog'
@@ -654,13 +688,15 @@ export default function CreatePostPage() {
     let sent = 0
     let lastError = ''
     for (const post of newPosts) {
-      if (sent + (lastError ? 1 : 0) > 0) await new Promise(r => setTimeout(r, 1500))
+      if (sent + (lastError ? 1 : 0) > 0) await new Promise(r => setTimeout(r, 3000))
       try {
         // Crop image to bulk aspect ratio before sending
         let photoUrl: string | null = post.image_url || null
         if (photoUrl && bulkAspectRatio) {
           photoUrl = await cropToRatio(photoUrl, bulkAspectRatio, uploadImage)
         }
+        // Downscale if over Instagram's 5000px limit
+        if (photoUrl) photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
 
         const res = await fetch('/api/buffer', {
           method: 'POST',

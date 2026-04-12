@@ -110,8 +110,11 @@ export async function POST(req: NextRequest) {
 
   const photoUrl: string | null = media?.photo || null
 
-  const results = await Promise.all(
-    profileIds.map(async (channelId: string) => {
+  // Send sequentially with delay to avoid Buffer rate limits
+  const results: { profileId: string; success: boolean; error?: string }[] = []
+  for (const channelId of profileIds as string[]) {
+    if (results.length > 0) await new Promise(r => setTimeout(r, 800))
+    const result = await (async () => {
       const service = (channelServiceMap[channelId] || '').toLowerCase()
 
       // Build per-platform metadata
@@ -138,34 +141,47 @@ export async function POST(req: NextRequest) {
         input.assets = { images: [{ url: photoUrl }] }
       }
 
-      try {
-        const data = await gql(token, `
-          mutation CreatePost($input: CreatePostInput!) {
-            createPost(input: $input) {
-              ... on PostActionSuccess {
-                post { id }
-              }
-              ... on MutationError {
-                message
+      // Retry once on rate limit
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const data = await gql(token, `
+            mutation CreatePost($input: CreatePostInput!) {
+              createPost(input: $input) {
+                ... on PostActionSuccess {
+                  post { id }
+                }
+                ... on MutationError {
+                  message
+                }
               }
             }
-          }
-        `, { input })
+          `, { input })
 
-        if (data.errors) {
-          const errMsg = data.errors.map((e: { message: string }) => e.message).join(', ')
-          return { profileId: channelId, success: false, error: errMsg }
+          if (data.errors) {
+            const errMsg = data.errors.map((e: { message: string }) => e.message).join(', ')
+            if (errMsg.toLowerCase().includes('too many requests') && attempt === 0) {
+              await new Promise(r => setTimeout(r, 3000))
+              continue
+            }
+            return { profileId: channelId, success: false, error: errMsg }
+          }
+          const result = data.data?.createPost
+          if (result?.post) {
+            return { profileId: channelId, success: true }
+          }
+          return { profileId: channelId, success: false, error: result?.message || JSON.stringify(result) || 'Post creation failed' }
+        } catch (e: unknown) {
+          if (attempt === 0) {
+            await new Promise(r => setTimeout(r, 3000))
+            continue
+          }
+          return { profileId: channelId, success: false, error: e instanceof Error ? e.message : 'Unknown error' }
         }
-        const result = data.data?.createPost
-        if (result?.post) {
-          return { profileId: channelId, success: true }
-        }
-        return { profileId: channelId, success: false, error: result?.message || JSON.stringify(result) || 'Post creation failed' }
-      } catch (e: unknown) {
-        return { profileId: channelId, success: false, error: e instanceof Error ? e.message : 'Unknown error' }
       }
-    })
-  )
+      return { profileId: channelId, success: false, error: 'Max retries exceeded' }
+    })()
+    results.push(result)
+  }
 
   const allOk = results.every((r: { success: boolean }) => r.success)
   return NextResponse.json({ success: allOk, results }, { status: allOk ? 200 : 207 })
