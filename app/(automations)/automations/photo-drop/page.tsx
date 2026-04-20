@@ -204,7 +204,7 @@ export default function PhotoDropPage() {
         body: JSON.stringify({
           type: 'approval', title: `${created} new post${created !== 1 ? 's' : ''} ready for approval`,
           message: `Photo Drop generated ${created} post${created !== 1 ? 's' : ''} for ${brands.find(b => b.id === brandId)?.name || 'your brand'}. Review and approve them to add to your Buffer queue.`,
-          link: '/posts',
+          link: '/drafts',
         }),
       }).catch(() => {})
     }
@@ -269,7 +269,7 @@ export default function PhotoDropPage() {
             ))}
           </div>
           <div className="flex gap-3 justify-center">
-            <Link href="/posts" className="btn btn-p">Review Posts</Link>
+            <Link href="/drafts" className="btn btn-p">Review Posts</Link>
             <button onClick={() => { setDone(false); setPhotos([]); setGroups([]); setCreatedCount(0) }} className="btn btn-o">Process More</button>
           </div>
         </div>
@@ -323,7 +323,7 @@ export default function PhotoDropPage() {
             <div className="text-center py-6">
               <PhotoIcon className="w-10 h-10 mx-auto text-[#5a4042] mb-2" />
               <p className="text-[#e1bec0] mb-1">No folders linked to this brand</p>
-              <p className="text-xs text-[#5a4042]">Go to <Link href="/photos" className="text-[#ff5473] hover:underline">Photo Library</Link> and create a folder with this brand assigned.</p>
+              <p className="text-xs text-[#5a4042]">Go to <Link href="/library" className="text-[#ff5473] hover:underline">Photo Library</Link> and create a folder with this brand assigned.</p>
             </div>
           ) : (
             <>

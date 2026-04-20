@@ -2,12 +2,15 @@
 
 import { useMemo, useState } from 'react'
 import { useWorkspace } from '@/context/WorkspaceContext'
+import { useActiveBrand, filterByActiveBrand } from '@/context/BrandContext'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/16/solid'
 import { POST_CATEGORIES } from '@/lib/types'
 
 const WEEKLY_TARGET = 7
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+// Status legend — shown as coloured dots below the month header
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-yellow-500',
   submitted: 'bg-violet-500',
@@ -16,12 +19,27 @@ const STATUS_COLORS: Record<string, string> = {
   published: 'bg-[#ff5473]',
 }
 
+// Buffer-style: colour pills by the first platform, not by status.
+function platformPillClass(platforms?: string[]): string {
+  if (!platforms || platforms.length === 0) return 'bg-[#5a4042]'
+  if (platforms.length > 1) return 'platform-multi'
+  const p = platforms[0]
+  if (p === 'instagram') return 'platform-ig'
+  if (p === 'facebook')  return 'platform-fb'
+  if (p === 'linkedin')  return 'platform-li'
+  return 'bg-[#5a4042]'
+}
+
 export default function CalendarPage() {
   const { posts, brands } = useWorkspace()
+  const { activeBrandId, activeBrand } = useActiveBrand()
   const now = new Date()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth())
   const [categoryFilter, setCategoryFilter] = useState<string>('')
+
+  // Posts scoped to the active brand (or all brands if "All" is selected)
+  const scopedPosts = useMemo(() => filterByActiveBrand(posts, activeBrandId), [posts, activeBrandId])
 
   // ----- Weekly pillar tracker (this calendar week, Mon-Sun) -----
   const weekStats = useMemo(() => {
@@ -30,7 +48,7 @@ export default function CalendarPage() {
     const mondayOffset = dow === 0 ? -6 : 1 - dow
     const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() + mondayOffset)
     const end = new Date(start); end.setDate(start.getDate() + 7)
-    const weekPosts = posts.filter(p => {
+    const weekPosts = scopedPosts.filter(p => {
       const d = p.scheduled_at || p.created_date
       if (!d) return false
       const dt = new Date(d)
@@ -44,7 +62,7 @@ export default function CalendarPage() {
     const covered = POST_CATEGORIES.filter(c => byCat.get(c.id))
     const missing = POST_CATEGORIES.filter(c => !byCat.get(c.id))
     return { count: weekPosts.length, byCat, covered, missing, start, end }
-  }, [posts])
+  }, [scopedPosts])
 
   const monthName = new Date(year, month).toLocaleString('en-US', { month: 'long', year: 'numeric' })
   const firstDay = new Date(year, month, 1).getDay()
@@ -58,7 +76,7 @@ export default function CalendarPage() {
   }
 
   function getPostsForDay(day: number) {
-    return posts.filter(p => {
+    return scopedPosts.filter(p => {
       const d = p.scheduled_at || p.created_date
       if (!d) return false
       const date = new Date(d)
@@ -72,10 +90,12 @@ export default function CalendarPage() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold text-[#e6e1e1]">Calendar</h1>
-          <p className="text-[#e1bec0] mt-1">Content schedule overview</p>
+          <p className="text-[#e1bec0] mt-1 text-sm">
+            {activeBrand ? `Schedule overview for ${activeBrand.name}` : 'Schedule overview across all brands'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={prevMonth} className="btn btn-o"><ChevronLeftIcon className="w-4 h-4" /></button>
@@ -132,14 +152,20 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      {/* Legend */}
+      {/* Legend — platform-coloured pills (Buffer-style) */}
       <div className="flex flex-wrap gap-3 mb-4">
-        {Object.entries(STATUS_COLORS).map(([s, cls]) => (
-          <div key={s} className="flex items-center gap-1.5 text-xs text-[#e1bec0]">
-            <div className={`w-2.5 h-2.5 rounded-full ${cls}`}></div>
-            <span className="capitalize">{s}</span>
-          </div>
-        ))}
+        <div className="flex items-center gap-1.5 text-xs text-[#e1bec0]">
+          <div className="w-2.5 h-2.5 rounded-full bg-pink-500"></div><span>Instagram</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-[#e1bec0]">
+          <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div><span>Facebook</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-[#e1bec0]">
+          <div className="w-2.5 h-2.5 rounded-full bg-sky-500"></div><span>LinkedIn</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-[#e1bec0]">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#ff5473]"></div><span>Multi-platform</span>
+        </div>
       </div>
 
       {/* Grid */}
@@ -163,10 +189,11 @@ export default function CalendarPage() {
                 </div>
                 {dayPosts.slice(0, 3).map(p => {
                   const b = brands.find(b => b.id === p.brand_profile_id)
+                  const pillClass = platformPillClass(p.platforms)
                   return (
-                    <div key={p.id} className={`cal-pill ${STATUS_COLORS[p.status] || 'bg-[#5a4042]'}`}
-                      title={`${b?.name || 'Unknown'}: ${p.caption?.slice(0, 60) || '(no caption)'}`}>
-                      {b?.name || '?'}
+                    <div key={p.id} className={`cal-pill ${pillClass}`}
+                      title={`${b?.name || 'Unknown'} (${(p.platforms || []).join(', ') || 'no platform'}): ${p.caption?.slice(0, 60) || '(no caption)'}`}>
+                      {activeBrandId ? (p.caption?.slice(0, 18) || 'Untitled') : (b?.name || '?')}
                     </div>
                   )
                 })}

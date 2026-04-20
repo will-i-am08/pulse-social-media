@@ -273,19 +273,106 @@ body {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 8px 12px;
+  padding: 7px 12px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #e1bec0;
   transition: all 0.15s;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   text-decoration: none;
   user-select: none;
 }
 .nav-item:hover { background: rgba(255,84,115,0.08); color: #ffb2b9; }
 .nav-item.active { background: rgba(255,84,115,0.12); color: #ffb2b9; border-left: 2px solid #ff5473; padding-left: 10px; }
+
+/* Sidebar group header (Buffer-style grouped nav) */
+.nav-group-header {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5a4042;
+  padding: 14px 12px 4px;
+  user-select: none;
+}
+
+/* Top bar — persistent across all app routes */
+.topbar {
+  height: 56px;
+  background: #141313;
+  border-bottom: 1px solid rgba(90,64,66,0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.brand-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: #211f1f;
+  border: 1px solid rgba(90,64,66,0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  color: #e6e1e1;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  min-width: 180px;
+}
+.brand-switcher:hover { border-color: rgba(255,84,115,0.4); background: #2b2a29; }
+
+.platform-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: #2b2a29;
+  color: #e1bec0;
+  border: 1px solid rgba(90,64,66,0.3);
+}
+.platform-chip.ig { background: rgba(236,72,153,0.1); color: #f9a8d4; border-color: rgba(236,72,153,0.3); }
+.platform-chip.fb { background: rgba(59,130,246,0.1); color: #93c5fd; border-color: rgba(59,130,246,0.3); }
+.platform-chip.li { background: rgba(14,165,233,0.1); color: #7dd3fc; border-color: rgba(14,165,233,0.3); }
+.platform-chip.tt { background: rgba(229,231,235,0.08); color: #e5e7eb; border-color: rgba(229,231,235,0.2); }
+
+/* Buffer-style platform-coloured calendar pills */
+.cal-pill.platform-ig { background: rgba(236,72,153,0.85); color: #fff; }
+.cal-pill.platform-fb { background: rgba(59,130,246,0.85); color: #fff; }
+.cal-pill.platform-li { background: rgba(14,165,233,0.85); color: #fff; }
+.cal-pill.platform-multi { background: rgba(255,84,115,0.85); color: #fff; }
+
+/* Date group header used in Queue/Drafts/Approvals/Sent */
+.date-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e1bec0;
+}
+.date-group-header .date-group-accent {
+  height: 1px;
+  flex: 1;
+  background: rgba(90,64,66,0.3);
+}
 
 /* ── GEO Command Center styles ── */
 .geo-glass {

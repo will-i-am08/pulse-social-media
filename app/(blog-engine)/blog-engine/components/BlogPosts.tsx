@@ -151,7 +151,7 @@ Lead with a hook. 2-4 sentences max. Mention there's a full article and direct r
       })
       if (post.featuredImage) params.set('image', post.featuredImage)
       toast.success('Caption ready!', { id: tid })
-      router.push(`/create-post?${params.toString()}`)
+      router.push(`/compose?${params.toString()}`)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed', { id: tid })
     }

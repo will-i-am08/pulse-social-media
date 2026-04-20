@@ -1,7 +1,5 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import PhotoLibrary from '@/components/app/PhotoLibrary'
-
-export default function PhotosPage() {
-  return <PhotoLibrary />
+export default function PhotosRedirect() {
+  redirect('/library')
 }

@@ -2,16 +2,27 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 const APP_ROUTES = [
+  // New Buffer-style routes
+  '/queue',
+  '/drafts',
+  '/approvals',
+  '/sent',
+  '/overview',
+  '/compose',
+  '/library',
+  // Legacy routes kept for redirect stubs
   '/dashboard',
   '/create-post',
   '/posts',
+  '/photos',
+  // Unchanged
   '/calendar',
   '/brands',
-  '/photos',
   '/analytics',
   '/clients',
   '/team',
   '/holidays',
+  '/refurb-stock',
   '/settings',
   '/profile',
   '/account',

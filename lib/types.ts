@@ -102,6 +102,7 @@ export interface Post {
   buffer_sent_at?: string
   aspect_ratio?: string | null
   category?: string | null
+  quality_checked?: boolean
 }
 
 // Note: "Public Holidays" is intentionally NOT a category here — it's owned by

@@ -32,7 +32,7 @@ const APPS: AppCard[] = [
     id: 'captioncraft',
     name: 'CaptionCraft',
     description: 'Social media scheduling, AI captions, brand management and client portals.',
-    href: '/dashboard',
+    href: '/queue',
     icon: MegaphoneIcon,
     gradient: 'linear-gradient(135deg, #ff5473 0%, #ffb2b9 100%)',
   },

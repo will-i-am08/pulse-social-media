@@ -490,7 +490,7 @@ Lead with one short hook line above the stock block. Keep it warm, casual, local
       }
       savePosts([newPost, ...posts])
       toast.success('Refurb post saved as draft!')
-      router.push('/posts')
+      router.push('/queue')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed')
     } finally { setBusy(false) }
@@ -534,7 +534,7 @@ Lead with one short hook line above the stock block. Keep it warm, casual, local
       }
       savePosts([newPost, ...posts])
       toast.success('Sent to Buffer queue!')
-      router.push('/posts')
+      router.push('/queue')
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed')
     } finally { setBusy(false) }
