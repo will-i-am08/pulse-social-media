@@ -81,6 +81,7 @@ export interface Brand {
 }
 
 export type PostStatus = 'draft' | 'submitted' | 'approved' | 'scheduled' | 'published'
+export type PostType = 'post' | 'story' | 'reel'
 
 export interface Post {
   id: string
@@ -88,6 +89,8 @@ export interface Post {
   caption: string
   image_url?: string | null
   image_urls?: string[]
+  video_url?: string | null
+  post_type?: PostType
   platforms: string[]
   status: PostStatus
   scheduled_at?: string | null

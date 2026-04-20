@@ -74,10 +74,15 @@ export async function POST(req: NextRequest) {
   const token = await getDecryptedBufferToken(user.id)
   if (!token) return NextResponse.json({ error: 'No Buffer token configured. Add it in Account Settings.' }, { status: 400 })
 
-  const { profileIds, text, media, shareNow, scheduledAt } = await req.json()
+  const { profileIds, text, media, shareNow, scheduledAt, postType } = await req.json()
 
   if (!profileIds?.length) return NextResponse.json({ error: 'Select at least one Buffer channel' }, { status: 400 })
   if (!text?.trim()) return NextResponse.json({ error: 'Post text is required' }, { status: 400 })
+
+  const pType: 'post' | 'story' | 'reel' = postType === 'story' || postType === 'reel' ? postType : 'post'
+  if (pType === 'reel' && !media?.video) {
+    return NextResponse.json({ error: 'Reels require a video' }, { status: 400 })
+  }
 
   // Normalize scheduledAt to ISO; reject past times
   let scheduledIso: string | null = null
@@ -109,6 +114,11 @@ export async function POST(req: NextRequest) {
   }
 
   const photoUrl: string | null = media?.photo || null
+  const videoUrl: string | null = media?.video || null
+  const videoThumb: string | null = media?.videoThumbnail || null
+
+  // Platforms that understand story/reel metadata
+  const SUPPORTS_STORY_REEL = new Set(['instagram', 'facebook'])
 
   // Send sequentially with delay to avoid Buffer rate limits
   const results: { profileId: string; success: boolean; error?: string }[] = []
@@ -117,12 +127,17 @@ export async function POST(req: NextRequest) {
     const result = await (async () => {
       const service = (channelServiceMap[channelId] || '').toLowerCase()
 
+      // Effective type per service: LinkedIn/TikTok/etc. fall back to 'post'
+      const effectiveType = SUPPORTS_STORY_REEL.has(service) ? pType : 'post'
+
       // Build per-platform metadata
       const metadata: Record<string, unknown> = {}
       if (service === 'facebook') {
-        metadata.facebook = { type: 'post' }
+        metadata.facebook = { type: effectiveType }
       } else if (service === 'instagram') {
-        metadata.instagram = { type: 'post', shouldShareToFeed: true }
+        metadata.instagram = effectiveType === 'post'
+          ? { type: 'post', shouldShareToFeed: true }
+          : { type: effectiveType }
       }
 
       // Priority: custom scheduledAt > shareNow > queue
@@ -136,8 +151,12 @@ export async function POST(req: NextRequest) {
         input.metadata = metadata
       }
 
-      // Instagram requires at least one image; other platforms benefit from it too
-      if (photoUrl) {
+      // Reels require a video; stories accept either; regular posts use images
+      if (effectiveType === 'reel' && videoUrl) {
+        input.assets = { videos: [{ url: videoUrl, ...(videoThumb ? { thumbnail: videoThumb } : {}) }] }
+      } else if (effectiveType === 'story' && videoUrl) {
+        input.assets = { videos: [{ url: videoUrl, ...(videoThumb ? { thumbnail: videoThumb } : {}) }] }
+      } else if (photoUrl) {
         input.assets = { images: [{ url: photoUrl }] }
       }
 

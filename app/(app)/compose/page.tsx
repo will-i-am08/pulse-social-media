@@ -7,9 +7,9 @@ import toast from 'react-hot-toast'
 import { useWorkspace } from '@/context/WorkspaceContext'
 import { uid } from '@/lib/utils'
 import { callClaude, buildImageContent } from '@/lib/claude'
-import { uploadImage } from '@/lib/supabase/storage'
+import { uploadImage, uploadVideo } from '@/lib/supabase/storage'
 import { cleanCaption } from '@/lib/cleanCaption'
-import type { Post, BrandGoal } from '@/lib/types'
+import type { Post, PostType, BrandGoal } from '@/lib/types'
 import { POST_CATEGORIES, detectCategory, buildBrandInstructions } from '@/lib/types'
 import {
   buildEnhancedPrompt,
@@ -29,9 +29,9 @@ import {
   XMarkIcon,
   PhotoIcon,
   PaperAirplaneIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/16/solid'
 import CaptionTemplates from '@/components/app/CaptionTemplates'
-import VariationControls from '@/components/app/VariationControls'
 import CaptionFeedback from '@/components/app/CaptionFeedback'
 
 const PLATFORMS = ['instagram', 'facebook', 'linkedin']
@@ -150,7 +150,7 @@ export default function CreatePostPage() {
   // Bulk state
   const [bulkBrandId, setBulkBrandId] = useState('')
   const [bulkPlatforms, setBulkPlatforms] = useState<string[]>(['instagram'])
-  type BulkRow = { images: string[]; prompt: string; caption: string; status: string; category: string }
+  type BulkRow = { images: string[]; video?: string; prompt: string; caption: string; status: string; category: string }
   const [bulkRows, setBulkRows] = useState<BulkRow[]>(
     [{ images: [], prompt: '', caption: '', status: 'idle', category: '' }]
   )
@@ -170,6 +170,10 @@ export default function CreatePostPage() {
   const [showTemplates, setShowTemplates] = useState(false)
   const [aspectRatio, setAspectRatio] = useState('')
   const [bulkAspectRatio, setBulkAspectRatio] = useState('')
+  const [postType, setPostType] = useState<PostType>('post')
+  const [bulkPostType, setBulkPostType] = useState<PostType>('post')
+  const [videoUrl, setVideoUrl] = useState<string>('')
+  const [videoUploading, setVideoUploading] = useState(false)
   const [category, setCategory] = useState('')
   const [categoryAuto, setCategoryAuto] = useState(false) // true if value was auto-detected (allows overwrite on re-detect)
 
@@ -289,6 +293,32 @@ export default function CreatePostPage() {
     }
   }
 
+  async function handleVideoUpload(file: File | null | undefined) {
+    if (!file) return
+    setVideoUploading(true)
+    try {
+      const url = await uploadVideo(file)
+      setVideoUrl(url)
+      toast.success('Video uploaded')
+    } catch (e: any) {
+      toast.error('Video upload failed: ' + e.message)
+    } finally {
+      setVideoUploading(false)
+    }
+  }
+
+  function changePostType(t: PostType) {
+    setPostType(t)
+    if (t === 'story' || t === 'reel') {
+      setAspectRatio('9/16')
+    }
+    if (t === 'reel') {
+      setImages([])
+    } else if (t === 'post') {
+      setVideoUrl('')
+    }
+  }
+
   async function generate() {
     if (!brand) return
     setGenerating(true)
@@ -351,6 +381,8 @@ export default function CreatePostPage() {
       brand_profile_id: brandId,
       image_url: images[0] || null,
       image_urls: [...images],
+      video_url: videoUrl || null,
+      post_type: postType,
       caption,
       platforms: [...platforms],
       status,
@@ -396,19 +428,24 @@ export default function CreatePostPage() {
   async function sendToBuffer() {
     if (!brandId) { toast.error('Select a brand first'); return }
     if (!caption.trim()) { toast.error('Add a caption first'); return }
+    if (postType === 'reel' && !videoUrl) { toast.error('Reels require a video'); return }
     const profileIds = brand?.buffer_profile_ids || []
     if (!profileIds.length) { toast.error('Configure Buffer profiles for this brand in Settings first'); return }
     setSendingBuffer(true)
     try {
-      // Crop image to selected aspect ratio before sending so Buffer receives the correct format
-      let photoUrl: string | null = images[0] || null
-      if (photoUrl && aspectRatio) {
+      // Only crop/downscale images for regular Posts. Stories/Reels are 9:16 native
+      // and videos can't go through the canvas cropping helpers.
+      let photoUrl: string | null = postType === 'reel' ? null : (images[0] || null)
+      if (photoUrl && aspectRatio && postType === 'post') {
         toast.loading('Cropping image to format…', { id: 'crop' })
         photoUrl = await cropToRatio(photoUrl, aspectRatio, uploadImage)
         toast.dismiss('crop')
       }
-      // Downscale if over Instagram's 5000px limit
-      if (photoUrl) photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
+      if (photoUrl && postType === 'post') photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
+
+      const mediaPayload: Record<string, string> = {}
+      if (photoUrl) mediaPayload.photo = photoUrl
+      if (videoUrl && (postType === 'story' || postType === 'reel')) mediaPayload.video = videoUrl
 
       const customSchedule = scheduledAt ? new Date(scheduledAt).toISOString() : null
       const shareNow = !customSchedule && category === 'blog'
@@ -418,9 +455,10 @@ export default function CreatePostPage() {
         body: JSON.stringify({
           profileIds,
           text: caption,
-          media: photoUrl ? { photo: photoUrl } : undefined,
+          media: Object.keys(mediaPayload).length ? mediaPayload : undefined,
           shareNow,
           scheduledAt: customSchedule,
+          postType,
         }),
       })
       const data = await res.json()
@@ -431,6 +469,8 @@ export default function CreatePostPage() {
           brand_profile_id: brandId,
           image_url: images[0] || null,
           image_urls: [...images],
+          video_url: videoUrl || null,
+          post_type: postType,
           caption,
           platforms: [...platforms],
           status: 'published',
@@ -594,6 +634,8 @@ export default function CreatePostPage() {
       status: 'draft',
       image_url: r.images[0] || null,
       image_urls: [...r.images],
+      video_url: r.video || null,
+      post_type: bulkPostType,
       created_date: new Date().toISOString(),
       batch_id: batchId,
       batch_label: batchLabel,
@@ -688,6 +730,8 @@ export default function CreatePostPage() {
       scheduled_at: null,
       image_url: r.images[0] || null,
       image_urls: [...r.images],
+      video_url: r.video || null,
+      post_type: bulkPostType,
       created_date: new Date().toISOString(),
       batch_id: batchId,
       batch_label: batchLabel,
@@ -698,18 +742,28 @@ export default function CreatePostPage() {
       quality_checked: allBulkQualityChecked,
     }))
 
+    // Reels require a video on every row
+    if (bulkPostType === 'reel' && newPosts.some(p => !p.video_url)) {
+      setBulkScheduling(false)
+      toast.error('Every Reel row needs a video')
+      return
+    }
+
     let sent = 0
     let lastError = ''
     for (const post of newPosts) {
       if (sent + (lastError ? 1 : 0) > 0) await new Promise(r => setTimeout(r, 3000))
       try {
-        // Crop image to bulk aspect ratio before sending
-        let photoUrl: string | null = post.image_url || null
-        if (photoUrl && bulkAspectRatio) {
+        // Only crop/downscale images for regular Posts. Stories/Reels are 9:16 and videos can't use canvas helpers.
+        let photoUrl: string | null = bulkPostType === 'reel' ? null : (post.image_url || null)
+        if (photoUrl && bulkAspectRatio && bulkPostType === 'post') {
           photoUrl = await cropToRatio(photoUrl, bulkAspectRatio, uploadImage)
         }
-        // Downscale if over Instagram's 5000px limit
-        if (photoUrl) photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
+        if (photoUrl && bulkPostType === 'post') photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
+
+        const mediaPayload: Record<string, string> = {}
+        if (photoUrl) mediaPayload.photo = photoUrl
+        if (post.video_url && (bulkPostType === 'story' || bulkPostType === 'reel')) mediaPayload.video = post.video_url
 
         const res = await fetch('/api/buffer', {
           method: 'POST',
@@ -717,7 +771,8 @@ export default function CreatePostPage() {
           body: JSON.stringify({
             profileIds,
             text: post.caption,
-            media: photoUrl ? { photo: photoUrl } : undefined,
+            media: Object.keys(mediaPayload).length ? mediaPayload : undefined,
+            postType: bulkPostType,
           }),
         })
         const data = await res.json()
@@ -775,6 +830,22 @@ export default function CreatePostPage() {
                   </label>
                 ))}
               </div>
+            </div>
+          </div>
+          <div className="mt-3">
+            <label className="lbl">Post Type (all rows)</label>
+            <div className="flex gap-2">
+              {(['post', 'story', 'reel'] as PostType[]).map(t => (
+                <button key={t} type="button" onClick={() => {
+                  setBulkPostType(t)
+                  if (t === 'story' || t === 'reel') setBulkAspectRatio('9/16')
+                  if (t === 'reel') setBulkRows(rows => rows.map(r => ({ ...r, images: [] })))
+                  if (t === 'post') setBulkRows(rows => rows.map(r => ({ ...r, video: undefined })))
+                }}
+                  className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors border ${bulkPostType === t ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
+                  {t === 'post' ? 'Feed Post' : t}
+                </button>
+              ))}
             </div>
           </div>
           <div className="mt-3">
@@ -845,17 +916,47 @@ export default function CreatePostPage() {
                     </div>
                   )}
                   <div className="flex flex-col gap-1">
-                    <label className="flex flex-col items-center justify-center w-full h-[34px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
-                      <PaperClipIcon className="w-3 h-3" />
-                      <span>{row.images.length ? '+ Upload' : 'Upload'}</span>
-                      <input type="file" accept="image/*" multiple={carouselMode} className="hidden" onChange={e => handleBulkImage(e, i)} />
-                    </label>
-                    {photos.length > 0 && (
+                    {bulkPostType !== 'reel' && (
+                      <label className="flex flex-col items-center justify-center w-full h-[34px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
+                        <PaperClipIcon className="w-3 h-3" />
+                        <span>{row.images.length ? '+ Upload' : 'Upload'}</span>
+                        <input type="file" accept="image/*" multiple={carouselMode && bulkPostType === 'post'} className="hidden" onChange={e => handleBulkImage(e, i)} />
+                      </label>
+                    )}
+                    {bulkPostType !== 'reel' && photos.length > 0 && (
                       <button onClick={() => openLibrary(i, carouselMode)}
                         className="flex flex-col items-center justify-center w-full h-[34px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
                         <PhotoIcon className="w-3 h-3" />
                         <span>Library</span>
                       </button>
+                    )}
+                    {(bulkPostType === 'story' || bulkPostType === 'reel') && (
+                      row.video ? (
+                        <div className="relative w-full h-[34px] rounded-lg border border-[#ff5473]/40 bg-[rgba(255,84,115,0.1)] flex items-center justify-center text-[10px] text-[#ff5473]">
+                          <VideoCameraIcon className="w-3 h-3 mr-1" /> Video
+                          <button onClick={() => {
+                            const r = [...bulkRows]; r[i] = { ...r[i], video: undefined }; setBulkRows(r)
+                          }} className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[8px] flex items-center justify-center">
+                            <XMarkIcon className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-[34px] border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors text-center text-[10px] text-[#e1bec0]">
+                          <VideoCameraIcon className="w-3 h-3" />
+                          <span>Video</span>
+                          <input type="file" accept="video/*" className="hidden" onChange={async e => {
+                            const f = e.target.files?.[0]; if (!f) return
+                            const rs = [...bulkRows]; rs[i] = { ...rs[i], status: 'uploading' }; setBulkRows([...rs])
+                            try {
+                              const url = await uploadVideo(f)
+                              const rs2 = [...bulkRows]; rs2[i] = { ...rs2[i], video: url, status: 'idle' }; setBulkRows([...rs2])
+                            } catch (err: any) {
+                              toast.error('Video upload failed: ' + err.message)
+                              const rs2 = [...bulkRows]; rs2[i] = { ...rs2[i], status: 'idle' }; setBulkRows([...rs2])
+                            }
+                          }} />
+                        </label>
+                      )
                     )}
                   </div>
                 </div>
@@ -1046,37 +1147,75 @@ export default function CreatePostPage() {
             </div>
           </div>
           <div>
-            <label className="lbl">Photos</label>
-            <div className="space-y-2">
-              {images.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {images.map((img, i) => (
-                    <div key={i} className="relative">
-                      <img src={img} alt="" className="w-20 h-20 rounded-lg object-cover border border-[rgba(90,64,66,0.3)]" />
-                      <button onClick={() => setImages(prev => prev.filter((_, j) => j !== i))}
-                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                        <XMarkIcon className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2">
-                <label className="flex-1 flex flex-col items-center justify-center h-24 border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors">
-                  <CameraIcon className="w-6 h-6 text-[#e1bec0] mb-1" />
-                  <p className="text-[#e1bec0] text-sm">Upload</p>
-                  <input type="file" accept="image/*" multiple className="hidden" onChange={e => handleImageUpload(e.target.files)} />
-                </label>
-                {photos.length > 0 && (
-                  <button onClick={() => openLibrary('single')}
-                    className="flex-1 flex flex-col items-center justify-center h-24 border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg hover:border-[#ff5473] transition-colors">
-                    <PhotoIcon className="w-6 h-6 text-[#e1bec0] mb-1" />
-                    <p className="text-[#e1bec0] text-sm">From Library</p>
-                  </button>
+            <label className="lbl">Post Type</label>
+            <div className="flex gap-2">
+              {(['post', 'story', 'reel'] as PostType[]).map(t => (
+                <button key={t} type="button" onClick={() => changePostType(t)}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium capitalize transition-colors border ${postType === t ? 'bg-[rgba(255,84,115,0.15)] text-[#ff5473] border-[#ff5473]/40' : 'bg-white/5 text-white/60 hover:text-white border-transparent'}`}>
+                  {t === 'post' ? 'Feed Post' : t}
+                </button>
+              ))}
+            </div>
+            {postType === 'reel' && <p className="text-[10px] text-[#e1bec0] mt-1.5">Reels are video-only, 9:16. Published only to Instagram/Facebook.</p>}
+            {postType === 'story' && <p className="text-[10px] text-[#e1bec0] mt-1.5">Stories are 9:16. Image or video. Instagram/Facebook only.</p>}
+          </div>
+          {postType !== 'reel' && (
+            <div>
+              <label className="lbl">{postType === 'story' ? 'Image (optional — or upload video below)' : 'Photos'}</label>
+              <div className="space-y-2">
+                {images.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {images.map((img, i) => (
+                      <div key={i} className="relative">
+                        <img src={img} alt="" className="w-20 h-20 rounded-lg object-cover border border-[rgba(90,64,66,0.3)]" />
+                        <button onClick={() => setImages(prev => prev.filter((_, j) => j !== i))}
+                          className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                          <XMarkIcon className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
+                <div className="flex gap-2">
+                  <label className="flex-1 flex flex-col items-center justify-center h-24 border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors">
+                    <CameraIcon className="w-6 h-6 text-[#e1bec0] mb-1" />
+                    <p className="text-[#e1bec0] text-sm">Upload</p>
+                    <input type="file" accept="image/*" multiple={postType === 'post'} className="hidden" onChange={e => handleImageUpload(e.target.files)} />
+                  </label>
+                  {photos.length > 0 && (
+                    <button onClick={() => openLibrary('single')}
+                      className="flex-1 flex flex-col items-center justify-center h-24 border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg hover:border-[#ff5473] transition-colors">
+                      <PhotoIcon className="w-6 h-6 text-[#e1bec0] mb-1" />
+                      <p className="text-[#e1bec0] text-sm">From Library</p>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+          {(postType === 'story' || postType === 'reel') && (
+            <div>
+              <label className="lbl">{postType === 'reel' ? 'Video (required)' : 'Video (optional)'}</label>
+              {videoUrl ? (
+                <div className="relative inline-block">
+                  <video src={videoUrl} className="w-40 h-[284px] rounded-lg object-cover border border-[rgba(90,64,66,0.3)]" muted playsInline controls />
+                  <button onClick={() => setVideoUrl('')}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                    <XMarkIcon className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-[rgba(90,64,66,0.4)] rounded-lg cursor-pointer hover:border-[#ff5473] transition-colors">
+                  {videoUploading ? (
+                    <><ArrowPathIcon className="w-6 h-6 text-[#e1bec0] mb-1 animate-spin" /><p className="text-[#e1bec0] text-sm">Uploading…</p></>
+                  ) : (
+                    <><VideoCameraIcon className="w-6 h-6 text-[#e1bec0] mb-1" /><p className="text-[#e1bec0] text-sm">Upload video</p></>
+                  )}
+                  <input type="file" accept="video/*" className="hidden" onChange={e => handleVideoUpload(e.target.files?.[0])} />
+                </label>
+              )}
+            </div>
+          )}
           <div>
             <label className="lbl">Aspect Ratio</label>
             <div className="flex gap-2 flex-wrap">
@@ -1255,13 +1394,13 @@ export default function CreatePostPage() {
             <button className="btn btn-o w-full flex items-center justify-center gap-2" disabled={saving || !brandId || (!!caption && !allQualityChecked)} onClick={() => savePost('draft')}>
               <BookmarkIcon className="w-4 h-4" /> Save as Draft
             </button>
-            <button className="btn btn-p w-full flex items-center justify-center gap-2" disabled={saving || !brandId || !caption || !allQualityChecked} onClick={() => savePost('scheduled')}>
+            <button className="btn btn-p w-full flex items-center justify-center gap-2" disabled={saving || !brandId || !caption || !allQualityChecked || (postType === 'reel' && !videoUrl)} onClick={() => savePost('scheduled')}>
               {saving ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Saving...</> : <><CalendarIcon className="w-4 h-4" /> Save as Scheduled</>}
             </button>
             {brand?.buffer_profile_ids?.length ? (
               <button className="w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-white transition-opacity disabled:opacity-40"
                 style={{ background: 'linear-gradient(135deg, #10b981 0%, #6ee7b7 100%)' }}
-                disabled={sendingBuffer || !caption.trim() || !allQualityChecked}
+                disabled={sendingBuffer || !caption.trim() || !allQualityChecked || (postType === 'reel' && !videoUrl)}
                 onClick={sendToBuffer}>
                 {sendingBuffer ? <><ArrowPathIcon className="w-4 h-4 animate-spin" /> Sending...</> : <><PaperAirplaneIcon className="w-4 h-4" /> Send to Buffer</>}
               </button>

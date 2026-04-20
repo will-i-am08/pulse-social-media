@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { PhotoIcon, EyeIcon, HandThumbUpIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/16/solid'
+import { PhotoIcon, EyeIcon, HandThumbUpIcon, PencilSquareIcon, TrashIcon, VideoCameraIcon } from '@heroicons/react/16/solid'
 import toast from 'react-hot-toast'
 import StatusBadge from './StatusBadge'
 import PlatformChip from './PlatformChip'
@@ -62,13 +62,22 @@ export default function PostCard({
           />
         )}
 
-        {post.image_url ? (
-          <img src={post.image_url} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-        ) : (
-          <div className="w-12 h-12 rounded-lg bg-[#2b2a29] flex items-center justify-center flex-shrink-0">
-            <PhotoIcon className="w-6 h-6 text-[#5a4042]" />
-          </div>
-        )}
+        <div className="relative w-12 h-12 flex-shrink-0">
+          {post.video_url ? (
+            <>
+              <video src={post.video_url} className="w-12 h-12 rounded-lg object-cover" muted playsInline />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <VideoCameraIcon className="w-4 h-4 text-white drop-shadow" />
+              </div>
+            </>
+          ) : post.image_url ? (
+            <img src={post.image_url} alt="" className="w-12 h-12 rounded-lg object-cover" />
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-[#2b2a29] flex items-center justify-center">
+              <PhotoIcon className="w-6 h-6 text-[#5a4042]" />
+            </div>
+          )}
+        </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -82,6 +91,11 @@ export default function PostCard({
             )}
             <span className="text-sm font-medium text-[#e6e1e1]">{brand?.name || 'Unknown'}</span>
             <StatusBadge status={post.status} />
+            {post.post_type && post.post_type !== 'post' && (
+              <span className="text-[10px] uppercase font-semibold tracking-wide px-1.5 py-0.5 rounded bg-[rgba(255,84,115,0.15)] text-[#ff5473]">
+                {post.post_type}
+              </span>
+            )}
             {(post.platforms || []).map(p => (
               <PlatformChip key={p} platform={p} />
             ))}
