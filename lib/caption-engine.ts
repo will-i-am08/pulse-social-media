@@ -11,6 +11,8 @@
  */
 
 import type { BrandRule } from './types'
+import { buildPlatformGuidance } from './platform-playbooks'
+import { buildHumanRules } from './human-rules'
 
 // ─── Enhanced Rule Types ─────────────────────────────────────────────
 
@@ -85,7 +87,8 @@ export const VARIATION_PRESETS: VariationPreset[] = [
 4. Close with a soft CTA that ties back to the narrative
 
 Voice: First person or "we". Conversational, warm, human. Paint a picture with sensory details.
-Avoid: Starting with "We" or "I" as the very first word. Generic openers like "Ever wondered..."`
+DO: Name specific people, places, times — "Tuesday morning", "a 2012 Hilux", "the third coffee". Anchor the scene.
+DON'T: Start with "We" or "I" as the very first word. Generic openers like "Ever wondered..." or "Picture this:".`
   },
   {
     id: 'question-led',
@@ -163,13 +166,14 @@ Avoid: Fake-sounding testimonials. Vague claims like "our clients love us".`
     emoji: '🧠',
     description: 'Teach something valuable, lead with insight',
     instructions: `CAPTION STRUCTURE — Educational:
-1. Open with a surprising fact, misconception, or "did you know?"
-2. Explain the concept clearly in 2–3 sentences (avoid jargon)
-3. Give a practical takeaway — what should the reader do differently?
-4. Close with a save/share CTA or engagement question
+1. Open with a specific misconception or a counterintuitive fact (skip "Did you know…?" framing — state the fact directly)
+2. Explain the concept clearly in 2–3 sentences, no jargon — like you\'d explain it to a friend over coffee
+3. Give a practical takeaway — one concrete thing the reader should do differently
+4. Close with a save/share CTA or an engagement question
 
 Voice: Knowledgeable but approachable. Think "smart friend explains" not "textbook".
-Avoid: Lecturing. Oversimplifying to the point of being wrong. Condescension.`
+DO: Use a number, a before/after, or a concrete example. "Most people think X. Actually, Y."
+DON'T: Lecture. Oversimplify to the point of being wrong. Open with "Did you know…" (too tired).`
   },
   {
     id: 'conversational',
@@ -177,13 +181,14 @@ Avoid: Lecturing. Oversimplifying to the point of being wrong. Condescension.`
     emoji: '💬',
     description: 'Casual, like talking to a friend',
     instructions: `CAPTION STRUCTURE — Conversational:
-1. Open like you're mid-conversation (no formal intro)
-2. Share a thought, observation, or experience naturally
-3. Make it relatable — the reader should think "same"
-4. Close with a casual question or "what do you think?"
+1. Open like you're mid-conversation — sentence fragment OK, mid-thought OK (no formal intro)
+2. Share a thought, observation, or experience in plain spoken language
+3. Make it relatable on a specific moment, not a generic concept — the reader should think "same"
+4. Close with a casual question that invites a quick reply (not "what do you think?" — be more specific)
 
-Voice: Warm, relatable, slightly stream-of-consciousness. Use line breaks for rhythm.
-Avoid: Trying too hard to be casual. Slang that doesn't match the brand.`
+Voice: Warm, relatable, slightly stream-of-consciousness. Contractions, natural rhythm, line breaks at speech-pause points.
+DO: Use asides in parentheses or on their own line. Sentence fragments. The occasional "honestly,".
+DON'T: Try-hard slang. Generic "What do you think?" closers. Opening with "Okay, so…" — it's become a tell.`
   },
   {
     id: 'hot-take',
@@ -205,13 +210,74 @@ Avoid: Being genuinely offensive. Taking positions the brand can't defend.`
     emoji: '✨',
     description: 'Short, impactful, lots of white space',
     instructions: `CAPTION STRUCTURE — Minimal:
-1. Keep it to 1–3 short lines max
-2. Every word must earn its place — no filler
-3. Use line breaks for dramatic effect
-4. CTA can be a single word or implied
+1. Keep it to 1–3 short lines max — often just one
+2. Every word must earn its place — if you can cut it, cut it
+3. Line breaks only where they change meaning or pace
+4. CTA can be a single word, a question fragment, or implied
 
 Voice: Intentional, atmospheric, confident in the silence. Let the image do heavy lifting.
-Avoid: Being vague or pretentious. This style works best with strong visuals.`
+DO: Concrete nouns. Verbs that do real work. One striking image or idea per line.
+DON'T: Vague poetry, one-word philosophy ("Growth."), or cryptic-for-the-sake-of-cryptic. Avoid emojis entirely in this style.`
+  },
+  {
+    id: 'pas',
+    name: 'Problem-Agitate-Solution',
+    emoji: '📉',
+    description: 'Classic direct-response framework — name the pain, sting it, offer the fix',
+    instructions: `CAPTION STRUCTURE — Problem-Agitate-Solution (PAS):
+1. PROBLEM — Name a specific, real pain the audience feels (not vague — exact)
+2. AGITATE — Make it sting. Describe what it costs them: time, money, stress, missed chances
+3. SOLUTION — Offer the fix with confidence. What you do, what changes, what they get
+4. CTA — A direct next step (book, DM, walk in, click, reply)
+
+Voice: Empathic about the pain, confident about the fix. Not preachy — you've been there too.
+DO: Use specifics — "waiting 3 weeks for a repair", "paying $200 for what takes 20 minutes". Make the problem concrete.
+DON'T: Exaggerate into scare-tactics. Skip the agitate step (it's what makes PAS work). Pivot too fast.`
+  },
+  {
+    id: 'bab',
+    name: 'Before-After-Bridge',
+    emoji: '🌉',
+    description: 'Paint the old reality, the new reality, and the bridge between them',
+    instructions: `CAPTION STRUCTURE — Before-After-Bridge (BAB):
+1. BEFORE — Paint the old reality vividly. What life/work/the problem looked like
+2. AFTER — Paint the new reality just as vividly. What it looks like now
+3. BRIDGE — The specific thing that got them from A to B (your product, service, approach)
+4. CTA — Invite them to cross the bridge themselves
+
+Voice: Visual, grounded, results-focused. The contrast does the heavy lifting.
+DO: Use sensory or concrete details in both the before AND after — "cracked screen you kept apologising for" → "back to looking new".
+DON'T: Make the before too bleak or the after too glossy — credibility matters. Skip the bridge (it's the whole point).`
+  },
+  {
+    id: 'curiosity-gap',
+    name: 'Curiosity Gap',
+    emoji: '🔍',
+    description: 'Tease something surprising, hold the answer, pay off at the end',
+    instructions: `CAPTION STRUCTURE — Curiosity Gap (Open Loop):
+1. HOOK — Tease a surprising outcome, fact, or question that demands an answer. No spoilers
+2. BUILD — 2–3 sentences that deepen the intrigue — stakes, context, what's at play
+3. PAYOFF — Resolve the loop with the actual insight or reveal. Make it worth the wait
+4. CTA — Natural next step that rides the reveal's momentum
+
+Voice: Confident, a little mysterious, earns the reveal. Never clickbait-cheap.
+DO: Make the hook specific ("The $15 part that stops 80% of iPhone 12 screen issues" beats "This changes everything"). Pay off fully at the end.
+DON'T: Tease and fail to deliver — that kills trust. Use hollow teases like "You won't believe what happened next".`
+  },
+  {
+    id: 'natural-speech',
+    name: 'Natural Speech',
+    emoji: '🗣️',
+    description: 'Write it like you\'d say it out loud — the hardest-leaning anti-AI preset',
+    instructions: `CAPTION STRUCTURE — Natural Speech:
+1. Open the way you'd actually talk — not the way you'd write. Fragment is fine. Mid-thought is fine.
+2. Use contractions, asides, the occasional "honestly" or "look," — the verbal tics of real speech
+3. Let the rhythm break. Short line. Then a longer one that runs a bit because that's how you'd say it.
+4. Close the way a voice memo would end — a thought, not a marketing CTA. Or a specific, low-pressure ask.
+
+Voice: You, talking to a mate. Unpolished on purpose. Resist the urge to smooth it.
+DO: Sentence fragments. Parenthetical asides. Starting sentences with "and" or "but". The occasional "yeah".
+DON'T: Use any AI filler ("In today's…", "Here's the thing", "Let me tell you"). No triple-parallel cadence. No forced casualness ("hey fam!"). Skip hashtags unless required — they break the voice.`
   },
 ]
 
@@ -238,6 +304,10 @@ export const FEEDBACK_TAGS = {
     { id: 'creative', label: 'Creative', description: 'Original and fresh approach' },
     { id: 'good-length', label: 'Good Length', description: 'Perfect length for the platform' },
     { id: 'engaging', label: 'Engaging', description: 'Makes you want to interact' },
+    { id: 'human-sounding', label: 'Human Sounding', description: 'Reads like a real person wrote it' },
+    { id: 'good-rhythm', label: 'Good Rhythm', description: 'Sentence flow and cadence feel natural' },
+    { id: 'specific-detail', label: 'Specific Detail', description: 'Concrete names, numbers, moments — not vague' },
+    { id: 'platform-native', label: 'Platform Native', description: 'Feels at home on the chosen platform' },
   ],
   negative: [
     { id: 'weak-hook', label: 'Weak Hook', description: 'Opening doesn\'t grab attention' },
@@ -248,6 +318,11 @@ export const FEEDBACK_TAGS = {
     { id: 'too-short', label: 'Too Short', description: 'Needs more substance' },
     { id: 'repetitive', label: 'Repetitive', description: 'Too similar to recent captions' },
     { id: 'wrong-tone', label: 'Wrong Tone', description: 'Tone doesn\'t fit' },
+    { id: 'sounds-ai', label: 'Sounds AI', description: 'Reads like ChatGPT defaults — filler phrases, stilted' },
+    { id: 'too-formal', label: 'Too Formal', description: 'Overly polished, lacks a human voice' },
+    { id: 'too-vague', label: 'Too Vague', description: 'No concrete detail — could be about anything' },
+    { id: 'wrong-platform-feel', label: 'Wrong Platform Feel', description: 'Doesn\'t match how the platform actually reads' },
+    { id: 'parallel-cadence', label: 'Parallel Cadence', description: 'Triple-parallel "Not X. Not Y. But Z." AI pattern' },
   ],
 }
 
@@ -508,6 +583,8 @@ export interface CaptionEngineInput {
   variationMode: 'auto' | string
   // Goals
   goals?: { period: string; title: string; description?: string }[]
+  // Rule scope — 'caption' for feed posts, 'blog' for blog-promo captions
+  scope?: 'caption' | 'blog'
 }
 
 export interface CaptionEngineOutput {
@@ -528,6 +605,7 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
     feedback,
     variationMode,
     goals,
+    scope,
   } = input
 
   // Normalise brand fields (handle both camelCase and snake_case)
@@ -550,7 +628,7 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
 
   // 3. Process rules for primary platform
   const primaryPlatform = platforms[0] || 'instagram'
-  const processedRules = processRules(rules, primaryPlatform)
+  const processedRules = processRules(rules, primaryPlatform, scope || 'caption')
 
   // 4. Summarise feedback
   const feedbackSummary = summariseFeedback(feedback)
@@ -568,6 +646,9 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
     systemParts.push(`\nBRAND VOICE:\n${brandVoice}`)
   }
 
+  // Human voice rules — proactive anti-AI guidance, tone-aware
+  systemParts.push(`\n${buildHumanRules(tone)}`)
+
   // Target audience
   if (targetAudience) {
     systemParts.push(`\nTARGET AUDIENCE:\n${targetAudience}`)
@@ -580,6 +661,12 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
 
   // Variation preset (the structural DNA of this caption)
   systemParts.push(`\n═══ TODAY'S CAPTION STYLE ═══\n${preset.instructions}`)
+
+  // Platform playbook — how this platform actually reads
+  const platformGuidance = buildPlatformGuidance(platforms)
+  if (platformGuidance) {
+    systemParts.push(`\n${platformGuidance}`)
+  }
 
   // Structured rules — grouped by priority
   if (processedRules.mandatory.length || processedRules.preferred.length || processedRules.optional.length) {
@@ -667,6 +754,11 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
   if (hasImage) {
     if (hasMultipleImages) {
       userParts.push(`\nThis is a carousel post — the caption MUST work for the full set of images. Describe what you see and use it as context.`)
+      userParts.push(`\n[CAROUSEL STRUCTURE]
+- The caption must unify the carousel's arc, not describe each card individually.
+- Open with a hook that implies there's more to swipe through (tease the reveal on card 2+).
+- Land on a takeaway or CTA that only makes sense after the reader has seen the full set.
+- Do NOT enumerate cards ("Slide 1…", "Slide 2…", "Swipe to see…" as a preface) — let the caption stand on its own.`)
     } else {
       userParts.push(`\nThe caption MUST be about the content shown in the attached image. Describe what you see and use it as context.`)
     }

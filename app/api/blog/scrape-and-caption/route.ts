@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDecryptedClaudeKey } from '@/lib/account/getAccountSettings'
+import { buildEnhancedPrompt, type CaptionFeedback } from '@/lib/caption-engine'
+import { cleanCaption } from '@/lib/cleanCaption'
 
 export const maxDuration = 60
 
@@ -89,7 +91,7 @@ export async function POST(req: NextRequest) {
 
   const { data: brand } = await supabase
     .from('workspace_brands')
-    .select('name, brand_voice, tone, output_length, include_hashtags, include_emojis')
+    .select('name, brand_voice, tone, output_length, include_hashtags, include_emojis, custom_rules, posting_instructions, brand_guidelines, key_messages, target_audience')
     .eq('id', brandId)
     .eq('user_id', user.id)
     .single()
@@ -122,27 +124,74 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not extract article content' }, { status: 422 })
   }
 
-  // Blog captions are intentionally shorter than normal — keep the hook tight.
-  const hashtags = brand.include_hashtags !== false ? 'Include a few relevant hashtags.' : 'Do not include hashtags.'
-  const emojis = brand.include_emojis !== false ? 'Use emojis sparingly where appropriate.' : 'Do not use emojis.'
-  const platformList = (platforms && platforms.length ? platforms : ['instagram']).join(', ')
+  const platformList = (platforms && platforms.length ? platforms : ['instagram'])
 
-  const userPrompt = `Write a SHORT social media caption (2–4 sentences max, tight and punchy) for the brand "${brand.name}" promoting the blog post below.
-Brand tone: ${brand.tone || 'professional'}
-${brand.brand_voice ? `Brand voice / guidelines: ${brand.brand_voice}` : ''}
-Platforms: ${platformList}
-${hashtags}
-${emojis}
-${customPrompt ? `Additional instructions: ${customPrompt}` : ''}
+  // Pull recent captions for anti-repetition context
+  const { data: recentPosts } = await supabase
+    .from('posts')
+    .select('data')
+    .eq('brand_profile_id', brandId)
+    .order('created_at', { ascending: false })
+    .limit(15)
 
-Source blog:
-Title: ${article.title || '(unknown)'}
-${article.description ? `Description: ${article.description}` : ''}
-URL: ${url}
-Excerpt:
-${article.body}
+  const recentCaptions = (recentPosts || [])
+    .map((r: any) => ({
+      caption: r.data?.caption || '',
+      variationPreset: r.data?.variationPreset || '',
+    }))
+    .filter((c: any) => c.caption)
 
-Write a caption that entices readers to click through. End the caption with the full blog URL on its own line so readers can click through (use exactly this URL: ${url}).`
+  // Pull feedback to apply learned preferences
+  const { data: feedbackRows } = await supabase
+    .from('caption_feedback')
+    .select('*')
+    .eq('brand_id', brandId)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const feedback: CaptionFeedback[] = (feedbackRows || []).map((r: any) => ({
+    id: r.id,
+    brandId: r.brand_id,
+    postId: r.post_id,
+    captionText: r.caption_text,
+    rating: r.rating,
+    tags: r.tags || [],
+    notes: r.notes || '',
+    variationPreset: r.variation_preset || '',
+    platforms: r.platforms || [],
+    createdAt: r.created_at,
+  }))
+
+  // Topic block — blog context + hard constraints (length, URL placement)
+  const topicParts: string[] = []
+  topicParts.push(`Promote this blog post. The caption must be SHORT — 2–4 tight sentences max.`)
+  topicParts.push(`End the caption with the full blog URL on its own line (use exactly: ${url}).`)
+  if (customPrompt) topicParts.push(`Additional instructions: ${customPrompt}`)
+  topicParts.push(``)
+  topicParts.push(`Source blog:`)
+  topicParts.push(`Title: ${article.title || '(unknown)'}`)
+  if (article.description) topicParts.push(`Description: ${article.description}`)
+  topicParts.push(`URL: ${url}`)
+  topicParts.push(`Excerpt:`)
+  topicParts.push(article.body)
+
+  // Build engine prompt — scope='blog' filters rules marked for blogs
+  const engineOutput = buildEnhancedPrompt({
+    brand: {
+      ...brand,
+      // Force short output for blog promo captions regardless of brand default
+      output_length: 'short',
+      key_messages: brand.key_messages || [],
+    },
+    platforms: platformList,
+    userPrompt: topicParts.join('\n'),
+    hasImage: false,
+    recentCaptions,
+    feedback,
+    variationMode: 'auto',
+    scope: 'blog',
+  })
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -155,14 +204,14 @@ Write a caption that entices readers to click through. End the caption with the 
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 512,
-        system: 'You are a social media copywriter. Write ONLY the caption text — no commentary, no explanations, no quotation marks, nothing else.',
-        messages: [{ role: 'user', content: userPrompt }],
+        system: engineOutput.systemPrompt,
+        messages: [{ role: 'user', content: engineOutput.userPrompt }],
       }),
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error?.message || 'Claude API error')
-    let caption = (data.content?.[0]?.text || '').trim()
-    // Guarantee the blog URL is in every caption
+    let caption = cleanCaption((data.content?.[0]?.text || '').trim())
+    // Guarantee the blog URL is in every caption (cleanCaption could strip a line break — re-check)
     if (caption && !caption.includes(url)) {
       caption = `${caption}\n\n${url}`
     }
@@ -171,6 +220,7 @@ Write a caption that entices readers to click through. End the caption with the 
       title: article.title,
       image: article.image || null,
       sourceUrl: url,
+      preset: engineOutput.selectedPreset,
     })
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })

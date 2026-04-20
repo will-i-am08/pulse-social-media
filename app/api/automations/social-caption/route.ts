@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getDecryptedClaudeKey } from '@/lib/account/getAccountSettings'
 import { buildEnhancedPrompt, type CaptionFeedback } from '@/lib/caption-engine'
+import { cleanCaption } from '@/lib/cleanCaption'
 
 export const maxDuration = 60
 
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error?.message || 'API error')
 
-    const caption = data.content?.[0]?.text || ''
+    const caption = cleanCaption(data.content?.[0]?.text || '')
     return NextResponse.json({
       caption,
       brandName: brand.name,
