@@ -641,35 +641,22 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
   systemParts.push(`You are an expert social media copywriter for "${brand.name}". You write platform-native, engaging content that feels human — never generic, never templated.`)
   systemParts.push(`Write ONLY the caption text. No commentary, explanations, labels, or quotation marks.`)
 
+  // Precedence directive — brand section below is authoritative over every default that follows
+  const hasBrandRules = processedRules.mandatory.length > 0 || processedRules.preferred.length > 0 || processedRules.optional.length > 0
+  const hasBrandContent = hasBrandRules || !!brandVoice || !!brandGuidelines || !!postingInstructions
+  if (hasBrandContent) {
+    systemParts.push(`\n═══ PRECEDENCE ═══\nThe BRAND section below defines this client's voice and non-negotiable rules. It overrides every default that follows — including the human voice rules, today's caption style, and the platform playbook. When anything downstream conflicts with a brand rule, the brand rule wins.`)
+  }
+
+  // ─── BRAND SECTION (highest priority) ─────────────────────────────
+
   // Brand voice
   if (brandVoice) {
     systemParts.push(`\nBRAND VOICE:\n${brandVoice}`)
   }
 
-  // Human voice rules — proactive anti-AI guidance, tone-aware
-  systemParts.push(`\n${buildHumanRules(tone)}`)
-
-  // Target audience
-  if (targetAudience) {
-    systemParts.push(`\nTARGET AUDIENCE:\n${targetAudience}`)
-  }
-
-  // Key messages
-  if (keyMessages.length > 0) {
-    systemParts.push(`\nKEY BRAND MESSAGES:\n${keyMessages.map(m => `- ${m}`).join('\n')}`)
-  }
-
-  // Variation preset (the structural DNA of this caption)
-  systemParts.push(`\n═══ TODAY'S CAPTION STYLE ═══\n${preset.instructions}`)
-
-  // Platform playbook — how this platform actually reads
-  const platformGuidance = buildPlatformGuidance(platforms)
-  if (platformGuidance) {
-    systemParts.push(`\n${platformGuidance}`)
-  }
-
-  // Structured rules — grouped by priority
-  if (processedRules.mandatory.length || processedRules.preferred.length || processedRules.optional.length) {
+  // Structured brand rules — grouped by priority
+  if (hasBrandRules) {
     systemParts.push(`\n═══ BRAND RULES ═══`)
     if (processedRules.mandatory.length) {
       systemParts.push(`MUST FOLLOW (non-negotiable):\n${processedRules.mandatory.map(r => `• ${r}`).join('\n')}`)
@@ -690,6 +677,30 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
   // Brand guidelines
   if (brandGuidelines) {
     systemParts.push(`\nBRAND GUIDELINES:\n${brandGuidelines}`)
+  }
+
+  // Target audience
+  if (targetAudience) {
+    systemParts.push(`\nTARGET AUDIENCE:\n${targetAudience}`)
+  }
+
+  // Key messages
+  if (keyMessages.length > 0) {
+    systemParts.push(`\nKEY BRAND MESSAGES:\n${keyMessages.map(m => `- ${m}`).join('\n')}`)
+  }
+
+  // ─── DEFAULTS (subject to the brand section above) ────────────────
+
+  // Human voice rules — proactive anti-AI guidance, tone-aware
+  systemParts.push(`\n${buildHumanRules(tone)}`)
+
+  // Variation preset (the structural DNA of this caption)
+  systemParts.push(`\n═══ TODAY'S CAPTION STYLE ═══\n${preset.instructions}`)
+
+  // Platform playbook — how this platform actually reads
+  const platformGuidance = buildPlatformGuidance(platforms)
+  if (platformGuidance) {
+    systemParts.push(`\n${platformGuidance}`)
   }
 
   // Anti-repetition context
