@@ -722,13 +722,22 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
 
       // CRITICAL: match the CTA verb to the contact type. Mixing them creates
       // nonsense like "drop it off at example.com" or "call us at 123 Main St".
+      // Also CRITICAL: never invent a transaction verb that the brand does not
+      // actually offer. If the brand doesn't take bookings, don't say "book".
+      // If they don't have an online store, don't say "order online". Read the
+      // brand guidelines — if walk-in is the model, "book" is wrong everywhere.
       if (chosen.kind === 'website') {
-        systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a website URL, the CTA verbs must match a URL — "visit", "book online", "head to", "check out", "learn more at", "details at". NEVER use physical-visit verbs ("walk in", "drop in", "drop it off", "pop in", "come by") with a URL — you cannot walk into a website. NEVER use call verbs ("call", "ring", "phone") with a URL. Even if the brand guidelines suggest walk-in or call CTAs, swap them for website-appropriate language for this post.`)
+        systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a website URL, the CTA verbs must match a URL. Use neutral informational verbs: "visit", "head to", "check out", "see more at", "details at", "info at", "more on". Do NOT use transaction verbs like "book", "order", "buy", "schedule" unless the brand guidelines explicitly confirm that is what the website does. If the brand's model is walk-in, drop-in, or call-to-enquire, the website is just info — phrase it as such. NEVER use physical-visit verbs ("walk in", "drop in", "drop it off", "pop in", "come by") with a URL. NEVER use call verbs ("call", "ring", "phone") with a URL.`)
       } else if (chosen.kind === 'phone') {
         systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a phone number, the CTA verbs must match a phone — "call", "ring", "give us a call", "phone us", "text". NEVER use website verbs ("visit", "click", "head to") or physical-visit verbs ("walk in", "drop in") with a phone number. Even if the brand guidelines suggest walk-in or website CTAs, swap them for phone-appropriate language for this post.`)
       } else {
-        systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a physical address, the CTA verbs must match a location — "visit us at", "come by", "walk in", "drop in", "pop in", "find us at". NEVER use website verbs ("click", "visit [url]", "book online") or phone verbs ("call", "ring") with an address. Even if the brand guidelines suggest website or call CTAs, swap them for location-appropriate language for this post.`)
+        systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a physical address, the CTA verbs must match a location — "come in", "come by", "walk in", "drop in", "pop in", "visit us at", "find us at". NEVER use website verbs ("click", "visit [url]", "book online") or phone verbs ("call", "ring") with an address. Even if the brand guidelines suggest website or call CTAs, swap them for location-appropriate language for this post.`)
       }
+
+      // Honour the brand's operating model. If the brand guidelines say things
+      // like "no booking required", "walk-in only", "no appointments", then
+      // "book" is forbidden regardless of contact type — it contradicts the USP.
+      systemParts.push(`OPERATING MODEL RULE: Read the brand guidelines above. If they state that bookings/appointments are NOT required (e.g. walk-in, drop-in, no-booking), you MUST NOT use the verb "book" or any booking language ("book now", "book your", "make an appointment", "schedule a time"). That contradicts the brand's USP. Use walk-in or informational language instead.`)
     } else {
       systemParts.push(`Do NOT include any contact details (website, phone, or address) in this caption. Keep the CTA copy-only — an idea, a question, or a soft next step.`)
     }
