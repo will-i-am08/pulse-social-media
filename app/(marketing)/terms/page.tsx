@@ -1,57 +1,92 @@
 import { Metadata } from 'next'
-import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
+import LegalShell from '@/components/marketing/LegalShell'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Pulse Digital Agency',
-  description: 'Terms and conditions governing the use of Pulse Digital services and website.',
+  title: 'Terms · Pulse Social Media',
+  description: 'The rules of the road for using pulsesocialmedia.com.au and CaptionCraft.',
+  alternates: { canonical: '/terms' },
 }
+
+const NAV = [
+  { id: 'accept', label: 'Accepting these terms' },
+  { id: 'account', label: 'Accounts' },
+  { id: 'use', label: 'Acceptable use' },
+  { id: 'ip', label: 'IP & ownership' },
+  { id: 'ai', label: 'AI-generated content' },
+  { id: 'billing', label: 'Billing' },
+  { id: 'cancel', label: 'Cancellation' },
+  { id: 'warranty', label: 'Warranty' },
+  { id: 'liability', label: 'Liability' },
+  { id: 'law', label: 'Governing law' },
+  { id: 'changes', label: 'Changes' },
+]
 
 export default function TermsPage() {
   return (
-    <main className="pt-32 pb-20 px-6 max-w-4xl mx-auto">
-      <AnimateOnScroll variant="fade-in" delay={0}>
-        <h1 className="text-5xl md:text-6xl font-black font-headline tracking-tighter mb-6">Terms of Service</h1>
-        <p className="text-[#6b7280] text-sm uppercase tracking-widest mb-12">Last updated: March 2026</p>
-      </AnimateOnScroll>
+    <LegalShell
+      eyebrow="Legal · Terms"
+      title={<>Terms of<br /><em>service.</em></>}
+      intro="The rules of the road for using pulsesocialmedia.com.au and CaptionCraft. Short, plain, and written so you can actually read them."
+      updated="12 April 2026"
+      nav={NAV}
+    >
+      <h2 id="accept">Accepting these <em>terms</em></h2>
+      <p>By using pulsesocialmedia.com.au, CaptionCraft, or engaging Pulse Social Media (ABN 24 459 717 280) for services, you&apos;re agreeing to these terms. If you&apos;re doing so on behalf of a company, you&apos;re confirming you have the authority to bind that company.</p>
+      <p>If any of these terms are unacceptable, don&apos;t use the service. I&apos;d rather you didn&apos;t than you used it under protest.</p>
 
-      <AnimateOnScroll variant="fade-up" delay={0.1}>
-        <div className="prose-custom space-y-10 text-[#6b7280] leading-relaxed">
-          <section>
-            <h2 className="text-xl font-bold text-[#0a0a0a] mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing and using the Pulse Digital website and services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.</p>
-          </section>
+      <h2 id="account">Your <em>account</em></h2>
+      <ul>
+        <li>You&apos;re responsible for keeping your login credentials secure.</li>
+        <li>One human per seat. Shared logins are not allowed on team plans.</li>
+        <li>Tell me promptly if you suspect unauthorised access.</li>
+        <li>You must be 16 or older. Pulse doesn&apos;t serve minors.</li>
+      </ul>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#0a0a0a] mb-3">2. Services</h2>
-            <p>Pulse Digital provides social media management, content creation, AI-powered marketing tools, and related digital agency services. The specific scope of services will be outlined in individual client agreements.</p>
-          </section>
+      <h2 id="use">Acceptable <em>use</em></h2>
+      <p>You agree not to use these services to:</p>
+      <ul>
+        <li>Break the law, or help anyone else break it.</li>
+        <li>Harass, defame, or threaten other people.</li>
+        <li>Generate content that&apos;s deceptive, fraudulent, or impersonates real individuals without their consent.</li>
+        <li>Build tooling that competes with Pulse by scraping the interface.</li>
+        <li>Push obvious spam or bulk unsolicited outreach through CaptionCraft.</li>
+      </ul>
+      <p>I reserve the right to suspend any account that does any of the above. I&apos;ll tell you why, and give you a chance to fix it where I can.</p>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#0a0a0a] mb-3">3. Intellectual Property</h2>
-            <p>All content, designs, and materials on this website are the property of Pulse Digital Agency unless otherwise stated. Client-created content remains the property of the respective client.</p>
-          </section>
+      <h2 id="ip">Intellectual <em>property</em></h2>
+      <p><strong>Your stuff stays yours.</strong> Brand guidelines, voice profiles, drafts, scheduled posts — all owned by you. I have a non-exclusive licence to process them solely to deliver the service.</p>
+      <p><strong>My stuff stays mine.</strong> The Pulse wordmark, the CaptionCraft application, the tuning methodology, templates and writing — all owned by Pulse Social Media, licensed to you for internal use only.</p>
+      <p>Work product produced under a service engagement (social posts, strategy decks, creative assets) transfers to you on payment of the final invoice.</p>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#0a0a0a] mb-3">4. User Responsibilities</h2>
-            <p>Users agree to provide accurate information, use our services in compliance with applicable laws, and not attempt to disrupt or compromise the security of our platform.</p>
-          </section>
+      <h2 id="ai">AI-generated <em>content</em></h2>
+      <div className="note"><b>Important</b>CaptionCraft helps you write. You&apos;re still the publisher. You are responsible for reviewing, approving, and factually checking every piece of output before it goes live.</div>
+      <p>AI outputs can be wrong, biased, or accidentally match something someone else wrote. I don&apos;t warrant factual accuracy or uniqueness of generated content. Treat every draft as a draft.</p>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#0a0a0a] mb-3">5. Limitation of Liability</h2>
-            <p>Pulse Digital shall not be liable for any indirect, incidental, or consequential damages arising from the use of our services. Our total liability shall not exceed the amount paid by you for the specific service in question.</p>
-          </section>
+      <h2 id="billing">Billing</h2>
+      <ul>
+        <li>Service fees are billed monthly or annually in advance.</li>
+        <li>Prices are in AUD unless your contract says otherwise. GST applies where applicable.</li>
+        <li>Unpaid invoices after 14 days accrue 1.5% interest per month. Accounts 30+ days overdue may be suspended.</li>
+        <li>All fees are non-refundable except as required by Australian Consumer Law.</li>
+      </ul>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#0a0a0a] mb-3">6. Changes to Terms</h2>
-            <p>We reserve the right to modify these terms at any time. Continued use of our services after changes constitutes acceptance of the updated terms.</p>
-          </section>
+      <h2 id="cancel">Cancellation</h2>
+      <p>Month-to-month plans cancel at the end of the current billing period. Annual plans cancel at renewal; pro-rata refunds are not standard, but I&apos;ll talk about edge cases. Service retainers have 30 days&apos; notice either way.</p>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#0a0a0a] mb-3">7. Contact</h2>
-            <p>For questions about these terms, contact us at <a href="mailto:hello@pulsedigital.agency" className="text-[#ff5473] hover:underline">hello@pulsedigital.agency</a>.</p>
-          </section>
-        </div>
-      </AnimateOnScroll>
-    </main>
+      <h2 id="warranty">Warranty <em>&amp; disclaimer</em></h2>
+      <p>I provide services with reasonable care and skill. I don&apos;t warrant that results (engagement, revenue, growth) will match any specific benchmark — social media is not that kind of contract.</p>
+      <p>To the extent permitted by law, services are provided &ldquo;as is&rdquo;. Nothing in these terms excludes your rights under the Australian Consumer Law.</p>
+
+      <h2 id="liability">Liability</h2>
+      <p>To the maximum extent permitted by law, Pulse Social Media&apos;s aggregate liability for any claim arising from these terms is limited to the fees you paid in the 12 months preceding the claim. No liability for indirect, consequential, or incidental damages.</p>
+
+      <h2 id="law">Governing <em>law</em></h2>
+      <p>These terms are governed by the laws of Victoria, Australia. Disputes go to the courts of Victoria — though I&apos;ll always try mediation first.</p>
+
+      <h2 id="changes">Changes</h2>
+      <p>I may update these terms. Material changes get 30 days&apos; notice by email. Continued use after that counts as acceptance.</p>
+
+      <div className="note"><b>Questions?</b><a href="mailto:william@pulsesocialmedia.com.au">william@pulsesocialmedia.com.au</a> — a real human, not a ticket queue.</div>
+    </LegalShell>
   )
 }

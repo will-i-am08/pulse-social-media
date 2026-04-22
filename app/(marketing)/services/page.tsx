@@ -1,261 +1,327 @@
 import { Metadata } from 'next'
-import Link from 'next/link'
 import Image from 'next/image'
-import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Services | Social Media Management & AI Strategy',
-  description: 'Social media management, AI-driven content creation, analytics, and creative strategy — explore the full range of Pulse Digital services.',
-  keywords: ['social media management services', 'AI content strategy', 'social media analytics', 'community management', 'content creation agency'],
-  openGraph: {
-    title: 'Services | Social Media Management & AI Strategy',
-    description: 'Full-service social media management, AI-powered content creation, analytics, and creative strategy from Pulse Digital.',
-    url: '/services',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Services' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Services | Pulse Digital Agency',
-    description: 'Full-service social media management, AI-powered content creation, analytics, and creative strategy.',
-    images: ['/og-image.png'],
-  },
+  title: 'Services · Pulse Social Media',
+  description: 'Founder-led social media management — strategy, content, community, paid, analytics and AI tooling, rolled into a flat monthly retainer.',
   alternates: { canonical: '/services' },
 }
 
-const DIVIDER = '1px solid rgba(0,0,0,0.08)'
+const CSS = `
+.pulse-services{ --italic:'Fraunces',serif; }
+.pulse-services .svc-head{max-width:1320px;margin:0 auto;padding:80px 48px 48px;display:grid;grid-template-columns:1.2fr 1fr;gap:72px;align-items:end;border-bottom:1px solid var(--hair)}
+.pulse-services .svc-head h1{font-size:clamp(56px,8vw,140px);font-weight:200;letter-spacing:-0.045em;line-height:.9;margin:16px 0 0}
+.pulse-services .svc-head h1 em{font-family:var(--italic);font-style:italic;color:var(--accent);font-weight:300}
+.pulse-services .svc-head .right{display:flex;flex-direction:column;gap:20px;max-width:460px}
+.pulse-services .svc-head .right p{font-size:18px;line-height:1.55;color:#2a2a2a;margin:0}
+.pulse-services .svc-head .meta{display:flex;gap:32px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--hair);padding-top:20px}
+.pulse-services .svc-head .meta b{display:block;color:var(--ink);font-family:var(--italic);font-style:italic;font-size:28px;font-weight:400;text-transform:none;letter-spacing:0;margin-bottom:4px}
+
+.pulse-services .disc{max-width:1320px;margin:0 auto;padding:80px 48px}
+.pulse-services .disc-head{display:grid;grid-template-columns:1fr 1.3fr;gap:64px;align-items:end;margin-bottom:48px}
+.pulse-services .disc-head h2{font-size:clamp(40px,5vw,68px);font-weight:200;letter-spacing:-0.03em;line-height:1;margin:12px 0 0}
+.pulse-services .disc-head h2 em{font-family:var(--italic);font-style:italic;color:var(--accent);font-weight:300}
+.pulse-services .disc-head p{color:#333;font-size:16px;line-height:1.65;margin:0;max-width:480px}
+.pulse-services .disc-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;grid-auto-rows:minmax(260px,auto)}
+.pulse-services .d-card{background:#fff;border:1px solid var(--hair);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;transition:transform .25s, box-shadow .25s}
+.pulse-services .d-card:hover{transform:translateY(-3px);box-shadow:0 24px 48px -24px rgba(0,0,0,.16)}
+.pulse-services .d-card .num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.pulse-services .d-card h3{font-size:24px;font-weight:500;letter-spacing:-0.02em;margin:0;line-height:1.15}
+.pulse-services .d-card h3 em{font-family:var(--italic);font-style:italic;color:var(--accent);font-weight:400}
+.pulse-services .d-card p{font-size:14px;line-height:1.6;color:#333;margin:0}
+.pulse-services .d-card ul{margin:auto 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--hair);padding-top:16px}
+.pulse-services .d-card li{font-size:13px;color:#444;display:flex;gap:8px;align-items:baseline}
+.pulse-services .d-card li::before{content:'●';color:var(--accent);font-size:8px;flex-shrink:0}
+.pulse-services .d-a{grid-column:span 7;background:linear-gradient(140deg,#1a1717 0%,#2a1f22 100%);color:#fff;border-color:transparent}
+.pulse-services .d-a h3{font-size:34px;max-width:480px;color:#fff}
+.pulse-services .d-a h3 em{color:var(--accent-soft)}
+.pulse-services .d-a .num{color:var(--accent-soft)}
+.pulse-services .d-a p{color:rgba(255,255,255,.7);max-width:440px}
+.pulse-services .d-a ul{border-top-color:rgba(255,255,255,.12)}
+.pulse-services .d-a li{color:rgba(255,255,255,.75)}
+.pulse-services .d-a li::before{color:var(--accent-soft)}
+.pulse-services .d-b{grid-column:span 5;background:var(--paper-2)}
+.pulse-services .d-c,.pulse-services .d-d,.pulse-services .d-e,.pulse-services .d-f{grid-column:span 3}
+.pulse-services .d-g{grid-column:span 5;background:var(--accent);color:#fff;border-color:transparent}
+.pulse-services .d-g h3{font-family:var(--italic);font-style:italic;font-weight:400;color:#fff;font-size:32px}
+.pulse-services .d-g p,.pulse-services .d-g li{color:rgba(255,255,255,.9)}
+.pulse-services .d-g .num{color:rgba(255,255,255,.7)}
+.pulse-services .d-g ul{border-top-color:rgba(255,255,255,.2)}
+.pulse-services .d-g li::before{color:#fff}
+.pulse-services .d-h{grid-column:span 7;display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0;overflow:hidden}
+.pulse-services .d-h .ph{border-radius:0;min-height:100%}
+.pulse-services .d-h .side{padding:28px;display:flex;flex-direction:column;gap:12px}
+.pulse-services .d-h .side h3{font-size:24px}
+
+.pulse-services .proof{background:var(--ink);color:#fff;padding:100px 48px}
+.pulse-services .proof-inner{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1fr 1.6fr;gap:80px;align-items:center}
+.pulse-services .proof-inner .ph{height:460px;border-radius:20px;position:relative}
+.pulse-services .proof-inner blockquote{font-family:var(--italic);font-style:italic;font-weight:300;font-size:clamp(30px,3.8vw,52px);line-height:1.1;letter-spacing:-0.02em;margin:0}
+.pulse-services .proof-inner blockquote em{color:var(--accent-soft)}
+.pulse-services .proof-inner cite{display:block;margin-top:32px;font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.pulse-services .proof-inner cite b{color:#fff;font-weight:500;display:block;margin-bottom:4px}
+.pulse-services .proof-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;border-top:1px solid rgba(255,255,255,.15);padding-top:32px}
+.pulse-services .proof-stat .v{font-family:var(--italic);font-style:italic;font-size:48px;letter-spacing:-0.02em;line-height:1;color:#fff;font-weight:400}
+.pulse-services .proof-stat .v .u{font-size:24px;color:var(--accent-soft)}
+.pulse-services .proof-stat .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:10px;line-height:1.5}
+
+.pulse-services .proc{max-width:1320px;margin:0 auto;padding:100px 48px}
+.pulse-services .proc-head{display:flex;justify-content:space-between;align-items:end;gap:48px;margin-bottom:48px;flex-wrap:wrap}
+.pulse-services .proc-head h2{font-size:clamp(40px,5vw,68px);font-weight:200;letter-spacing:-0.03em;line-height:1;margin:12px 0 0}
+.pulse-services .proc-head h2 em{font-family:var(--italic);font-style:italic;color:var(--accent);font-weight:300}
+.pulse-services .proc-head p{color:var(--muted);max-width:360px;margin:0;font-size:15px;line-height:1.6}
+.pulse-services .proc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair)}
+.pulse-services .proc-step{background:var(--paper);padding:36px 28px;min-height:300px;display:flex;flex-direction:column}
+.pulse-services .proc-step .n{font-family:var(--italic);font-style:italic;font-size:72px;font-weight:300;color:var(--accent);line-height:1;letter-spacing:-0.04em}
+.pulse-services .proc-step h3{font-size:20px;font-weight:500;letter-spacing:-0.02em;margin:20px 0 10px}
+.pulse-services .proc-step p{font-size:13px;line-height:1.6;color:#333;margin:0}
+.pulse-services .proc-step .mono-label{margin-top:auto;padding-top:20px}
+
+.pulse-services .faq{max-width:960px;margin:0 auto;padding:80px 48px;border-top:1px solid var(--hair)}
+.pulse-services .faq h2{font-size:clamp(36px,4.5vw,60px);font-weight:200;letter-spacing:-0.03em;line-height:1;margin:8px 0 32px}
+.pulse-services .faq h2 em{font-family:var(--italic);font-style:italic;color:var(--accent);font-weight:300}
+.pulse-services details{border-top:1px solid var(--hair);padding:22px 0}
+.pulse-services details:last-of-type{border-bottom:1px solid var(--hair)}
+.pulse-services summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:400;gap:24px}
+.pulse-services summary::-webkit-details-marker{display:none}
+.pulse-services summary::after{content:'+';font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:22px;flex-shrink:0}
+.pulse-services details[open] summary::after{content:'−'}
+.pulse-services details p{color:#333;line-height:1.65;margin:14px 0 0;max-width:720px;font-size:16px}
+
+.pulse-services .cc{max-width:1320px;margin:0 auto;padding:80px 48px;border-top:1px solid var(--hair)}
+.pulse-services .cc-inner{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center}
+.pulse-services .cc-left h2{font-size:clamp(44px,5.5vw,76px);font-weight:200;letter-spacing:-0.035em;line-height:.95;margin:12px 0 24px}
+.pulse-services .cc-left h2 em{font-family:var(--italic);font-style:italic;color:var(--accent);font-weight:300}
+.pulse-services .cc-lead{font-size:18px;line-height:1.55;color:#222;margin:0 0 28px;max-width:520px}
+.pulse-services .cc-points{list-style:none;padding:24px 0 0;margin:0 0 32px;display:flex;flex-direction:column;gap:14px;border-top:1px solid var(--hair)}
+.pulse-services .cc-points li{font-size:15px;line-height:1.55;color:#333;padding-left:20px;position:relative}
+.pulse-services .cc-points li::before{content:'';position:absolute;left:0;top:9px;width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.pulse-services .cc-points b{color:var(--ink);font-weight:600}
+.pulse-services .cc-cta{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pulse-services .cc-right{position:relative}
+.pulse-services .cc-card{background:#fff;border:1px solid var(--hair);border-radius:20px;box-shadow:0 40px 80px -40px rgba(0,0,0,.25), 0 0 0 1px rgba(0,0,0,.02);overflow:hidden;transform:rotate(-0.6deg)}
+.pulse-services .cc-card-head{background:var(--paper-2);padding:14px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--hair)}
+.pulse-services .cc-dots{display:flex;gap:6px}
+.pulse-services .cc-dots span{width:10px;height:10px;border-radius:50%;background:rgba(0,0,0,.12)}
+.pulse-services .cc-dots span:nth-child(1){background:#ff5f57}
+.pulse-services .cc-dots span:nth-child(2){background:#febc2e}
+.pulse-services .cc-dots span:nth-child(3){background:#28c840}
+.pulse-services .cc-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.pulse-services .cc-card-body{padding:24px 22px 22px;display:flex;flex-direction:column;gap:14px}
+.pulse-services .cc-meta{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.pulse-services .cc-meta span{opacity:.7}
+.pulse-services .cc-meta b{color:var(--ink);font-weight:500;font-family:'Plus Jakarta Sans';font-size:13px;letter-spacing:0;margin-left:6px}
+.pulse-services .cc-out{background:var(--paper-2);border:1px dashed var(--hair);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.pulse-services .cc-out p{margin:0;font-size:15px;line-height:1.55;color:var(--ink);font-weight:400}
+.pulse-services .cc-chips{display:flex;flex-wrap:wrap;gap:6px}
+.pulse-services .cc-chips span{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border:1px solid var(--hair);border-radius:999px;color:var(--muted);background:#fff}
+.pulse-services .cc-actions{display:flex;justify-content:space-between;gap:10px;margin-top:4px}
+.pulse-services .cc-btn{flex:1;padding:12px 14px;font-family:inherit;font-size:12px;font-weight:600;border-radius:10px;border:1px solid var(--hair);background:#fff;color:var(--ink);cursor:pointer;transition:background .15s, color .15s, border-color .15s}
+.pulse-services .cc-btn:hover{border-color:var(--ink)}
+.pulse-services .cc-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pulse-services .cc-btn.primary:hover{background:var(--accent);border-color:var(--accent)}
+
+@media(max-width:960px){
+  .pulse-services .svc-head,.pulse-services .disc-head,.pulse-services .proc-head{grid-template-columns:1fr;padding-left:24px;padding-right:24px;gap:24px}
+  .pulse-services .svc-head{padding:48px 24px 32px}
+  .pulse-services .disc{padding:56px 24px}
+  .pulse-services .disc-grid{grid-template-columns:1fr;grid-auto-rows:auto}
+  .pulse-services .disc-grid > *{grid-column:auto !important}
+  .pulse-services .d-h{grid-template-columns:1fr}
+  .pulse-services .proof{padding:56px 24px}
+  .pulse-services .proof-inner{grid-template-columns:1fr;gap:32px}
+  .pulse-services .proof-inner .ph{height:300px}
+  .pulse-services .proof-stats{grid-template-columns:1fr 1fr;gap:16px}
+  .pulse-services .proc{padding:56px 24px}
+  .pulse-services .proc-grid{grid-template-columns:1fr 1fr}
+  .pulse-services .faq{padding:48px 24px}
+  .pulse-services .cc{padding:56px 24px}
+  .pulse-services .cc-inner{grid-template-columns:1fr;gap:40px}
+  .pulse-services .cc-card{transform:none}
+}
+@media(max-width:560px){
+  .pulse-services .proc-grid{grid-template-columns:1fr}
+  .pulse-services .proof-stats{grid-template-columns:1fr}
+}
+`
 
 export default function ServicesPage() {
   return (
-    <main style={{ color: '#0a0a0a' }} className="pt-32 pb-20 overflow-hidden">
+    <main className="pulse-services">
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-8 mb-32 relative">
-        <div className="flex flex-col md:flex-row gap-16 items-center">
-          <div className="flex-1 space-y-8">
-            <AnimateOnScroll variant="fade-in" delay={0}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fff0f2] text-[#ff5473] text-xs font-bold tracking-widest uppercase">
-                <span className="w-2 h-2 rounded-full bg-[#ff5473] animate-pulse"></span>
-                Engineering Growth
-              </div>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.1}>
-              <h1 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(48px, 7vw, 88px)' }}>
-                The Future of<br /><span style={{ color: '#ff5473' }}>Digital Marketing</span>
-              </h1>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.2}>
-              <p className="text-[#6b7280] text-lg max-w-xl leading-relaxed font-light">
-                We go beyond managing your digital presence &mdash; we grow it. Combining smart social strategy with custom AI tools to keep your brand front and centre.
-              </p>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.3}>
-              <Link
-                href="/contact"
-                className="inline-flex items-center px-8 py-4 rounded-full text-white font-semibold transition-opacity hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
-              >
-                Start the Pulse →
-              </Link>
-            </AnimateOnScroll>
+      <section className="svc-head">
+        <div>
+          <p className="mono-label">Services · What we do</p>
+          <h1>The full <em>engine,</em><br />one flat <em>fee.</em></h1>
+        </div>
+        <div className="right">
+          <p>Six disciplines, one operator, one invoice. Pulse runs your social the way an in-house hire would — strategy, creative, community, paid, analytics and AI tooling — without the overhead of a ten-person agency.</p>
+          <div className="meta">
+            <div><b>6</b>Disciplines</div>
+            <div><b>30d</b>Rolling</div>
+            <div><b>48h</b>SOW turnaround</div>
           </div>
-          <AnimateOnScroll variant="slide-right" delay={0.2} className="flex-1 relative">
-            <div className="relative z-10 rounded-xl overflow-hidden shadow-xl">
-              <Image
-                src="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&w=800&q=80"
-                alt="Person using social media on a smartphone"
-                width={600}
-                height={750}
-                className="w-full aspect-[4/5] object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            </div>
-            <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-[#ff5473]/10 blur-[100px] rounded-full -z-10"></div>
-          </AnimateOnScroll>
         </div>
       </section>
 
-      {/* Services Bento Grid */}
-      <section className="max-w-7xl mx-auto px-8 mb-40">
-        <AnimateOnScroll variant="fade-up">
-          <p className="mono-label text-[#9ca3af] mb-8">What We Offer</p>
-        </AnimateOnScroll>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-
-          {/* Social Media Management - Large Card */}
-          <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-8 bg-[#f5f5f5] rounded-xl p-10 flex flex-col justify-between min-h-[500px] group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-1/2 h-full opacity-20 group-hover:opacity-40 transition-opacity">
-              <Image
-                src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"
-                alt="Social media analytics on monitors"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
+      <section className="disc">
+        <div className="disc-head">
+          <div>
+            <p className="mono-label">What&apos;s in the box</p>
+            <h2>Six things we<br />do <em>better</em> than anyone.</h2>
+          </div>
+          <p>Most agencies bolt specialisms together and pass your account between five juniors. Pulse is a single operator stack — one brain, one playbook, AI doing the busywork so senior thinking makes it into every post.</p>
+        </div>
+        <div className="disc-grid">
+          <div className="d-card d-a">
+            <div className="num">01 · Signature</div>
+            <h3>Always-on social management — <em>with a real strategist at the wheel.</em></h3>
+            <p>Multi-channel scheduling, creative, community care, monthly reviews. Your brand online every day, on-message every time.</p>
+            <ul>
+              <li>Up to 4 channels, weekly cadence</li>
+              <li>One senior operator on your account — no juniors</li>
+              <li>Monthly performance review + next-quarter plan</li>
+            </ul>
+          </div>
+          <div className="d-card d-b">
+            <div className="num">02</div>
+            <h3>AI <em>caption engine</em></h3>
+            <p>CaptionCraft drafts on-brand copy in seconds — reviewed by a human before it ships.</p>
+            <ul><li>Voice-trained on your archive</li><li>Strategist QA on every caption</li></ul>
+          </div>
+          <div className="d-card d-c">
+            <div className="num">03</div>
+            <h3>Content &amp; creative</h3>
+            <p>Photo, vertical video, motion. We produce the feed and make sign-off painless.</p>
+          </div>
+          <div className="d-card d-d">
+            <div className="num">04</div>
+            <h3>Community</h3>
+            <p>Reply coverage, DM triage, brand-safe conversation. Followers into loyal advocates.</p>
+          </div>
+          <div className="d-card d-e">
+            <div className="num">05</div>
+            <h3>Paid media</h3>
+            <p>Creative-testing frameworks that scale the winners. No vanity spend.</p>
+          </div>
+          <div className="d-card d-f">
+            <div className="num">06</div>
+            <h3>Analytics</h3>
+            <p>Exec dashboards, monthly readouts, honest attribution.</p>
+          </div>
+          <div className="d-card d-g">
+            <div className="num">Add-on · Featured</div>
+            <h3>Creator &amp; UGC programme</h3>
+            <p>Matching, contracts, rights management, briefing — plug a creator layer into your retainer at any tier.</p>
+            <ul><li>4 matched creators / month</li><li>Briefing, approvals, rights in your drive</li></ul>
+          </div>
+          <div className="d-card d-h">
+            <div className="ph has-img">
+              <Image src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1600&q=75&auto=format" alt="A Pulse operator at work" fill sizes="(max-width: 960px) 100vw, 40vw" style={{ objectFit: 'cover' }} />
             </div>
-            <div className="relative z-10 max-w-md">
-              <div className="w-12 h-12 rounded bg-[#fff0f2] flex items-center justify-center mb-6">
-                <span className="material-symbols-outlined text-[#ff5473]" style={{ fontVariationSettings: "'FILL' 1" }}>share</span>
-              </div>
-              <h2 className="text-3xl font-bold mb-4 text-[#0a0a0a]">Social Media Management</h2>
-              <p className="text-[#6b7280] leading-relaxed mb-8">
-                Consistent, high-quality content creation and community management that turns casual followers into loyal brand advocates. We handle the strategy, you enjoy the growth.
-              </p>
-              <ul className="space-y-3 mb-10">
-                {['Content Strategy', 'Multi-Platform Management', 'Real-Time Performance Optimisation'].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm font-medium text-[#0a0a0a]">
-                    <span className="material-symbols-outlined text-[#ff5473] text-sm">check_circle</span> {item}
-                  </li>
-                ))}
-              </ul>
+            <div className="side">
+              <div className="num">How we&apos;re staffed</div>
+              <h3>One operator, <em>never a pool.</em></h3>
+              <p>You deal with me from day one — brief, draft, ship, review. No account-manager layer, no junior ghostwriters, no work shipping without my eyes on it.</p>
             </div>
-            <div className="relative z-10">
-              <Link href="/contact" className="text-[#ff5473] font-bold flex items-center gap-2 hover:gap-4 transition-all">
-                Explore Strategy <span className="material-symbols-outlined">north_east</span>
-              </Link>
-            </div>
-          </AnimateOnScroll>
-
-          {/* AI Solution Card */}
-          <AnimateOnScroll variant="fade-up" delay={0.1} className="md:col-span-4 rounded-xl p-10 flex flex-col justify-between" style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}>
-            <div>
-              <span className="material-symbols-outlined text-white text-4xl mb-6 block">psychology</span>
-              <h3 className="text-2xl font-black leading-tight text-white">AI-Driven Automation</h3>
-            </div>
-            <p className="text-white/80 text-sm leading-relaxed my-6">
-              Custom AI solutions that streamline your workflows and help you spot opportunities before your competitors do.
-            </p>
-            <Link href="/contact" className="block w-full py-4 bg-white text-[#ff5473] rounded font-bold hover:bg-neutral-100 transition-colors text-center">
-              Deploy Solutions
-            </Link>
-          </AnimateOnScroll>
-
-          {/* SaaS Platform Card */}
-          <AnimateOnScroll variant="fade-up" delay={0.15} className="md:col-span-4 bg-[#f9f9f9] rounded-xl p-10 flex flex-col justify-between min-h-[400px]" style={{ border: DIVIDER }}>
-            <div>
-              <div className="text-[#ff5473] font-bold text-xs tracking-widest uppercase mb-4">SaaS Platform</div>
-              <h3 className="text-xl font-bold mb-4 text-[#0a0a0a]">Pulse Analytics Platform</h3>
-              <p className="text-[#6b7280] text-sm leading-relaxed">
-                Your all-in-one dashboard for tracking engagement, automating responses, and scaling your social presence without the headaches.
-              </p>
-            </div>
-            <div className="pt-8">
-              <p className="text-xs text-[#9ca3af]">Trusted by 250+ growing brands</p>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Predictive Performance Card */}
-          <AnimateOnScroll variant="fade-up" delay={0.2} className="md:col-span-8 bg-[#f5f5f5] rounded-xl p-10 flex flex-col md:flex-row gap-10 items-center overflow-hidden" style={{ border: DIVIDER }}>
-            <div className="flex-1">
-              <h3 className="text-2xl font-bold mb-4 text-[#0a0a0a]">Predictive Performance</h3>
-              <p className="text-[#6b7280] text-sm mb-6">
-                Our performance tracking tools show you how your content is doing in real time, so you can make smart adjustments that maximise your ROI.
-              </p>
-              <div className="h-1 w-full bg-[#e5e5e5] rounded-full overflow-hidden">
-                <div className="h-full bg-[#ff5473] w-[85%]"></div>
-              </div>
-              <div className="flex justify-between mt-2">
-                <span className="text-[10px] uppercase tracking-widest text-[#9ca3af]">Efficiency Gain</span>
-                <span className="text-[10px] uppercase tracking-widest text-[#ff5473] font-bold">85% Boost</span>
-              </div>
-            </div>
-            <div className="flex-1 w-full md:w-auto h-48 rounded bg-[#eeeeee] flex items-center justify-center p-6">
-              <div className="flex gap-2 items-end h-full w-full">
-                <div className="flex-1 bg-[#ff5473]/15 rounded-t h-[40%]"></div>
-                <div className="flex-1 bg-[#ff5473]/25 rounded-t h-[60%]"></div>
-                <div className="flex-1 bg-[#ff5473]/50 rounded-t h-[90%]"></div>
-                <div className="flex-1 bg-[#ff5473]/20 rounded-t h-[50%]"></div>
-                <div className="flex-1 bg-[#ff5473]/70 rounded-t h-[100%]"></div>
-                <div className="flex-1 bg-[#ff5473]/35 rounded-t h-[70%]"></div>
-              </div>
-            </div>
-          </AnimateOnScroll>
+          </div>
         </div>
       </section>
 
-      {/* Research-Backed Stats */}
-      <section className="max-w-7xl mx-auto px-8 mb-40">
-        <AnimateOnScroll variant="fade-up">
-          <div className="rounded-xl p-10 flex flex-col md:flex-row items-center gap-10" style={{ border: DIVIDER }}>
-            <div className="flex-shrink-0 max-w-xs">
-              <h3 className="text-2xl font-black text-[#0a0a0a] mb-2">The Data Backs It Up</h3>
-              <p className="text-[#6b7280] text-sm leading-relaxed">Social Media Examiner&apos;s annual industry report, surveying thousands of marketers, shows what consistent social media management actually delivers.</p>
+      <section className="cc">
+        <div className="cc-inner">
+          <div className="cc-left">
+            <p className="mono-label pink">Our in-house tool</p>
+            <h2>Meet <em>CaptionCraft.</em></h2>
+            <p className="cc-lead">Every Pulse retainer comes with access to CaptionCraft — the AI caption engine I built in-house, trained on your brand voice. It drafts on-brand copy in seconds, so my time goes on strategy, community and the work that actually moves numbers.</p>
+            <ul className="cc-points">
+              <li><b>Voice-trained on your archive</b> — the longer you use it, the more it sounds like you.</li>
+              <li><b>Human QA on every caption</b> — nothing ships without my sign-off.</li>
+              <li><b>Variants on tap</b> — three angles, three lengths, three CTAs, in one click.</li>
+            </ul>
+            <div className="cc-cta">
+              <Link className="btn-pill btn-ink" href="/captioncraft">See how it works →</Link>
+              <Link className="btn-pill btn-ghost" href="/contact">Or talk to us</Link>
             </div>
-            <div className="h-px md:h-16 w-full md:w-px flex-shrink-0" style={{ background: 'rgba(0,0,0,0.08)' }} />
-            <div className="flex flex-col flex-1 gap-6">
-              <div className="flex flex-wrap md:flex-nowrap gap-10 justify-around text-center">
-                {[
-                  { stat: '92%', label: 'Increased brand exposure' },
-                  { stat: '80%', label: 'Increased website traffic' },
-                  { stat: '66%', label: 'Generated new leads' },
-                  { stat: '58%', label: 'Grew business partnerships' },
-                  { stat: '40%', label: 'Improved sales' },
-                ].map((item, i) => (
-                  <div key={i}>
-                    <div className="text-3xl font-black text-[#ff5473] mb-1">{item.stat}</div>
-                    <div className="text-xs text-[#6b7280] uppercase tracking-[0.12em] font-bold leading-snug">{item.label}</div>
+          </div>
+          <div className="cc-right">
+            <div className="cc-card">
+              <div className="cc-card-head">
+                <div className="cc-dots"><span /><span /><span /></div>
+                <div className="cc-label">CaptionCraft · draft</div>
+              </div>
+              <div className="cc-card-body">
+                <div className="cc-meta"><span>Voice:</span> <b>Geekly · friendly, dry, Bendigo-local</b></div>
+                <div className="cc-meta"><span>Angle:</span> <b>Spring window-cleaning special</b></div>
+                <div className="cc-out">
+                  <p>Screens full of dust bunnies? Same. Bring your laptop in this week and we&apos;ll give it a proper spring clean — inside and out — for $49. Your keyboard will thank you.</p>
+                  <div className="cc-chips">
+                    <span>Hook ★</span><span>CTA ★</span><span>152 chars</span><span>Voice match 94%</span>
                   </div>
-                ))}
-              </div>
-              <p className="text-xs text-[#c4c9d4] text-right tracking-wide">Source: Social Media Examiner Industry Report</p>
-            </div>
-          </div>
-        </AnimateOnScroll>
-      </section>
-
-      {/* How We Work */}
-      <section className="max-w-7xl mx-auto px-8 mb-40">
-        <AnimateOnScroll variant="fade-up">
-          <div className="bg-[#f9f9f9] rounded-xl p-12 md:p-20 relative overflow-hidden" style={{ border: DIVIDER }}>
-            <div className="text-center max-w-3xl mx-auto">
-              <p className="mono-label text-[#9ca3af] mb-4">Our Process</p>
-              <h2 className="display-text text-[#0a0a0a] mb-8" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-                How We Work Together
-              </h2>
-              <p className="text-[#6b7280] text-lg leading-relaxed mb-12">
-                Pulse Digital brings together human creativity and smart technology. We build the tools and strategies that help your team achieve more than you thought possible.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3" style={{ borderTop: DIVIDER }}>
-                {[
-                  ['01', 'Discovery', 'We audit your current presence, learn your audience, and map out a clear strategy built around your goals.'],
-                  ['02', 'Integration', 'We plug into your existing workflows, connect your channels, and set up the AI tools that will drive your content engine.'],
-                  ['03', 'Launch', 'We go live, monitor performance in real time, and continuously optimise to make sure you keep growing.'],
-                ].map(([num, label, desc], i) => (
-                  <AnimateOnScroll key={num} variant="fade-up" delay={i * 0.1}>
-                    <div
-                      className="p-8 text-left"
-                      style={i === 1 ? { borderLeft: DIVIDER, borderRight: DIVIDER } : {}}
-                    >
-                      <div className="text-[#ff5473] text-4xl font-black mb-2">{num}</div>
-                      <div className="text-sm font-bold tracking-widest uppercase text-[#0a0a0a] mb-3">{label}</div>
-                      <p className="text-[#6b7280] text-sm leading-relaxed font-light">{desc}</p>
-                    </div>
-                  </AnimateOnScroll>
-                ))}
+                </div>
+                <div className="cc-actions">
+                  <button className="cc-btn">Regenerate ↻</button>
+                  <button className="cc-btn primary">Send for review →</button>
+                </div>
               </div>
             </div>
           </div>
-        </AnimateOnScroll>
+        </div>
       </section>
 
-      {/* CTA */}
-      <section className="max-w-7xl mx-auto px-8 mb-20 text-center">
-        <AnimateOnScroll variant="fade-in">
-          <div className="py-32" style={{ borderTop: DIVIDER, borderBottom: DIVIDER }}>
-            <p className="mono-label text-[#9ca3af] mb-10">Let&apos;s work together</p>
-            <h2 className="display-text text-[#0a0a0a] mb-12" style={{ fontSize: 'clamp(48px, 7vw, 80px)' }}>
-              Ready to feel<br /><span style={{ color: '#ff5473' }}>the heat?</span>
-            </h2>
-            <Link
-              href="/contact"
-              className="inline-flex items-center px-10 py-5 rounded-full text-white font-semibold text-base transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
-            >
-              Schedule a Consultation
-            </Link>
+      <section className="proof">
+        <div className="proof-inner">
+          <div className="ph dark has-img">
+            <Image src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=1400&q=75&auto=format" alt="Client portrait" fill sizes="(max-width: 960px) 100vw, 35vw" style={{ objectFit: 'cover' }} />
           </div>
-        </AnimateOnScroll>
+          <div>
+            <p className="mono-label" style={{ color: 'rgba(255,255,255,.4)' }}>Client · Geekly, Bendigo VIC</p>
+            <blockquote>&ldquo;Pulse turned our shopfront into a <em>conversation.</em> We went from posting when we remembered to being the most <em>recognised</em> repair shop in the region.&rdquo;</blockquote>
+            <cite><b>Geekly Computers &amp; Mobile Repair</b>Bendigo VIC</cite>
+            <div className="proof-stats">
+              <div className="proof-stat"><div className="v">~1.5<span className="u">%</span></div><div className="l">Market avg IG engagement · Social Insider benchmark</div></div>
+              <div className="proof-stat"><div className="v">3–5<span className="u">/wk</span></div><div className="l">Posting cadence proven to sustain reach</div></div>
+              <div className="proof-stat"><div className="v">3<span className="u">×</span></div><div className="l">Short-form video reach vs static · platform data</div></div>
+            </div>
+          </div>
+        </div>
       </section>
 
+      <section className="proc">
+        <div className="proc-head">
+          <div>
+            <p className="mono-label">What happens next</p>
+            <h2>Four weeks from<br />signed to <em>live.</em></h2>
+          </div>
+          <p>No multi-month discovery theatre. Onboarded in two weeks, shipping in week three — the person who scopes your work is the same person who runs it.</p>
+        </div>
+        <div className="proc-grid">
+          <div className="proc-step"><div className="n">i.</div><h3>Scope &amp; sign</h3><p>Flat-fee SOW back within 48 hours of the brief. No pricing games, no surprise contractors.</p><div className="mono-label">Week 0</div></div>
+          <div className="proc-step"><div className="n">ii.</div><h3>Tune in</h3><p>Audit, voice doc, channel reset, tooling plug-in. I meet your team, you meet me.</p><div className="mono-label">Week 1–2</div></div>
+          <div className="proc-step"><div className="n">iii.</div><h3>Plug in</h3><p>Content engine live. First wave of posts, first campaign brief, first community shift.</p><div className="mono-label">Week 3–4</div></div>
+          <div className="proc-step"><div className="n">iv.</div><h3>Turn up</h3><p>Always-on rhythm. Weekly ship, monthly review, quarterly reset. Month-to-month forever.</p><div className="mono-label">Week 5+</div></div>
+        </div>
+      </section>
+
+      <section className="faq">
+        <p className="mono-label">Short answers</p>
+        <h2>Before you <em>enquire.</em></h2>
+        <details open><summary>How does pricing work?</summary><p>Retainers are scoped per engagement — I send a flat-rate SOW within 48 hours of a brief. No hourly games, no mystery line items.</p></details>
+        <details><summary>Is platform ad spend included?</summary><p>No. The retainer covers management only. Platform spend (Meta, TikTok, LinkedIn) is billed directly against a card you give me, or to your own ad account.</p></details>
+        <details><summary>Who owns what we make?</summary><p>You do. Every raw file, caption, strategy doc and dashboard lives in your drive from day one. On exit, you keep the keys.</p></details>
+        <details><summary>Can I pause or cancel?</summary><p>Yes. Month-to-month, cancel at the end of any billing cycle with 30 days&apos; notice. No lock-ins.</p></details>
+        <details><summary>Can you work with our existing in-house team?</summary><p>Yes — happy to slot alongside in-house marketing, comms or creative. Hybrid setups work well.</p></details>
+        <details><summary>What if I just need a one-off project?</summary><p>I run short <em>Strategy Intensives</em> — a tight two-week engagement that ships a voice doc, channel mix, content pillars and a 90-day calendar. Ask and I&apos;ll scope one.</p></details>
+      </section>
+
+      <section className="final-cta">
+        <p className="mono-label">Ready when you are</p>
+        <h2>Let&apos;s make it<br /><em>Pulse.</em></h2>
+        <p className="sub">Tell us about the brand. We&apos;ll come back with a plan, a timeline, and a flat-rate SOW — no pitch theatre, no mystery line items.</p>
+        <Link className="btn-pill btn-grad" href="/contact" style={{ padding: '18px 36px', fontSize: 15 }}>Start the project →</Link>
+      </section>
     </main>
   )
 }

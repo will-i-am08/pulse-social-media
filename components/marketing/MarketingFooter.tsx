@@ -3,35 +3,46 @@ import Image from 'next/image'
 
 export default function MarketingFooter() {
   return (
-    <footer className="bg-white border-t border-black/5 w-full pt-20 pb-10">
-      <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-8">
-        <div className="flex flex-col items-center md:items-start gap-4">
-          <Link href="/" className="text-xl font-black font-headline tracking-tighter text-[#0a0a0a] flex items-center">
-            <Image
-              src="/logo.png"
-              alt="Pulse Digital Logo"
-              width={24}
-              height={24}
-              className="w-6 h-6 inline-block mr-2 mb-1"
-              sizes="24px"
-            />
-            Pulse
-          </Link>
-          <p className="font-body text-xs uppercase tracking-widest text-rose-500 font-bold">Your Social Media Partner.</p>
+    <footer className="footer">
+      <div className="footer-grid">
+        <div className="brand">
+          <div className="logo">
+            <Image className="mark" src="/marketing/logo-dark.png" alt="Pulse Social Media" width={26} height={26} />
+            Pulse Social Media
+          </div>
+          <p>Founder-led social media management — strategy, community, content and AI tooling, for brands that want to sound like themselves.</p>
         </div>
-        <div className="flex flex-wrap justify-center gap-8">
-          {[
-            { label: 'Privacy Policy', href: '/privacy' },
-            { label: 'Terms of Service', href: '/terms' },
-            { label: 'Cookie Settings', href: '/cookies' },
-            { label: 'Contact', href: '/contact' },
-          ].map(({ label, href }) => (
-            <Link key={label} href={href} className="font-body text-xs uppercase tracking-widest text-neutral-400 hover:text-[#ff5473] transition-colors">
-              {label}
-            </Link>
-          ))}
+        <div>
+          <h5>Company</h5>
+          <ul>
+            <li><Link href="/about">About</Link></li>
+            <li><Link href="/services">Services</Link></li>
+            <li><Link href="/insights">Insights</Link></li>
+            <li><Link href="/contact">Contact</Link></li>
+          </ul>
         </div>
-        <div className="text-neutral-400 font-body text-xs uppercase tracking-widest">&copy; 2026 Pulse Digital Agency. All rights reserved.</div>
+        <div>
+          <h5>Products</h5>
+          <ul>
+            <li><Link href="/captioncraft">CaptionCraft</Link></li>
+            <li><Link href="#">Pulse Analytics</Link></li>
+            <li><Link href="#">Blog Engine</Link></li>
+            <li><Link href="#">GEO</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h5>Legal</h5>
+          <ul>
+            <li><Link href="/privacy">Privacy</Link></li>
+            <li><Link href="/terms">Terms</Link></li>
+            <li><Link href="/cookies">Cookies</Link></li>
+          </ul>
+        </div>
+      </div>
+      <div className="footer-bottom">
+        <div>© Pulse Social Media {new Date().getFullYear()} · Bendigo VIC</div>
+        <div>william@pulsesocialmedia.com.au</div>
+        <div>Instagram · LinkedIn</div>
       </div>
     </footer>
   )

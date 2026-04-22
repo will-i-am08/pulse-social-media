@@ -18,11 +18,11 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPublishedPostBySlug(params.slug)
-  if (!post) return { title: 'Post Not Found | Pulse Digital' }
+  if (!post) return { title: 'Post Not Found | Pulse Social Media' }
 
   const meta: Metadata = {
-    title: `${post.title} | Pulse Digital Blog`,
-    description: post.meta || `Read "${post.title}" on the Pulse Digital blog.`,
+    title: `${post.title} | Pulse Social Media Blog`,
+    description: post.meta || `Read "${post.title}" on the Pulse Social Media blog.`,
   }
 
   if (post.featuredImage && post.featuredImage.startsWith('http')) {
@@ -151,7 +151,7 @@ export default async function BlogPostPage({ params }: Props) {
                     </div>
                     <div>
                       <p className="font-medium text-[#0a0a0a]">{post.author}</p>
-                      <p className="text-sm text-[#6b7280]">Pulse Digital</p>
+                      <p className="text-sm text-[#6b7280]">Pulse Social Media</p>
                     </div>
                   </div>
                 </div>

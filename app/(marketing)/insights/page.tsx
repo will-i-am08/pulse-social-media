@@ -1,150 +1,200 @@
+import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Metadata } from 'next'
-import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
-import NewsletterForm from '@/components/marketing/NewsletterForm'
-import InsightsBlogGrid from './InsightsBlogGrid'
 import { getPublishedPosts } from '@/lib/blog'
+import type { BlogPost } from '@/lib/types'
 
 export const metadata: Metadata = {
-  title: 'Insights | Digital Strategy, AI & Social Media Guides',
-  description: 'Digital strategy insights, AI trends, and actionable social media guides from the Pulse Digital team. Stay ahead of the curve.',
-  keywords: ['social media insights', 'digital marketing blog', 'AI marketing trends', 'social media tips', 'content strategy guides'],
-  openGraph: {
-    title: 'Insights | Digital Strategy, AI & Social Media Guides',
-    description: 'Digital strategy insights, AI trends, and actionable social media guides from the Pulse Digital team.',
-    url: '/insights',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Insights' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Insights | Pulse Digital Agency',
-    description: 'Digital strategy insights, AI trends, and actionable social media guides from the Pulse Digital team.',
-    images: ['/og-image.png'],
-  },
+  title: 'Insights · Pulse Social Media',
+  description: 'Playbooks, teardowns, and quiet opinions on what\'s working on social right now. Updated weekly.',
   alternates: { canonical: '/insights' },
 }
 
-export const revalidate = 60
+// Revalidate the list every 5 minutes so newly-published posts show up
+// without needing a full redeploy.
+export const revalidate = 300
 
-const DIVIDER = '1px solid rgba(0,0,0,0.08)'
+const CSS = `
+.pulse-insights .filters{max-width:1320px;margin:0 auto;padding:32px 48px;border-top:1px solid var(--hair);display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+.pulse-insights .chips{display:flex;gap:8px;flex-wrap:wrap}
+.pulse-insights .chip{padding:8px 14px;border-radius:999px;border:1px solid var(--hair);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);cursor:pointer;background:#fff}
+.pulse-insights .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pulse-insights .feat{max-width:1320px;margin:0 auto;padding:40px 48px 80px;display:grid;grid-template-columns:1.4fr 1fr;gap:56px;align-items:center;border-bottom:1px solid var(--hair)}
+.pulse-insights .feat .ph{aspect-ratio:4/3;border-radius:14px;position:relative}
+.pulse-insights .feat .meta{display:flex;gap:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;flex-wrap:wrap}
+.pulse-insights .feat .meta .pink{color:var(--accent)}
+.pulse-insights .feat h2{font-size:clamp(40px,5vw,64px);font-weight:200;letter-spacing:-0.03em;line-height:1.02;margin:0 0 20px}
+.pulse-insights .feat h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:300}
+.pulse-insights .feat p{color:#333;line-height:1.6;margin:0 0 24px;max-width:520px}
+.pulse-insights .grid-posts{max-width:1320px;margin:0 auto;padding:48px 48px 80px;display:grid;grid-template-columns:repeat(3,1fr);gap:36px 28px}
+.pulse-insights .post{display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:transform .2s}
+.pulse-insights .post:hover{transform:translateY(-4px)}
+.pulse-insights .post .ph{aspect-ratio:16/10;border-radius:10px;position:relative}
+.pulse-insights .post .meta{display:flex;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.pulse-insights .post h3{font-size:22px;font-weight:500;line-height:1.2;margin:0}
+.pulse-insights .post p{color:var(--muted);font-size:14px;line-height:1.5;margin:0}
+.pulse-insights .empty-hint{max-width:1320px;margin:0 auto;padding:32px 48px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);border-top:1px solid var(--hair)}
+.pulse-insights .newsletter{background:var(--ink);color:#fff;padding:80px 48px}
+.pulse-insights .ns-inner{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.pulse-insights .ns-inner h2{font-size:clamp(40px,5vw,72px);font-weight:200;letter-spacing:-0.03em;line-height:1;margin:0;color:#fff}
+.pulse-insights .ns-inner h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent-soft);font-weight:300}
+.pulse-insights .ns-form{display:flex;gap:8px;padding:6px;background:rgba(255,255,255,.05);border-radius:999px;border:1px solid rgba(255,255,255,.1);max-width:440px;margin-top:24px}
+.pulse-insights .ns-form input{flex:1;background:transparent;border:0;outline:0;color:#fff;padding:12px 18px;font-family:inherit;font-size:14px}
+.pulse-insights .ns-form input::placeholder{color:rgba(255,255,255,.4)}
+@media(max-width:820px){.pulse-insights .filters{padding:20px 24px;flex-direction:column;align-items:flex-start}.pulse-insights .feat{grid-template-columns:1fr;padding:32px 24px 48px;gap:24px}.pulse-insights .feat h2{font-size:32px}.pulse-insights .grid-posts{grid-template-columns:1fr;padding:32px 24px 48px}.pulse-insights .newsletter{padding:48px 24px}.pulse-insights .ns-inner{grid-template-columns:1fr;gap:24px}.pulse-insights .ns-inner h2{font-size:34px}}
+`
+
+// Fallback placeholder cards, shown when the Supabase blog has no published
+// posts yet. Keeps the design looking intentional before launch.
+const PLACEHOLDER_POSTS = [
+  { img: 'https://images.unsplash.com/photo-1633355444132-695d5876cd00?w=800&q=75&auto=format', cat: 'AI tools', time: '8 min', title: 'Teaching CaptionCraft to sound like us', lead: 'The three tuning steps that make an AI captioning tool feel on-brand.', href: '/insights/the-content-engine' },
+  { img: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800&q=75&auto=format', cat: 'Case study', time: '6 min', title: 'How Geekly grew their social without paid', lead: 'Local-SEO-meets-TikTok, applied to a Bendigo repair shop.', href: '/insights/the-content-engine' },
+  { img: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=75&auto=format', cat: 'Creative', time: '5 min', title: 'Why the hook matters less than the rewatch', lead: 'The first 3 seconds are overrated — here\'s what to watch instead.', href: '/insights/the-content-engine' },
+]
+
+const FILTERS = ['All', 'Strategy', 'AI tools', 'Creative', 'Community', 'Paid', 'Case studies']
+
+function readTime(wordCount: number) {
+  return Math.max(1, Math.ceil(wordCount / 200))
+}
+
+function formatDate(dateStr?: string) {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function firstTag(tags: string): string {
+  return tags.split(',').map(t => t.trim()).filter(Boolean)[0] || 'Post'
+}
 
 export default async function InsightsPage() {
-  const posts = await getPublishedPosts()
-  const latestPost = posts[0]
-  const featuredHref = latestPost ? `/blog/${latestPost.slug}` : '#blog-posts'
+  let posts: BlogPost[] = []
+  try {
+    posts = await getPublishedPosts(25)
+  } catch {
+    // If Supabase is unreachable we just fall through to the empty state —
+    // the page still renders with placeholder cards rather than blowing up.
+    posts = []
+  }
+
+  const featured = posts[0]
+  const grid = posts.slice(1)
 
   return (
-    <main style={{ color: '#0a0a0a' }} className="pt-32 pb-24">
+    <main className="pulse-insights">
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {/* Hero Featured Article */}
-      <section className="max-w-7xl mx-auto px-8 mb-32">
-        <AnimateOnScroll variant="fade-in" delay={0}>
-          <div className="flex items-center gap-3 mb-10">
-            <span className="w-2 h-2 rounded-full bg-[#ff5473] animate-pulse"></span>
-            <span className="mono-label text-[#ff5473]">Featured Article</span>
-          </div>
-        </AnimateOnScroll>
-        <div className="flex flex-col lg:flex-row gap-12 items-center">
-          <div className="w-full lg:w-7/12">
-            <AnimateOnScroll variant="fade-up" delay={0.1}>
-              <h1 className="display-text text-[#0a0a0a] mb-8" style={{ fontSize: 'clamp(48px, 8vw, 96px)' }}>
-                The Algorithm <br />
-                <span style={{ color: '#ff5473' }}>Renaissance.</span>
-              </h1>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.2}>
-              <p className="text-[#6b7280] text-lg md:text-xl max-w-xl mb-10 leading-relaxed font-light">
-                Navigating the shift from generative experimentation to practical intelligence. How the next wave of AI is reshaping digital strategy for agencies and brands.
-              </p>
-            </AnimateOnScroll>
-            <AnimateOnScroll variant="fade-up" delay={0.3}>
-              <div className="flex items-center gap-6">
-                <Link href={featuredHref} className="flex items-center gap-2 group">
-                  <span className="text-sm font-bold uppercase tracking-widest text-[#0a0a0a] group-hover:text-[#ff5473] transition-colors">Read More</span>
-                  <span className="material-symbols-outlined text-[#ff5473] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                </Link>
-                <span className="text-[#9ca3af] text-sm font-medium tracking-tight">12 Min Read — Jan 2026</span>
-              </div>
-            </AnimateOnScroll>
-          </div>
-          <AnimateOnScroll variant="slide-right" delay={0.2} className="w-full lg:w-5/12">
-            <div className="relative aspect-[4/5] rounded-lg overflow-hidden group">
-              <Image
-                src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=1200&q=80"
-                alt="Social media content creation on a smartphone"
-                fill
-                className="object-cover grayscale brightness-90 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                sizes="(max-width: 768px) 100vw, 42vw"
-              />
-              <div className="absolute bottom-6 left-6 right-6 p-6 backdrop-blur-md bg-white/80 rounded" style={{ border: DIVIDER }}>
-                <p className="text-xs font-bold text-[#ff5473] mb-1 uppercase tracking-tighter">Key Takeaway</p>
-                <p className="text-sm text-[#0a0a0a]">Predictive architectures are surpassing generative models in commercial ROI.</p>
-              </div>
-            </div>
-          </AnimateOnScroll>
+      <section className="page-head">
+        <div>
+          <p className="mono-label">Insights &amp; field notes</p>
+          <h1>What I&apos;ve learned<br />from <em>shipping daily.</em></h1>
         </div>
+        <p>Playbooks, teardowns, and quiet opinions on what&apos;s working on social right now. Updated weekly.</p>
       </section>
 
-      {/* Research Callout */}
-      <section className="max-w-7xl mx-auto px-8 mb-32">
-        <AnimateOnScroll variant="fade-up">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-3 mb-2">
-              <p className="mono-label text-[#ff5473]">Why It Matters</p>
+      <div className="filters">
+        <div className="chips">
+          {FILTERS.map((f, i) => (
+            <button key={f} className={`chip ${i === 0 ? 'on' : ''}`}>{f}</button>
+          ))}
+        </div>
+      </div>
+
+      {featured ? (
+        <article className="feat">
+          <div className="ph has-img">
+            {featured.featuredImage ? (
+              <Image src={featured.featuredImage} alt={featured.title} fill sizes="(max-width: 820px) 100vw, 50vw" style={{ objectFit: 'cover' }} />
+            ) : null}
+          </div>
+          <div>
+            <div className="meta">
+              <span className="pink">● Latest</span>
+              <span>{firstTag(featured.tags)}</span>
+              <span>{readTime(featured.wordCount)} min read</span>
+              <span>{formatDate(featured.publishedDate)}</span>
             </div>
-            {[
-              {
-                icon: 'trending_up',
-                headline: 'Brands that actively use social media report up to 92% increased exposure',
-                body: 'Social media platforms provide a global stage for brands to showcase their products, services, and values — creating recognition and awareness far beyond traditional channels.',
-              },
-              {
-                icon: 'groups',
-                headline: 'Engaged communities drive brand loyalty that advertising alone cannot buy',
-                body: 'By creating communities around their products, brands encourage like-minded individuals to connect and share experiences. Satisfied customers become brand advocates who recommend to their own networks.',
-              },
-              {
-                icon: 'analytics',
-                headline: 'Data from social platforms enables smarter, faster strategic decisions',
-                body: 'Social media analytics allow brands to track engagement rates, audience demographics, and conversion rates — providing a continuous feedback loop to refine strategy and maximise ROI.',
-              },
-            ].map((item, i) => (
-              <div key={i} className="bg-[#f9f9f9] rounded-xl p-8" style={{ border: DIVIDER }}>
-                <span className="material-symbols-outlined text-[#ff5473] text-3xl mb-4 block">{item.icon}</span>
-                <h3 className="text-lg font-bold text-[#0a0a0a] mb-3 leading-snug">{item.headline}</h3>
-                <p className="text-[#6b7280] text-sm leading-relaxed">{item.body}</p>
+            <h2>{featured.title}</h2>
+            {featured.meta ? <p>{featured.meta}</p> : null}
+            <Link className="btn-pill btn-ink" href={`/blog/${featured.slug}`}>Read the article →</Link>
+          </div>
+        </article>
+      ) : (
+        <article className="feat">
+          <div className="ph has-img">
+            <Image src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=1800&q=75&auto=format" alt="Feature article image" fill sizes="(max-width: 820px) 100vw, 50vw" style={{ objectFit: 'cover' }} />
+          </div>
+          <div>
+            <div className="meta">
+              <span className="pink">● Editor&apos;s pick</span>
+              <span>Strategy</span>
+              <span>12 min read</span>
+              <span>Apr 18, 2026</span>
+            </div>
+            <h2>The content calendar is <em>dead.</em> Long live the content engine.</h2>
+            <p>Most brands are still planning social the way they planned print ads in 2007. I broke the monthly calendar and replaced it with a rolling 14-day engine.</p>
+            <Link className="btn-pill btn-ink" href="/insights/the-content-engine">Read the article →</Link>
+          </div>
+        </article>
+      )}
+
+      {grid.length > 0 ? (
+        <section className="grid-posts">
+          {grid.map(p => (
+            <Link className="post" href={`/blog/${p.slug}`} key={p.id}>
+              <div className="ph has-img">
+                {p.featuredImage ? (
+                  <Image src={p.featuredImage} alt={p.title} fill sizes="(max-width: 820px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
+                ) : null}
               </div>
+              <div className="meta">
+                <span style={{ color: 'var(--accent)' }}>{firstTag(p.tags)}</span>
+                <span>{readTime(p.wordCount)} min</span>
+              </div>
+              <h3>{p.title}</h3>
+              {p.meta ? <p>{p.meta}</p> : null}
+            </Link>
+          ))}
+        </section>
+      ) : (
+        <>
+          <div className="empty-hint">Preview · placeholder cards · real posts appear here once published</div>
+          <section className="grid-posts">
+            {PLACEHOLDER_POSTS.map((p) => (
+              <Link className="post" href={p.href} key={p.title}>
+                <div className="ph has-img">
+                  <Image src={p.img} alt={p.title} fill sizes="(max-width: 820px) 100vw, 33vw" style={{ objectFit: 'cover' }} />
+                </div>
+                <div className="meta">
+                  <span style={{ color: 'var(--accent)' }}>{p.cat}</span>
+                  <span>{p.time}</span>
+                </div>
+                <h3>{p.title}</h3>
+                <p>{p.lead}</p>
+              </Link>
             ))}
-          </div>
-        </AnimateOnScroll>
-      </section>
+          </section>
+        </>
+      )}
 
-      {/* Blog Posts */}
-      <section id="blog-posts" className="py-32" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
-        <div className="max-w-7xl mx-auto px-8">
-          <InsightsBlogGrid posts={posts} />
+      <section className="newsletter">
+        <div className="ns-inner">
+          <div>
+            <p className="mono-label" style={{ color: 'rgba(255,255,255,.45)' }}>Field notes newsletter</p>
+            <h2>One letter,<br />every <em>Friday.</em></h2>
+          </div>
+          <div>
+            <p style={{ color: 'rgba(255,255,255,.6)', lineHeight: 1.6, maxWidth: 420, margin: 0 }}>
+              The three things I saw on social this week that are worth your time. No roundups. Unsubscribe in one click.
+            </p>
+            <form className="ns-form" action="#" method="post">
+              <input placeholder="you@company.com" type="email" required />
+              <button className="btn-pill btn-grad" type="submit">Subscribe</button>
+            </form>
+          </div>
         </div>
       </section>
-
-      {/* Newsletter */}
-      <section className="max-w-7xl mx-auto px-8 my-32">
-        <AnimateOnScroll variant="scale-up">
-          <div className="bg-[#f5f5f5] rounded-xl p-12 md:p-20 relative overflow-hidden" style={{ border: DIVIDER }}>
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-[#ff5473]/5 to-transparent pointer-events-none"></div>
-            <div className="relative z-10 max-w-2xl">
-              <p className="mono-label text-[#ff5473] mb-4">Weekly Digest</p>
-              <h2 className="display-text text-[#0a0a0a] mb-6" style={{ fontSize: 'clamp(32px, 4vw, 52px)' }}>
-                Get our <span style={{ color: '#ff5473' }}>weekly digital insights</span>. Every Tuesday.
-              </h2>
-              <p className="text-[#6b7280] mb-10 text-lg font-light">We break down the latest digital trends into practical takeaways. No fluff, just the good stuff.</p>
-              <NewsletterForm />
-              <p className="mt-6 mono-label text-[#9ca3af]">Privacy guaranteed. Opt-out at any time.</p>
-            </div>
-          </div>
-        </AnimateOnScroll>
-      </section>
-
     </main>
   )
 }

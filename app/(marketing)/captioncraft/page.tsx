@@ -1,279 +1,244 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
-import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 
 export const metadata: Metadata = {
-  title: 'CaptionCraft | AI Caption Generator for Social Media',
-  description: 'AI-powered caption and content generation for social media. Create on-brand posts in seconds with CaptionCraft by Pulse Digital.',
-  keywords: ['AI caption generator', 'social media caption tool', 'AI content creation', 'caption writer', 'social media automation tool'],
-  openGraph: {
-    title: 'CaptionCraft | AI Caption Generator for Social Media',
-    description: 'Create on-brand social media captions in seconds with AI. CaptionCraft by Pulse Digital.',
-    url: '/captioncraft',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'CaptionCraft by Pulse Digital' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'CaptionCraft | AI Caption Generator',
-    description: 'Create on-brand social media captions in seconds with AI. CaptionCraft by Pulse Digital.',
-    images: ['/og-image.png'],
-  },
+  title: 'CaptionCraft · Pulse Social Media',
+  description: 'Captions that sound like you. Not like a bot. CaptionCraft is the AI writing tool built in-house at Pulse because every other one made brands sound the same.',
   alternates: { canonical: '/captioncraft' },
 }
 
-const DIVIDER = '1px solid rgba(0,0,0,0.08)'
+const CSS = `
+.pulse-cc .cc-hero{max-width:1320px;margin:0 auto;padding:48px 48px 96px;border-top:1px solid var(--hair);display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:center}
+.pulse-cc .cc-hero .eyebrow{display:inline-flex;gap:10px;align-items:center;padding:8px 14px;border-radius:999px;border:1px solid var(--hair);background:#fff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:24px}
+.pulse-cc .cc-hero .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.pulse-cc .cc-hero h1{font-size:clamp(44px,5.5vw,84px);font-weight:200;letter-spacing:-0.035em;line-height:1.02;margin:0 0 24px}
+.pulse-cc .cc-hero h1 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:300}
+.pulse-cc .cc-hero p{color:#333;font-size:18px;line-height:1.55;max-width:500px;margin:0 0 32px}
+.pulse-cc .cc-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:40px}
+.pulse-cc .cc-stats{display:flex;gap:40px;padding-top:28px;border-top:1px solid var(--hair)}
+.pulse-cc .cc-stats .st .n{font-family:'Fraunces',serif;font-weight:300;font-size:40px;letter-spacing:-0.02em;color:var(--ink)}
+.pulse-cc .cc-stats .st .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-top:4px}
 
-export default function CaptionCraftPromoPage() {
+.pulse-cc .cc-mock{background:#141313;border-radius:18px;padding:20px;box-shadow:0 40px 80px -30px rgba(0,0,0,.3);position:relative;overflow:hidden}
+.pulse-cc .cc-mock::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 20%,rgba(255,84,115,.15),transparent 50%);pointer-events:none}
+.pulse-cc .cc-top{display:flex;align-items:center;gap:10px;padding:8px 4px 16px;border-bottom:1px solid rgba(255,255,255,.06)}
+.pulse-cc .cc-top .dt{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.1)}
+.pulse-cc .cc-top .ttl{margin-left:14px;color:rgba(255,255,255,.55);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase}
+.pulse-cc .cc-body{display:grid;grid-template-columns:180px 1fr;gap:16px;padding:16px 4px 4px;color:#fff}
+.pulse-cc .cc-side{display:flex;flex-direction:column;gap:4px}
+.pulse-cc .cc-side .item{padding:10px 12px;border-radius:8px;font-size:13px;color:rgba(255,255,255,.6);display:flex;gap:10px;align-items:center}
+.pulse-cc .cc-side .item.on{background:rgba(255,84,115,.12);color:#fff}
+.pulse-cc .cc-side .item .ic{width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.15)}
+.pulse-cc .cc-side .item.on .ic{background:var(--accent)}
+.pulse-cc .cc-main{background:#1c1b1b;border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.pulse-cc .cc-field{display:flex;flex-direction:column;gap:6px}
+.pulse-cc .cc-field label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.pulse-cc .cc-inp{background:#0e0d0d;border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;font-size:13px;color:rgba(255,255,255,.85)}
+.pulse-cc .cc-tone{display:flex;gap:6px;flex-wrap:wrap}
+.pulse-cc .cc-tone span{padding:5px 10px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)}
+.pulse-cc .cc-tone span.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pulse-cc .cc-output{background:linear-gradient(135deg,rgba(255,84,115,.12),rgba(255,178,185,.04));border:1px solid rgba(255,84,115,.25);border-radius:10px;padding:16px;color:rgba(255,255,255,.92);font-size:13.5px;line-height:1.55}
+.pulse-cc .cc-output .handle{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em}
+.pulse-cc .cc-output .acts{display:flex;gap:8px;margin-top:12px}
+.pulse-cc .cc-output .acts span{padding:5px 10px;border-radius:6px;background:rgba(255,255,255,.06);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+
+.pulse-cc .features{background:var(--paper-2);padding:96px 48px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.pulse-cc .feat-inner{max-width:1320px;margin:0 auto}
+.pulse-cc .feat-head{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-bottom:64px;align-items:end}
+.pulse-cc .feat-head h2{font-size:clamp(40px,5vw,72px);font-weight:200;letter-spacing:-0.03em;line-height:1;margin:0}
+.pulse-cc .feat-head h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:300}
+.pulse-cc .feat-head p{color:#333;line-height:1.6;margin:0}
+.pulse-cc .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:18px;overflow:hidden}
+.pulse-cc .fc{background:#fff;padding:36px;display:flex;flex-direction:column;gap:14px;min-height:280px}
+.pulse-cc .fc .num{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--accent)}
+.pulse-cc .fc h3{font-size:24px;font-weight:400;letter-spacing:-0.015em;margin:0;line-height:1.2}
+.pulse-cc .fc p{color:var(--muted);line-height:1.6;margin:0;font-size:14.5px}
+.pulse-cc .fc .mini{margin-top:auto;padding-top:16px;border-top:1px solid var(--hair);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+.pulse-cc .how{max-width:1320px;margin:0 auto;padding:96px 48px}
+.pulse-cc .how-head{text-align:center;margin-bottom:64px}
+.pulse-cc .how-head h2{font-size:clamp(40px,5vw,72px);font-weight:200;letter-spacing:-0.03em;line-height:1;margin:0 0 16px}
+.pulse-cc .how-head h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:300}
+.pulse-cc .how-head p{color:var(--muted);max-width:520px;margin:0 auto;line-height:1.6}
+.pulse-cc .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.pulse-cc .step{position:relative}
+.pulse-cc .step .n{font-family:'Fraunces',serif;font-weight:300;font-style:italic;font-size:72px;color:var(--accent);line-height:1;margin-bottom:16px}
+.pulse-cc .step h4{font-size:20px;font-weight:500;margin:0 0 8px}
+.pulse-cc .step p{color:var(--muted);line-height:1.55;margin:0;font-size:14px}
+
+.pulse-cc .pricing{background:var(--ink);color:#fff;padding:96px 48px}
+.pulse-cc .price-inner{max-width:1320px;margin:0 auto}
+.pulse-cc .price-head{text-align:center;margin-bottom:56px}
+.pulse-cc .price-head h2{font-size:clamp(40px,5vw,72px);font-weight:200;letter-spacing:-0.03em;line-height:1;margin:0 0 16px;color:#fff}
+.pulse-cc .price-head h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent-soft);font-weight:300}
+.pulse-cc .price-head p{color:rgba(255,255,255,.55);max-width:520px;margin:0 auto;line-height:1.6}
+.pulse-cc .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.pulse-cc .plan{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:16px}
+.pulse-cc .plan.featured{background:linear-gradient(180deg,rgba(255,84,115,.12),rgba(255,84,115,.03));border-color:rgba(255,84,115,.4)}
+.pulse-cc .plan .tname{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.pulse-cc .plan.featured .tname{color:var(--accent-soft)}
+.pulse-cc .plan h3{font-size:28px;font-weight:400;letter-spacing:-0.02em;margin:0;color:#fff}
+.pulse-cc .plan .price{font-family:'Fraunces',serif;font-weight:300;font-size:56px;letter-spacing:-0.02em;line-height:1;color:#fff;margin:8px 0}
+.pulse-cc .plan .price small{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;color:rgba(255,255,255,.5);letter-spacing:0}
+.pulse-cc .plan ul{list-style:none;padding:0;margin:8px 0 0;display:flex;flex-direction:column;gap:10px}
+.pulse-cc .plan li{color:rgba(255,255,255,.75);font-size:14px;line-height:1.5;padding-left:22px;position:relative}
+.pulse-cc .plan li::before{content:'✓';position:absolute;left:0;color:var(--accent-soft);font-size:13px}
+.pulse-cc .plan .btn-pill{margin-top:20px;justify-content:center;text-align:center}
+.pulse-cc .plan .btn-line{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2)}
+
+.pulse-cc .cc-faq{max-width:1080px;margin:0 auto;padding:96px 48px}
+.pulse-cc .cc-faq h2{font-size:clamp(36px,4vw,56px);font-weight:200;letter-spacing:-0.03em;margin:0 0 40px;text-align:center}
+.pulse-cc .cc-faq h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:300}
+.pulse-cc details{border-top:1px solid var(--hair);padding:22px 0}
+.pulse-cc details:last-child{border-bottom:1px solid var(--hair)}
+.pulse-cc summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-size:20px;font-weight:400}
+.pulse-cc summary::-webkit-details-marker{display:none}
+.pulse-cc summary::after{content:'+';font-family:'JetBrains Mono',monospace;color:var(--accent);font-size:22px}
+.pulse-cc details[open] summary::after{content:'−'}
+.pulse-cc details p{color:#444;line-height:1.65;margin:14px 0 0;max-width:720px}
+
+@media(max-width:900px){.pulse-cc .cc-hero{grid-template-columns:1fr;padding:32px 24px 48px;gap:40px}.pulse-cc .cc-stats{flex-wrap:wrap;gap:24px}.pulse-cc .features,.pulse-cc .how,.pulse-cc .pricing,.pulse-cc .cc-faq{padding:64px 24px}.pulse-cc .feat-head,.pulse-cc .feat-grid,.pulse-cc .steps,.pulse-cc .price-grid{grid-template-columns:1fr}.pulse-cc .feat-head{gap:24px}.pulse-cc .cc-body{grid-template-columns:1fr}}
+`
+
+export default function CaptionCraftPage() {
   return (
-    <main style={{ color: '#0a0a0a' }} className="pt-32 pb-20 overflow-hidden">
+    <main className="pulse-cc">
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {/* Hero */}
-      <section className="max-w-7xl mx-auto px-8 mb-32 relative">
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[80%] h-[500px] bg-[radial-gradient(ellipse_at_center,_rgba(255,84,115,0.06)_0%,_transparent_70%)] pointer-events-none"></div>
-        <div className="relative z-10 text-center max-w-4xl mx-auto">
-          <AnimateOnScroll variant="fade-in" delay={0}>
-            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[#fff0f2] mb-8" style={{ border: '1px solid rgba(255,84,115,0.2)' }}>
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff5473] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#ff5473]"></span>
-              </span>
-              <span className="text-[#ff5473] text-xs font-bold uppercase tracking-widest">Powered by Claude AI</span>
-            </div>
-          </AnimateOnScroll>
-          <AnimateOnScroll variant="fade-up" delay={0.1}>
-            <h1 className="display-text text-[#0a0a0a] mb-8" style={{ fontSize: 'clamp(64px, 12vw, 120px)' }}>
-              Caption<span style={{ color: '#ff5473' }}>Craft</span>
-            </h1>
-          </AnimateOnScroll>
-          <AnimateOnScroll variant="fade-up" delay={0.2}>
-            <p className="text-[#6b7280] text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed mb-12 font-light">
-              Our proprietary AI content studio. The in-house tool we built and use every day to create better content, faster — for every brand we manage.
-            </p>
-          </AnimateOnScroll>
-          <AnimateOnScroll variant="fade-up" delay={0.3}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a
-                href="#cc-how"
-                className="flex items-center gap-2 text-[#6b7280] font-semibold hover:text-[#ff5473] transition-colors px-6 py-4"
-              >
-                <span className="material-symbols-outlined">play_circle</span>
-                See How It Works
-              </a>
-            </div>
-          </AnimateOnScroll>
+      <section className="cc-hero">
+        <div>
+          <span className="eyebrow"><span className="dot" />A Pulse product · v2.4</span>
+          <h1>Captions that<br />sound like <em>you.</em><br />Not like a bot.</h1>
+          <p>CaptionCraft is the AI writing tool I built in-house because every other one made brands sound the same. It learns your brand voice in an afternoon and drafts every post from there.</p>
+          <div className="cc-btns">
+            <Link className="btn-pill btn-grad" href="#pricing" style={{ padding: '16px 28px' }}>Try it free for 14 days →</Link>
+            <Link className="btn-pill" href="#how" style={{ padding: '16px 28px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--hair)' }}>See how it works</Link>
+          </div>
+          <div className="cc-stats">
+            <div className="st"><div className="n">8</div><div className="l">Channels supported</div></div>
+            <div className="st"><div className="n">~2s</div><div className="l">Per draft</div></div>
+            <div className="st"><div className="n">∞</div><div className="l">Drafts &amp; revisions</div></div>
+          </div>
         </div>
-      </section>
 
-      {/* Problem / Solution */}
-      <section className="max-w-7xl mx-auto px-8 mb-32" id="cc-how">
-        <AnimateOnScroll variant="fade-up">
-          <div className="bg-[#f5f5f5] rounded-xl p-12 md:p-20 relative overflow-hidden" style={{ border: DIVIDER }}>
-            <div className="relative z-10 grid md:grid-cols-2 gap-16 items-center">
-              <div>
-                <p className="mono-label text-[#ff5473] mb-4">The Old Way</p>
-                <h3 className="text-3xl md:text-4xl font-black text-[#0a0a0a] tracking-tight mb-6">
-                  Managing social without the right tools wastes hours.
-                </h3>
-                <div className="space-y-4 text-[#6b7280]">
-                  {[
-                    'Writing the same caption five different ways, for five different clients, in five different tabs.',
-                    'Switching between docs, spreadsheets, and DMs just to get a post approved.',
-                    'Losing track of which draft went to which brand on which platform.',
-                  ].map((text, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <span className="material-symbols-outlined text-red-400 mt-0.5 text-lg">close</span>
-                      <p>{text}</p>
-                    </div>
-                  ))}
+        <div className="cc-mock">
+          <div className="cc-top">
+            <div className="dt" /><div className="dt" /><div className="dt" />
+            <span className="ttl">CaptionCraft · draft_0438</span>
+          </div>
+          <div className="cc-body">
+            <div className="cc-side">
+              <div className="item on"><div className="ic" />Drafts</div>
+              <div className="item"><div className="ic" />Voice tuning</div>
+              <div className="item"><div className="ic" />Brand library</div>
+              <div className="item"><div className="ic" />Schedule</div>
+              <div className="item"><div className="ic" />Analytics</div>
+              <div className="item"><div className="ic" />Team</div>
+            </div>
+            <div className="cc-main">
+              <div className="cc-field"><label>Brand voice</label><div className="cc-inp">North &amp; Co · Specialty coffee · Warm / dry / low-fi</div></div>
+              <div className="cc-field"><label>Brief</label><div className="cc-inp">Launching the autumn blend — dark chocolate, plum, a bit of smoke.</div></div>
+              <div className="cc-field">
+                <label>Tone dials</label>
+                <div className="cc-tone">
+                  <span className="on">Dry</span><span>Formal</span><span className="on">Warm</span>
+                  <span>Salesy</span><span className="on">Specific</span><span>Playful</span>
                 </div>
               </div>
-              <div>
-                <p className="mono-label text-[#ff5473] mb-4">The CaptionCraft Way</p>
-                <h3 className="text-3xl md:text-4xl font-black text-[#0a0a0a] tracking-tight mb-6">
-                  The tool we built to manage it better.
-                </h3>
-                <div className="space-y-4 text-[#6b7280]">
-                  {[
-                    'Claude AI writes polished, on-brand captions in seconds — our team reviews and refines every one.',
-                    'Every brand, post, and schedule lives in one place — no context switching, no dropped balls.',
-                    'Approved posts go straight to your social channels automatically via Buffer.',
-                  ].map((text, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <span className="material-symbols-outlined text-[#ff5473] mt-0.5 text-lg">check_circle</span>
-                      <p>{text}</p>
-                    </div>
-                  ))}
+              <div className="cc-output">
+                <div className="handle">@northandco · draft 2 of 5</div>
+                <div style={{ marginTop: 8 }}>Autumn blend is here and it tastes like the first day you wore a jumper — dark chocolate, plum, a wisp of smoke. Roasted Tuesday. On the shelf Thursday. Don&apos;t sleep on it.</div>
+                <div className="acts">
+                  <span>★ Keep</span><span>↻ Regenerate</span><span>✎ Edit</span><span>→ Schedule</span>
                 </div>
               </div>
             </div>
           </div>
-        </AnimateOnScroll>
-      </section>
-
-      {/* Features Bento Grid */}
-      <section className="max-w-7xl mx-auto px-8 mb-32">
-        <AnimateOnScroll variant="fade-up">
-          <div className="mb-16 text-center">
-            <p className="mono-label text-[#ff5473] mb-4">Everything You Need</p>
-            <h3 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 5vw, 64px)' }}>
-              Built in-house.<br /><span className="italic text-[#9ca3af]">Used every day.</span>
-            </h3>
-          </div>
-        </AnimateOnScroll>
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-
-          {/* AI Caption Generation - Large */}
-          <AnimateOnScroll variant="fade-up" delay={0} className="md:col-span-8 bg-[#f5f5f5] rounded-xl p-10 flex flex-col justify-between min-h-[420px] group overflow-hidden relative" style={{ border: DIVIDER }}>
-            <div className="absolute top-0 right-0 w-2/5 h-full opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-              <span className="material-symbols-outlined absolute bottom-10 right-6 text-[200px] text-[#ff5473] leading-none">auto_awesome</span>
-            </div>
-            <div className="relative z-10 max-w-lg">
-              <div className="w-12 h-12 rounded bg-[#fff0f2] flex items-center justify-center mb-6">
-                <span className="material-symbols-outlined text-[#ff5473]" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-              </div>
-              <h3 className="text-3xl font-bold mb-4 text-[#0a0a0a]">AI Caption Generation</h3>
-              <p className="text-[#6b7280] leading-relaxed mb-8">
-                Claude AI writes scroll-stopping captions in seconds. Choose tone, length, and platform — then let the AI do the heavy lifting. Edit, regenerate, or use as-is.
-              </p>
-              <ul className="space-y-3">
-                {[
-                  'Professional, casual, playful, luxury — any voice',
-                  'Instagram, Facebook & LinkedIn in one click',
-                  'Bulk mode: generate up to 10 captions at once',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm font-medium text-[#0a0a0a]">
-                    <span className="material-symbols-outlined text-[#ff5473] text-sm">check_circle</span> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Multi-Brand */}
-          <AnimateOnScroll variant="fade-up" delay={0.1} className="md:col-span-4 rounded-xl p-10 text-white flex flex-col justify-between" style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}>
-            <div>
-              <span className="material-symbols-outlined text-4xl mb-6 block">domain</span>
-              <h3 className="text-2xl font-black leading-tight">Multi-Brand Management</h3>
-            </div>
-            <p className="text-white/80 text-sm leading-relaxed my-6">
-              Unlimited brand profiles, each with its own voice, tone, guidelines, and social handles. Switch between clients in a single click.
-            </p>
-            <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-widest">
-              <span>No brand limits</span>
-              <span className="material-symbols-outlined text-sm">north_east</span>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Calendar */}
-          <AnimateOnScroll variant="fade-up" delay={0.15} className="md:col-span-4 bg-[#f9f9f9] rounded-xl p-10 flex flex-col justify-between min-h-[340px]" style={{ border: DIVIDER }}>
-            <div>
-              <span className="material-symbols-outlined text-[#ff5473] text-4xl mb-6 block">calendar_month</span>
-              <h3 className="text-xl font-bold mb-3 text-[#0a0a0a]">Content Calendar</h3>
-              <p className="text-[#6b7280] text-sm leading-relaxed">
-                Drag-and-drop monthly view across all your brands. See everything that&apos;s scheduled, approved, or waiting at a glance.
-              </p>
-            </div>
-            <div className="pt-6">
-              <div className="grid grid-cols-7 gap-1">
-                {['M','T','W','T','F','S','S'].map((d, i) => (
-                  <div key={i} className="h-6 rounded bg-[#e5e5e5] text-[8px] flex items-center justify-center text-[#9ca3af] font-bold">{d}</div>
-                ))}
-                {[3,4,null,6,null,8,9].map((n, i) => (
-                  <div key={i} className={`h-6 rounded text-[9px] flex items-center justify-center ${n === null ? 'bg-[#ff5473]/15 text-[#ff5473] font-bold' : 'bg-[#eeeeee] text-[#6b7280]'}`}>
-                    {n === null ? (i === 4 ? 5 : 7) : n}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Photo Library */}
-          <AnimateOnScroll variant="fade-up" delay={0.2} className="md:col-span-4 bg-[#f9f9f9] rounded-xl p-10 flex flex-col justify-between min-h-[340px]" style={{ border: DIVIDER }}>
-            <div>
-              <span className="material-symbols-outlined text-[#ff5473] text-4xl mb-6 block">photo_library</span>
-              <h3 className="text-xl font-bold mb-3 text-[#0a0a0a]">Photo Library</h3>
-              <p className="text-[#6b7280] text-sm leading-relaxed">
-                Upload, organise, and tag your image assets. Folders, search, and one-click attach to any post.
-              </p>
-            </div>
-            <div className="pt-6 grid grid-cols-3 gap-2">
-              <div className="h-14 rounded bg-[#e5e5e5] flex items-center justify-center" style={{ border: DIVIDER }}>
-                <span className="material-symbols-outlined text-[#9ca3af] text-xl">image</span>
-              </div>
-              <div className="h-14 rounded bg-[#fff0f2] flex items-center justify-center" style={{ border: '1px solid rgba(255,84,115,0.2)' }}>
-                <span className="material-symbols-outlined text-[#ff5473] text-xl">image</span>
-              </div>
-              <div className="h-14 rounded bg-[#e5e5e5] flex items-center justify-center" style={{ border: DIVIDER }}>
-                <span className="material-symbols-outlined text-[#9ca3af] text-xl">image</span>
-              </div>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Publishing */}
-          <AnimateOnScroll variant="fade-up" delay={0.25} className="md:col-span-4 bg-[#f9f9f9] rounded-xl p-10 flex flex-col justify-between min-h-[340px]" style={{ border: DIVIDER }}>
-            <div>
-              <span className="material-symbols-outlined text-[#ff5473] text-4xl mb-6 block">send</span>
-              <h3 className="text-xl font-bold mb-3 text-[#0a0a0a]">One-Click Publishing</h3>
-              <p className="text-[#6b7280] text-sm leading-relaxed">
-                Direct Buffer integration sends approved posts straight to your social channels. Connect once, publish everywhere.
-              </p>
-            </div>
-            <div className="pt-6 flex items-center gap-3 flex-wrap">
-              <div className="px-3 py-1.5 rounded-full bg-[#fff0f2] text-[#ff5473] text-xs font-medium flex items-center gap-1.5" style={{ border: '1px solid rgba(255,84,115,0.2)' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ff5473] animate-pulse"></span>Buffer
-              </div>
-              <div className="px-3 py-1.5 rounded-full bg-[#f5f5f5] text-[#6b7280] text-xs font-medium" style={{ border: DIVIDER }}>Direct API</div>
-              <div className="px-3 py-1.5 rounded-full bg-[#f5f5f5] text-[#6b7280] text-xs font-medium" style={{ border: DIVIDER }}>Auto-send</div>
-            </div>
-          </AnimateOnScroll>
-
-          {/* Analytics */}
-          <AnimateOnScroll variant="fade-up" delay={0.3} className="md:col-span-8 bg-[#f5f5f5] rounded-xl p-10 flex flex-col md:flex-row gap-10 items-center overflow-hidden" style={{ border: DIVIDER }}>
-            <div className="flex-1">
-              <span className="material-symbols-outlined text-[#ff5473] text-4xl mb-6 block">analytics</span>
-              <h3 className="text-2xl font-bold mb-4 text-[#0a0a0a]">Analytics Dashboard</h3>
-              <p className="text-[#6b7280] text-sm mb-6">
-                Monthly trends, platform breakdowns, approval rates, and publication tracking — all per brand, all in one view.
-              </p>
-              <div className="h-1 w-full bg-[#e5e5e5] rounded-full overflow-hidden">
-                <div className="h-full bg-[#ff5473] w-[78%]"></div>
-              </div>
-              <div className="flex justify-between mt-2">
-                <span className="text-[10px] uppercase tracking-widest text-[#9ca3af]">Approval Rate</span>
-                <span className="text-[10px] uppercase tracking-widest text-[#ff5473] font-bold">78% avg</span>
-              </div>
-            </div>
-            <div className="flex-1 w-full md:w-auto h-48 rounded bg-[#eeeeee] flex items-end p-4 gap-2">
-              {[35, 55, 40, 70, 60, 85, 78].map((h, i) => (
-                <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: i === 5 ? '#ff5473' : `rgba(255,84,115,${0.15 + i * 0.08})` }}></div>
-              ))}
-            </div>
-          </AnimateOnScroll>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="max-w-7xl mx-auto px-8 mb-20 text-center">
-        <AnimateOnScroll variant="fade-in">
-          <div className="py-32" style={{ borderTop: DIVIDER, borderBottom: DIVIDER }}>
-            <p className="mono-label text-[#9ca3af] mb-10">Get started today</p>
-            <h2 className="display-text text-[#0a0a0a] mb-6" style={{ fontSize: 'clamp(48px, 7vw, 80px)' }}>
-              Want this working<br /><span style={{ color: '#ff5473' }}>for your brand?</span>
-            </h2>
-            <p className="text-[#6b7280] text-lg max-w-xl mx-auto mb-12 font-light">
-              CaptionCraft is the tool behind our social media management service. Get in touch and we&apos;ll put it to work for you.
-            </p>
-            <Link
-              href="/contact"
-              className="inline-flex items-center px-12 py-5 rounded-full text-white font-semibold text-base transition-opacity hover:opacity-90"
-              style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}
-            >
-              Start the Conversation
-            </Link>
+      <section className="features">
+        <div className="feat-inner">
+          <div className="feat-head">
+            <h2>Everything an in-house<br />writer <em>wishes</em> they had.</h2>
+            <p>Built for my own studio floor first — then opened up. It&apos;s the only caption tool I let touch a client&apos;s account, because it&apos;s the only one I trust.</p>
           </div>
-        </AnimateOnScroll>
+          <div className="feat-grid">
+            <div className="fc"><span className="num">01</span><h3>Voice tuning in an afternoon</h3><p>Paste 20 posts, answer 8 questions, done. CaptionCraft builds a voice profile that gets within 90% of your house style on the first draft.</p><div className="mini">~20 min setup</div></div>
+            <div className="fc"><span className="num">02</span><h3>Multiplayer, not magic</h3><p>Every draft is editable. Track changes, @-mentions, comments, approvals. It works the way your content team already works.</p><div className="mini">Web · macOS · iOS</div></div>
+            <div className="fc"><span className="num">03</span><h3>Platform-native by default</h3><p>LinkedIn knows about line breaks. Instagram knows about hashtags. X knows to keep it short. CaptionCraft writes for the channel, not just the brief.</p><div className="mini">8 channels supported</div></div>
+            <div className="fc"><span className="num">04</span><h3>Brand guardrails</h3><p>Banned words, required phrases, compliance checks, legal disclaimers — all enforced on every draft. No more &ldquo;let&apos;s not say that&rdquo; emails.</p><div className="mini">SOC 2 ready</div></div>
+            <div className="fc"><span className="num">05</span><h3>Scheduling that respects the post</h3><p>Built-in calendar, cross-platform, with smart send-times tuned to your audience. No more juggling three tools and a spreadsheet.</p><div className="mini">Bulk upload · CSV / Notion</div></div>
+            <div className="fc"><span className="num">06</span><h3>Analytics that mean something</h3><p>Engagement per 1000, save-rate, rewatch-rate, comment sentiment. Not just likes, because likes lie.</p><div className="mini">API · Looker · Tableau</div></div>
+          </div>
+        </div>
       </section>
 
+      <section className="how" id="how">
+        <div className="how-head">
+          <p className="mono-label">How it works</p>
+          <h2>Four <em>steps</em> from<br />onboarded to posting.</h2>
+          <p>Most teams are up and drafting in under an hour. A voice tune that reads like you — in the time it takes to run a stand-up.</p>
+        </div>
+        <div className="steps">
+          <div className="step"><div className="n">01</div><h4>Paste your posts</h4><p>Drop in 15–20 posts you&apos;re proud of. We handle the parsing.</p></div>
+          <div className="step"><div className="n">02</div><h4>Tune the dials</h4><p>Eight quick sliders to push the voice warmer, drier, punchier.</p></div>
+          <div className="step"><div className="n">03</div><h4>Brief &amp; generate</h4><p>Write a one-line brief. Get five drafts. Keep the best. Kill the rest.</p></div>
+          <div className="step"><div className="n">04</div><h4>Schedule &amp; ship</h4><p>Approve, schedule across platforms, and get back to the day job.</p></div>
+        </div>
+      </section>
+
+      <section className="pricing" id="pricing">
+        <div className="price-inner">
+          <div className="price-head">
+            <p className="mono-label" style={{ color: 'rgba(255,255,255,.45)' }}>Pricing</p>
+            <h2>Simple, flat, <em>per brand.</em></h2>
+            <p>No per-seat nonsense. One price per brand voice. Every plan includes unlimited drafts and scheduling.</p>
+          </div>
+          <div className="price-grid">
+            <div className="plan">
+              <span className="tname">Starter</span>
+              <h3>Studio</h3>
+              <div className="price">$49<small>/ brand / mo</small></div>
+              <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 14, lineHeight: 1.5, margin: 0 }}>For a single brand, a small team, and unlimited curiosity.</p>
+              <ul><li>1 brand voice</li><li>Unlimited drafts</li><li>4 social channels</li><li>2 team seats</li><li>Email support</li></ul>
+              <Link className="btn-pill btn-line" href="/contact">Start free trial →</Link>
+            </div>
+            <div className="plan featured">
+              <span className="tname">Most popular</span>
+              <h3>Studio+</h3>
+              <div className="price">$149<small>/ brand / mo</small></div>
+              <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 14, lineHeight: 1.5, margin: 0 }}>For growing teams with serious content cadence.</p>
+              <ul><li>3 brand voices</li><li>All channels</li><li>Unlimited seats</li><li>Approval workflows</li><li>Priority support</li><li>Analytics &amp; API</li></ul>
+              <Link className="btn-pill btn-grad" href="/contact">Start free trial →</Link>
+            </div>
+            <div className="plan">
+              <span className="tname">Enterprise</span>
+              <h3>Atelier</h3>
+              <div className="price">Custom</div>
+              <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 14, lineHeight: 1.5, margin: 0 }}>For agencies and brands running 10+ voices in parallel.</p>
+              <ul><li>Unlimited voices</li><li>SSO / SAML</li><li>Custom model tuning</li><li>Dedicated CSM</li><li>SOC 2 · DPA · MSA</li><li>99.95% SLA</li></ul>
+              <Link className="btn-pill btn-line" href="/contact">Talk to sales →</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="cc-faq">
+        <h2>Honest <em>answers.</em></h2>
+        <details open><summary>Is this just a ChatGPT wrapper?</summary><p>No. We use several models under the hood, but the real work is in the voice tuning, guardrails, and platform-native formatting layers we built on top. You could technically get to a similar place with GPT + two weeks of prompt engineering. We&apos;ve done that work for you.</p></details>
+        <details><summary>Does my data train your model?</summary><p>Never. Your drafts, brand voice, and analytics are yours. We have a zero-retention contract with our model providers, and enterprise plans include a full DPA.</p></details>
+        <details><summary>Can I cancel anytime?</summary><p>Yes. Monthly plans are month-to-month. Annual plans pro-rate to the month. No &ldquo;retention specialists.&rdquo; No survey maze.</p></details>
+        <details><summary>Does it work for non-English?</summary><p>Currently fluent in English, French, Spanish, Portuguese (PT &amp; BR), Italian, German, Dutch, Japanese and Korean. More on the roadmap.</p></details>
+        <details><summary>What happens to the drafts I delete?</summary><p>Hard-deleted after 30 days. Recoverable for the first 7 days, then purged. We keep encrypted analytics metadata only.</p></details>
+      </section>
+
+      <section className="final-cta" style={{ borderTop: 0 }}>
+        <p className="mono-label">Ready to try it?</p>
+        <h2>14 days.<br />No credit <em>card.</em></h2>
+        <p className="sub">Tune your voice, ship a week of content, decide whether it belongs in your stack. That&apos;s the whole offer.</p>
+        <Link className="btn-pill btn-grad" href="/contact" style={{ padding: '18px 36px', fontSize: 15 }}>Start free trial →</Link>
+      </section>
     </main>
   )
 }

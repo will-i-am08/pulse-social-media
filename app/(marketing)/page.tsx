@@ -1,371 +1,318 @@
 import { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
-import AnimateOnScroll from '@/components/marketing/AnimateOnScroll'
 
 export const metadata: Metadata = {
-  // 54 chars — within the 50-60 char target
-  title: 'Pulse Digital | Social Media Marketing Services',
-  description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and engaging content. See results today with our expert team.',
-  keywords: ['social media agency', 'social media management', 'AI content creation', 'brand growth', 'digital marketing', 'social media strategy Australia', 'content marketing agency', 'social media marketing services'],
+  title: 'Pulse Social Media | Founder-led Social Media Agency',
+  description: 'Founder-led social media management — strategy, community, content and AI tooling. Based in Bendigo, VIC. Working with brands that want to sound like themselves.',
+  keywords: ['social media agency', 'social media management', 'AI content creation', 'content strategy', 'Bendigo social media agency', 'Pulse Social Media'],
   openGraph: {
-    title: 'Pulse Digital | Social Media Marketing Services',
-    description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and engaging content. See results today with our expert team.',
+    title: 'Pulse Social Media | Founder-led Social Media Agency',
+    description: 'Founder-led social media management — strategy, community, content and AI tooling. Bendigo, Victoria.',
     url: '/',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Digital Agency' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Social Media' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pulse Digital | Social Media Marketing Services',
-    description: 'Pulse Digital helps brands grow through smart social media strategy, AI-powered tools, and engaging content. See results today with our expert team.',
+    title: 'Pulse Social Media | Founder-led Social Media Agency',
+    description: 'Founder-led social media management — strategy, community, content and AI tooling.',
     images: ['/og-image.png'],
   },
   alternates: { canonical: '/' },
 }
 
-const CARD = 'bg-white rounded-2xl p-6 flex flex-col gap-4 shadow-sm'
-const BORDER = '1px solid rgba(0,0,0,0.07)'
-const DIVIDER = '1px solid rgba(0,0,0,0.08)'
-
-const STATS = [
-  { number: '5.24B', label: 'Social media users worldwide' },
-  { number: '2h 20m', label: 'Average daily time spent on social' },
-  { number: '80%', label: 'Of consumers follow brands on social' },
-  { number: '73%', label: 'Of marketers say social works' },
-]
-
-const SERVICES = [
-  {
-    title: 'AI-Powered Strategy',
-    icon: 'auto_awesome',
-    description: 'We use Claude AI and proprietary audience intelligence to understand what your audience cares about — delivering the right content at the right time, across every platform.',
-  },
-  {
-    title: 'Community Engagement',
-    icon: 'groups',
-    description: 'Active social media management that keeps your community growing and turns followers into loyal brand advocates. Always-on, always human in tone.',
-  },
-  {
-    title: 'Real Analytics',
-    icon: 'analytics',
-    description: 'Beyond vanity metrics. We measure what actually drives growth — engagement quality, conversion attribution, and audience sentiment — then use that data to sharpen every decision.',
-  },
-  {
-    title: 'Content That Connects',
-    icon: 'edit_note',
-    description: 'High-quality creative content powered by CaptionCraft, our own AI caption tool. Every output is reviewed by a human strategist before it goes anywhere near your audience.',
-  },
-]
-
-const SOCIAL_IMPACT = [
-  {
-    icon: 'storefront',
-    stat: '92%',
-    headline: 'Increased brand exposure',
-    body: 'Brands that actively post on social media report up to 92% increased exposure — giving you a global stage that traditional advertising simply can\'t match.',
-    source: 'Social Media Examiner',
-  },
-  {
-    icon: 'shopping_cart',
-    stat: '78%',
-    headline: 'Of purchases influenced by social',
-    body: 'Nearly 4 in 5 consumers say social media posts from brands influence their buying decisions. Your presence on social isn\'t optional — it\'s where decisions get made.',
-    source: 'Forbes / Sprout Social',
-  },
-  {
-    icon: 'groups',
-    stat: '5×',
-    headline: 'Higher ROI with engaged communities',
-    body: 'Brands with actively managed, engaged social communities see up to 5× higher ROI on their content investment compared to brands that simply post and leave.',
-    source: 'HubSpot Research',
-  },
-]
-
-const WHY_NOW = [
-  {
-    icon: 'trending_up',
-    title: 'The window is open — but closing',
-    body: 'Organic reach is still accessible for brands that move now. Waiting means competing against more established accounts with bigger budgets. The best time to build your presence was yesterday.',
-  },
-  {
-    icon: 'psychology',
-    title: 'Consistency beats virality every time',
-    body: 'The brands winning on social aren\'t lucky — they\'re consistent. A structured, data-informed content strategy compounds over time in a way that one-off posts never will.',
-  },
-  {
-    icon: 'auto_graph',
-    title: 'AI has changed the playing field',
-    body: 'Brands using AI-assisted content strategy are producing more, testing faster, and learning quicker than those relying on manual workflows alone. This is the new competitive baseline.',
-  },
-]
-
-const DIFFERENTIATORS = [
-  {
-    icon: 'memory',
-    title: 'AI-First, Not AI-Only',
-    body: 'We use Claude AI, CaptionCraft, and predictive analytics as the engine — but every strategy, caption, and campaign is reviewed and refined by a human strategist.',
-  },
-  {
-    icon: 'construction',
-    title: 'We Build Our Own Tools',
-    body: 'CaptionCraft is our proprietary AI caption and content platform. We don\'t just use off-the-shelf software — we build the tools that give our clients an edge.',
-  },
-  {
-    icon: 'bar_chart',
-    title: 'Radical Transparency',
-    body: 'You see everything. Real-time dashboards, honest reporting, and clear attribution — so you always know exactly what\'s working and why.',
-  },
-  {
-    icon: 'speed',
-    title: 'Speed Without Sacrifice',
-    body: 'Our automated workflows handle scheduling, approval flows, and publishing pipelines — meaning faster execution without cutting corners on quality.',
-  },
-]
-
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/#organization`,
-      name: 'Pulse Digital Agency',
-      url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au',
-      logo: {
-        '@type': 'ImageObject',
-        url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/logo.png`,
-      },
-      description: 'AI-powered social media agency helping brands grow through intelligent content strategy, community management, and data-driven marketing.',
-      sameAs: [],
-    },
-    {
-      '@type': 'WebSite',
-      '@id': `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/#website`,
-      url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au',
-      name: 'Pulse Digital Agency',
-      publisher: {
-        '@id': `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'}/#organization`,
-      },
-    },
-  ],
+const HOME_CSS = `
+.pulse-home .hero{max-width:1320px;margin:0 auto;padding:80px 48px 100px}
+.pulse-home .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:48px;margin-bottom:64px}
+.pulse-home .hero-meta{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);line-height:1.8}
+.pulse-home .hero-meta b{color:var(--ink);font-weight:500}
+.pulse-home .hero-lower{display:grid;grid-template-columns:1.3fr 1fr;gap:64px;align-items:end;margin-top:40px}
+.pulse-home .hero-sub{font-size:20px;line-height:1.5;color:#3a3a3a;font-weight:300;max-width:540px}
+.pulse-home .hero-cta{display:flex;gap:24px;align-items:center;margin-top:28px;justify-content:flex-end}
+.pulse-home .pulse-strip{margin-top:72px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);padding:22px 0;display:flex;align-items:center;gap:24px;overflow:hidden}
+.pulse-home .wave{flex:1;height:48px}
+.pulse-home .wave svg{display:block;width:100%;height:100%}
+.pulse-home .readout{display:flex;gap:28px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.pulse-home .readout b{color:var(--accent);font-weight:500}
+.pulse-home .clients{border-bottom:1px solid var(--hair);padding:28px 48px;max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:40px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase}
+.pulse-home .clients .logos{display:flex;gap:56px;flex:1;flex-wrap:wrap;color:#0a0a0a;font-weight:500;text-transform:none;font-family:'Plus Jakarta Sans';font-size:18px;opacity:.6}
+.pulse-home .clients .frau{font-family:'Fraunces',serif;letter-spacing:-0.02em}
+.pulse-home .stats{max-width:1320px;margin:0 auto;padding:100px 48px;display:grid;grid-template-columns:repeat(12,1fr);gap:32px;align-items:end}
+.pulse-home .stats .intro{grid-column:span 4}
+.pulse-home .stats .intro h2{font-size:48px;font-weight:200;letter-spacing:-0.03em;line-height:1;margin:12px 0 0}
+.pulse-home .stats .intro h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:300}
+.pulse-home .stats .grid{grid-column:span 8;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--hair)}
+.pulse-home .stats .cell{padding:28px 20px 28px 0;border-right:1px solid var(--hair)}
+.pulse-home .stats .cell:last-child{border-right:0}
+.pulse-home .stats .num{font-size:56px;font-weight:200;letter-spacing:-0.04em;line-height:1}
+.pulse-home .stats .num .unit{color:var(--accent);font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:.6em;margin-left:2px}
+.pulse-home .stats .lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-top:14px;line-height:1.5}
+.pulse-home .svc{max-width:1320px;margin:0 auto;padding:80px 48px;border-top:1px solid var(--hair)}
+.pulse-home .svc-head{display:grid;grid-template-columns:1fr 1.4fr;gap:64px;align-items:end;margin-bottom:56px}
+.pulse-home .svc-head p{color:var(--muted);font-size:16px;line-height:1.6;max-width:460px;margin:0}
+.pulse-home .svc-grid{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-rows:minmax(240px,auto);gap:20px}
+.pulse-home .svc-a{grid-column:span 7;background:linear-gradient(140deg,#1a1717 0%, #2a1f22 100%) !important;color:#fff;border-color:transparent !important}
+.pulse-home .svc-a h3{font-size:36px;font-weight:300;letter-spacing:-0.025em;max-width:480px;color:#fff}
+.pulse-home .svc-a h3 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent-soft);font-weight:300}
+.pulse-home .svc-a p{color:rgba(255,255,255,.6);max-width:400px}
+.pulse-home .svc-a .num{color:var(--accent-soft)}
+.pulse-home .svc-a .chart{position:absolute;right:-30px;bottom:-20px;width:340px;height:240px;opacity:.7}
+.pulse-home .svc-b{grid-column:span 5;background:var(--paper-2) !important}
+.pulse-home .svc-c,.pulse-home .svc-d,.pulse-home .svc-e{grid-column:span 4}
+.pulse-home .svc-f{grid-column:span 7;display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0;overflow:hidden}
+.pulse-home .svc-f .side{padding:28px;display:flex;flex-direction:column;gap:14px}
+.pulse-home .svc-f .ph{border-radius:0;height:100%;min-height:260px}
+.pulse-home .svc-g{grid-column:span 5;background:var(--accent) !important;color:#fff;border-color:transparent !important}
+.pulse-home .svc-g .num{color:rgba(255,255,255,.7)}
+.pulse-home .svc-g p{color:rgba(255,255,255,.85)}
+.pulse-home .svc-g h3{font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:34px;line-height:1.05;color:#fff}
+.pulse-home .svc-g .arrow{color:#fff}
+.pulse-home .quote-sec{background:var(--ink);color:#fff;padding:120px 48px;margin-top:80px}
+.pulse-home .quote-inner{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:1fr 1.6fr;gap:80px;align-items:center}
+.pulse-home .quote-inner .ph{height:540px;border-radius:20px}
+.pulse-home .quote-inner blockquote{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(32px,4vw,56px);line-height:1.1;letter-spacing:-0.025em;margin:0}
+.pulse-home .quote-inner blockquote em{color:var(--accent-soft);font-style:italic}
+.pulse-home .quote-inner cite{display:block;margin-top:40px;font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.pulse-home .quote-inner cite b{color:#fff;font-weight:500;display:block;margin-bottom:4px;letter-spacing:.05em}
+.pulse-home .proc{max-width:1320px;margin:0 auto;padding:100px 48px}
+.pulse-home .proc-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:48px;gap:48px}
+.pulse-home .proc-head p{color:var(--muted);max-width:340px;margin:0}
+.pulse-home .proc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair)}
+.pulse-home .proc-step{background:var(--paper);padding:40px 32px;min-height:320px;display:flex;flex-direction:column}
+.pulse-home .proc-step .n{font-family:'Fraunces',serif;font-style:italic;font-size:84px;font-weight:300;color:var(--accent);line-height:1;letter-spacing:-0.05em}
+.pulse-home .proc-step h3{font-size:22px;font-weight:500;letter-spacing:-0.02em;margin:24px 0 12px}
+.pulse-home .proc-step p{font-size:14px;line-height:1.6;color:var(--muted);margin:0}
+.pulse-home .proc-step .mono-label{margin-top:auto;padding-top:24px}
+@media(max-width:820px){
+  .pulse-home .hero{padding:40px 24px 48px}
+  .pulse-home .hero-top{flex-direction:column;gap:16px;margin-bottom:32px}
+  .pulse-home .hero-lower{grid-template-columns:1fr;gap:24px}
+  .pulse-home .hero-cta{justify-content:flex-start}
+  .pulse-home .clients{padding:28px 24px;flex-wrap:wrap}
+  .pulse-home .clients .logos{gap:28px;font-size:16px}
+  .pulse-home .stats{grid-template-columns:1fr;padding:56px 24px;gap:32px}
+  .pulse-home .stats .intro,.pulse-home .stats .grid{grid-column:auto}
+  .pulse-home .stats .grid{grid-template-columns:1fr 1fr}
+  .pulse-home .stats .num{font-size:42px}
+  .pulse-home .svc{padding:48px 24px}
+  .pulse-home .svc-head{grid-template-columns:1fr;gap:16px}
+  .pulse-home .svc-grid{grid-template-columns:1fr}
+  .pulse-home .svc-a,.pulse-home .svc-b,.pulse-home .svc-c,.pulse-home .svc-d,.pulse-home .svc-e,.pulse-home .svc-f,.pulse-home .svc-g{grid-column:auto}
+  .pulse-home .svc-a h3{font-size:26px}.pulse-home .svc-a .chart{display:none}
+  .pulse-home .svc-f{grid-template-columns:1fr}
+  .pulse-home .quote-sec{padding:60px 24px}
+  .pulse-home .quote-inner{grid-template-columns:1fr;gap:32px}
+  .pulse-home .quote-inner .ph{height:360px}.pulse-home .quote-inner blockquote{font-size:30px}
+  .pulse-home .proc{padding:48px 24px}
+  .pulse-home .proc-grid{grid-template-columns:1fr}
+  .pulse-home .proc-head{flex-direction:column;align-items:flex-start;gap:8px}
+  .pulse-home .pulse-strip{flex-wrap:wrap;gap:12px}.pulse-home .wave{min-width:200px}
 }
+`
+
+function wavePath(w: number, h: number, amp: number, freq: number, seed: number) {
+  let d = `M 0 ${h / 2}`
+  for (let x = 0; x <= w; x += 6) {
+    const y =
+      h / 2 +
+      Math.sin(x * freq + seed) * amp * 0.55 +
+      Math.sin(x * freq * 2.3 + seed * 1.3) * amp * 0.35 +
+      Math.sin(x * freq * 5 + seed * 0.7) * amp * 0.2
+    d += ` L ${x} ${y.toFixed(1)}`
+  }
+  return d
+}
+
+function areaChartSvg(color: string) {
+  const pts = [120, 100, 90, 110, 80, 65, 90, 70, 45, 60, 35, 20]
+  const step = 340 / (pts.length - 1)
+  let fill = 'M 0 140'
+  let line = `M 0 ${pts[0]}`
+  pts.forEach((y, i) => {
+    fill += ` L ${i * step} ${y}`
+    if (i > 0) line += ` L ${i * step} ${y}`
+  })
+  fill += ' L 340 140 Z'
+  const dots = pts.map((y, i) => `<circle cx="${i * step}" cy="${y}" r="2.5" fill="${color}"/>`).join('')
+  return `<svg viewBox="0 0 340 150" preserveAspectRatio="none" width="100%" height="100%"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".5"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${fill}" fill="url(#ga)"/><path d="${line}" fill="none" stroke="${color}" stroke-width="2"/>${dots}</svg>`
+}
+
+const BASE_WAVE = wavePath(1200, 48, 10, 0.022, 1.2)
+const ACCENT_WAVE = wavePath(1200, 48, 14, 0.016, 0)
+const HERO_CHART = areaChartSvg('#ffb2b9')
 
 export default function HomePage() {
   return (
-    <main style={{ color: '#0a0a0a' }}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+    <main className="pulse-home">
+      <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
 
-      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-        <div className="max-w-7xl mx-auto px-8 md:px-16 py-24 relative w-full">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            {/* Left: text */}
-            <div>
-              <AnimateOnScroll variant="fade-in" delay={0}>
-                <p className="mono-label text-[#ff5473] mb-8">Social Media Management Agency</p>
-              </AnimateOnScroll>
-              <AnimateOnScroll variant="fade-up" delay={0.1}>
-                <h1 className="display-text text-[#0a0a0a] mb-6" style={{ fontSize: 'clamp(52px, 8vw, 104px)' }}>
-                  Built for<br />Brands That<br /><span style={{ color: '#ff5473' }}>Move Fast.</span>
-                </h1>
-              </AnimateOnScroll>
-              <AnimateOnScroll variant="fade-up" delay={0.2}>
-                <p className="text-[#6b7280] text-lg max-w-md mb-10 leading-relaxed font-light">
-                  We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects.
-                </p>
-              </AnimateOnScroll>
-              <AnimateOnScroll variant="fade-up" delay={0.3}>
-                <div className="flex items-center gap-8">
-                  <Link href="/contact" className="inline-flex items-center px-8 py-4 rounded-full text-white font-semibold text-sm transition-opacity hover:opacity-90" style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}>
-                    Start the Project
-                  </Link>
-                  <Link href="/services" className="text-sm font-medium text-[#9ca3af] hover:text-[#0a0a0a] transition-colors flex items-center gap-2">
-                    See Our Work <span>→</span>
-                  </Link>
-                </div>
-              </AnimateOnScroll>
+      <section className="hero">
+        <div className="hero-top">
+          <div className="hero-meta">
+            <div><b>Pulse Social Media</b> / Founder-led agency</div>
+            <div>Est. 2026 · Bendigo VIC · Remote-friendly</div>
+          </div>
+          <div className="hero-meta" style={{ textAlign: 'right' }}>
+            <div>Channels · <b>IG · TT · FB · LI</b></div>
+            <div>Available · <b>7 days · 9–5 AEST</b></div>
+          </div>
+        </div>
+
+        <h1 className="hero-display">
+          Built for brands that<br />move <em className="fraunces">fast.</em>
+        </h1>
+
+        <div className="hero-lower">
+          <p className="hero-sub">We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects.</p>
+          <div className="hero-cta">
+            <Link className="btn-pill btn-grad" href="/contact">Start the project →</Link>
+            <Link className="btn-pill btn-ghost" href="/insights">Read our thinking</Link>
+          </div>
+        </div>
+
+        <div className="pulse-strip">
+          <span className="mono-label">Live pulse ─</span>
+          <div className="wave">
+            <svg viewBox="0 0 1200 48" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g1" x1="0" x2="1">
+                  <stop offset="0" stopColor="#ff5473" stopOpacity=".1" />
+                  <stop offset=".2" stopColor="#ff5473" />
+                  <stop offset=".8" stopColor="#ff5473" />
+                  <stop offset="1" stopColor="#ff5473" stopOpacity=".1" />
+                </linearGradient>
+              </defs>
+              <path d={BASE_WAVE} stroke="#cfc9c0" strokeWidth="1" fill="none" opacity=".6" />
+              <path d={ACCENT_WAVE} stroke="url(#g1)" strokeWidth="1.5" fill="none" />
+            </svg>
+          </div>
+          <div className="readout">
+            <span>Flat-rate <b>month-to-month</b></span>
+            <span>Voice <b>trained on yours</b></span>
+            <span>Bendigo <b>AEST</b></span>
+          </div>
+        </div>
+      </section>
+
+      <section className="stats">
+        <div className="intro">
+          <p className="mono-label">Market benchmarks · why social</p>
+          <h2>Social media,<br />in <em>motion.</em></h2>
+        </div>
+        <div className="grid">
+          <div className="cell"><div className="num">5.24<span className="unit">B</span></div><div className="lbl">Global social users (DataReportal, 2024)</div></div>
+          <div className="cell"><div className="num">2<span className="unit">h 20m</span></div><div className="lbl">Avg. daily time on social</div></div>
+          <div className="cell"><div className="num">80<span className="unit">%</span></div><div className="lbl">Consumers follow brands on social</div></div>
+          <div className="cell"><div className="num">73<span className="unit">%</span></div><div className="lbl">Marketers say social drives results</div></div>
+        </div>
+      </section>
+
+      <section className="svc">
+        <div className="svc-head">
+          <div>
+            <p className="mono-label">Our services</p>
+            <h2 className="section-display">Strategy that <em>performs,</em><br />content that <em>connects.</em></h2>
+          </div>
+          <p>Four disciplines, one engine. We combine human-led strategy with Claude-powered tooling so brands can show up every day with intention — not noise.</p>
+        </div>
+        <div className="svc-grid">
+          <div className="card svc-a">
+            <div className="num">01 · Signature service</div>
+            <h3>Always-on social media management — <em>with a real strategist at the wheel.</em></h3>
+            <p>Multi-channel scheduling, community care, creative, and reporting. Your brand, online every day, on-message every time.</p>
+            <Link className="arrow" style={{ color: 'var(--accent-soft)' }} href="/services">Explore strategy →</Link>
+            <div className="chart" dangerouslySetInnerHTML={{ __html: HERO_CHART }} />
+          </div>
+
+          <div className="card svc-b">
+            <div className="num">02</div><h3>AI caption engine</h3>
+            <p>CaptionCraft, our in-house tool, drafts on-brand copy in seconds — every word reviewed by a human strategist before it ships.</p>
+            <Link className="arrow" href="/captioncraft">Meet CaptionCraft →</Link>
+          </div>
+
+          <div className="card svc-c">
+            <div className="num">03</div><h3>Content &amp; creative</h3>
+            <p>Photo, video, motion. We produce the work that fills your feed and make it easy for your team to sign off.</p>
+          </div>
+
+          <div className="card svc-d">
+            <div className="num">04</div><h3>Community management</h3>
+            <p>Always-on replies, DM triage, and brand-safe conversation. Turning followers into loyal advocates.</p>
+          </div>
+
+          <div className="card svc-e">
+            <div className="num">05</div><h3>Analytics &amp; attribution</h3>
+            <p>Honest reporting on what actually moves the needle — engagement quality, conversions, sentiment.</p>
+          </div>
+
+          <div className="card svc-f">
+            <div className="ph has-img">
+              <Image src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=1400&q=75&auto=format" alt="Pulse team at work" fill sizes="(max-width:820px) 100vw, 50vw" style={{ objectFit: 'cover' }} />
             </div>
-
-            {/* Right: feature cards */}
-            <AnimateOnScroll variant="fade-up" delay={0.2}>
-              <div className="hidden md:grid grid-cols-2 gap-4">
-                {[
-                  { icon: 'strategy', label: 'Content Strategy', desc: 'Audience-led strategies built around your goals' },
-                  { icon: 'groups', label: 'Community Management', desc: 'Always-on engagement that builds real loyalty' },
-                  { icon: 'analytics', label: 'Performance Reporting', desc: 'Honest insights on what\'s actually driving growth' },
-                  { icon: 'edit_note', label: 'Content Creation', desc: 'On-brand posts, captions and copy — done for you' },
-                ].map((card) => (
-                  <div key={card.label} className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
-                    <div className="w-9 h-9 rounded-lg bg-[#fff0f2] flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[#ff5473] text-lg">{card.icon}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[#0a0a0a]">{card.label}</p>
-                      <p className="text-xs text-[#6b7280] leading-relaxed mt-0.5">{card.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </AnimateOnScroll>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-8 right-8 h-px" style={{ background: 'rgba(0,0,0,0.06)' }} />
-      </section>
-
-      {/* ── Stats ────────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
-        <AnimateOnScroll variant="fade-up">
-          <p className="mono-label text-[#9ca3af] mb-8">Social media by the numbers</p>
-        </AnimateOnScroll>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {STATS.map((stat, i) => (
-            <AnimateOnScroll key={stat.label} variant="fade-up" delay={i * 0.08}>
-              <div className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                <div className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 60px)' }}>
-                  {stat.number}
-                </div>
-                <p className="mono-label text-[#9ca3af]" style={{ letterSpacing: '0.12em' }}>{stat.label}</p>
-              </div>
-            </AnimateOnScroll>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Services ─────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
-        <div className="grid md:grid-cols-3 gap-16 mb-10">
-          <AnimateOnScroll variant="fade-up">
-            <div>
-              <p className="mono-label text-[#9ca3af] mb-4">Our Services</p>
-              <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-                Social Media Strategy<br />Services That Deliver
-              </h2>
+            <div className="side">
+              <div className="num">06 · Paid</div><h3>Performance campaigns</h3>
+              <p>Creative testing frameworks that scale the winners. We match the spend to the strategy — no vanity budgets.</p>
+              <Link className="arrow" href="/services">See case studies →</Link>
             </div>
-          </AnimateOnScroll>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {SERVICES.map((service, i) => (
-            <AnimateOnScroll key={service.title} variant="fade-up" delay={i * 0.08}>
-              <div className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', minHeight: '180px' }}>
-                <div className="w-10 h-10 rounded-lg bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-[#ff5473]">{service.icon}</span>
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-[#0a0a0a] mb-1">{service.title}</h3>
-                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{service.description}</p>
-                </div>
-              </div>
-            </AnimateOnScroll>
-          ))}
-        </div>
-        <AnimateOnScroll variant="fade-up" delay={0.2}>
-          <div className="mt-8 flex justify-start">
-            <Link href="/services" className="text-sm font-medium text-[#ff5473] hover:opacity-70 transition-opacity flex items-center gap-2">
-              View all services <span>→</span>
-            </Link>
           </div>
-        </AnimateOnScroll>
-      </section>
 
-      {/* ── Social Impact ─────────────────────────────────────────────────────── */}
-      <section className="py-20" style={{ background: '#f9f9f9', borderTop: DIVIDER, borderBottom: DIVIDER }}>
-        <div className="max-w-7xl mx-auto px-8 md:px-16">
-          <AnimateOnScroll variant="fade-up">
-            <div className="mb-12">
-              <p className="mono-label text-[#ff5473] mb-4">Why Social Media</p>
-              <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-                The Opportunity<br />Is Real
-              </h2>
-            </div>
-          </AnimateOnScroll>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {SOCIAL_IMPACT.map((item, i) => (
-              <AnimateOnScroll key={item.headline} variant="fade-up" delay={i * 0.08}>
-                <div className="bg-white rounded-2xl p-8 flex flex-col gap-4 h-full" style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                  <div className="w-10 h-10 rounded-lg bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
-                    <span className="material-symbols-outlined text-[#ff5473]">{item.icon}</span>
-                  </div>
-                  <div className="display-text text-[#ff5473]" style={{ fontSize: 'clamp(42px, 5vw, 64px)' }}>{item.stat}</div>
-                  <p className="text-base font-semibold text-[#0a0a0a]">{item.headline}</p>
-                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{item.body}</p>
-                  <p className="mono-label text-[#c4c9d4] mt-auto">Source: {item.source}</p>
-                </div>
-              </AnimateOnScroll>
-            ))}
+          <div className="card svc-g">
+            <div className="num">07 · Featured</div>
+            <h3>Build with us — your<br />content, fully managed.</h3>
+            <p>From zero to always-on in 30 days. Fixed monthly retainer, unlimited revisions, full attribution.</p>
+            <Link className="arrow" href="/contact">Book a call →</Link>
           </div>
         </div>
       </section>
 
-      {/* ── Why Pulse ────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
-        <AnimateOnScroll variant="fade-up">
-          <div className="mb-12">
-            <p className="mono-label text-[#9ca3af] mb-4">Why Pulse</p>
-            <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-              Why Brands Choose<br />Pulse Digital Agency
-            </h2>
+      <section className="quote-sec">
+        <div className="quote-inner">
+          <div className="ph dark has-img">
+            <Image src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=1400&q=75&auto=format" alt="Client portrait" fill sizes="(max-width:820px) 100vw, 40vw" style={{ objectFit: 'cover' }} />
           </div>
-        </AnimateOnScroll>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {DIFFERENTIATORS.map((d, i) => (
-            <AnimateOnScroll key={d.title} variant="fade-up" delay={i * 0.08}>
-              <div className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', minHeight: '160px' }}>
-                <div className="w-10 h-10 rounded-lg bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-[#ff5473]">{d.icon}</span>
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-[#0a0a0a] mb-1">{d.title}</h3>
-                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{d.body}</p>
-                </div>
-              </div>
-            </AnimateOnScroll>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Why Now ──────────────────────────────────────────────────────────── */}
-      <section className="py-20 px-8 md:px-16 max-w-7xl mx-auto">
-        <AnimateOnScroll variant="fade-up">
-          <div className="mb-12">
-            <p className="mono-label text-[#9ca3af] mb-4">The case for acting now</p>
-            <h2 className="display-text text-[#0a0a0a]" style={{ fontSize: 'clamp(36px, 4vw, 56px)' }}>
-              Why Now Is the<br />Right Time
-            </h2>
+          <div>
+            <p className="mono-label" style={{ color: 'rgba(255,255,255,.4)' }}>Client story · Geekly, Bendigo VIC</p>
+            <blockquote>&ldquo;Pulse turned our shopfront into a <em>conversation.</em> We went from posting when we remembered to being the most <em>recognised</em> repair shop in the region.&rdquo;</blockquote>
+            <cite><b>Geekly Computers &amp; Mobile Repair</b>Bendigo VIC</cite>
           </div>
-        </AnimateOnScroll>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {WHY_NOW.map((item, i) => (
-            <AnimateOnScroll key={item.title} variant="fade-up" delay={i * 0.08}>
-              <div className={CARD} style={{ border: BORDER, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', minHeight: '200px' }}>
-                <div className="w-10 h-10 rounded-lg bg-[#fff0f2] flex items-center justify-center flex-shrink-0">
-                  <span className="material-symbols-outlined text-[#ff5473]">{item.icon}</span>
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-[#0a0a0a] mb-2">{item.title}</h3>
-                  <p className="text-sm text-[#6b7280] leading-relaxed font-light">{item.body}</p>
-                </div>
-              </div>
-            </AnimateOnScroll>
-          ))}
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────────────────────── */}
-      <section className="py-28">
-        <div className="max-w-7xl mx-auto px-8 md:px-16 text-center">
-          <AnimateOnScroll variant="fade-up">
-            <p className="mono-label text-[#9ca3af] mb-8">Let&apos;s work together</p>
-            <h2 className="display-text text-[#0a0a0a] mb-10" style={{ fontSize: 'clamp(56px, 9vw, 110px)' }}>
-              Ready to<br /><span style={{ color: '#ff5473' }}>Pulse?</span>
-            </h2>
-            <Link href="/contact" className="inline-flex items-center px-10 py-5 rounded-full text-white font-semibold text-base transition-opacity hover:opacity-90" style={{ background: 'linear-gradient(135deg, #ffb2b9 0%, #ff5473 100%)' }}>
-              Start the Project
-            </Link>
-          </AnimateOnScroll>
+      <section className="proc">
+        <div className="proc-head">
+          <div>
+            <p className="mono-label">How we work</p>
+            <h2 className="section-display">Three moves, one <em>rhythm.</em></h2>
+          </div>
+          <p>We keep it simple. No multi-month discovery, no mystery deliverables. Here&apos;s the shape of the first 90 days.</p>
+        </div>
+        <div className="proc-grid">
+          <div className="proc-step">
+            <div className="n">i.</div><h3>Tune in</h3>
+            <p>We audit your current presence, map your audience, and set the measurable goals we&apos;ll all be held to.</p>
+            <div className="mono-label">Week 1 – 2</div>
+          </div>
+          <div className="proc-step">
+            <div className="n">ii.</div><h3>Plug in</h3>
+            <p>We connect CaptionCraft, build out the content engine, and run the first wave of campaigns against the plan.</p>
+            <div className="mono-label">Week 3 – 6</div>
+          </div>
+          <div className="proc-step">
+            <div className="n">iii.</div><h3>Turn up</h3>
+            <p>Always-on management, real-time reporting, and a monthly strategy review so you always know what&apos;s next.</p>
+            <div className="mono-label">Week 7 onward</div>
+          </div>
         </div>
       </section>
 
+      <section className="final-cta">
+        <p className="mono-label">Let&apos;s work together</p>
+        <h2>Ready<br />to <em>Pulse?</em></h2>
+        <p className="sub">Tell us about the brand. We&apos;ll come back with a plan, a timeline, and a flat-rate proposal — no pitch theatre.</p>
+        <Link className="btn-pill btn-grad" href="/contact" style={{ padding: '18px 36px', fontSize: 15 }}>
+          Start the project →
+        </Link>
+      </section>
     </main>
   )
 }
