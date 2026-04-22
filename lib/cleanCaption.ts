@@ -76,21 +76,25 @@ const DETECTION_PATTERNS: { name: string; regex: RegExp }[] = [
 ]
 
 /**
- * Remove mid-sentence dashes entirely — split the clauses into separate
- * sentences with proper capitalisation. Compound hyphens ("same-day",
- * "on-the-fly") are left alone because they have no surrounding spaces.
+ * Strip every dash and hyphen. Mid-sentence dashes split clauses into
+ * separate sentences. Compound hyphens ("same-day", "on-the-fly") get
+ * their hyphen replaced with a space.
  *
- * Targets:
- *   " — " / " – " / " -- " / " - "  (any dash used as a sentence break)
- *   "word—word" / "word–word"       (unspaced em/en dash between words)
+ * Targets (in order, because order matters):
+ *   " — " / " – " / " -- " / " - "   (spaced dash between clauses)   → ". "
+ *   "word—word" / "word–word"        (unspaced em/en dash)            → ". "
+ *   "word-word"                      (compound hyphen)                → " "
+ *   any stray dash or hyphen                                          → removed
  */
 function replaceDashes(text: string): string {
-  // Spaced dashes between clauses → ". " + uppercase the next letter.
+  // 1. Spaced clause-breaks first, otherwise they'd be swallowed by the compound rule.
   let result = text.replace(/\s+(?:—|–|--|-)\s+([a-zA-Z])/g, (_, letter) => '. ' + letter.toUpperCase())
-  // Unspaced em/en dashes between words → ". " + uppercase. (Leave "-" alone: it's a compound.)
+  // 2. Unspaced em/en dashes between words → sentence break.
   result = result.replace(/(\w)[—–](\w)/g, (_, a, b) => a + '. ' + b.toUpperCase())
-  // Any remaining stray em/en dashes → period.
-  result = result.replace(/[—–]/g, '.')
+  // 3. Compound hyphens between letters/numbers → single space.
+  result = result.replace(/(\w)-(\w)/g, '$1 $2')
+  // 4. Any leftover stray dashes/hyphens → gone.
+  result = result.replace(/[—–-]/g, '')
   return result
 }
 
