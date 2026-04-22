@@ -712,6 +712,16 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
       const label = chosen.kind === 'website' ? 'website URL' : chosen.kind === 'phone' ? 'phone number' : 'address'
       systemParts.push(`If the caption calls for a contact detail or CTA, use ONLY this ${label}: ${chosen.value}`)
       systemParts.push(`Do NOT mention any other contact detail (website, phone, or address). Rotate naturally — do not force it if the caption reads better without one.`)
+
+      // CRITICAL: match the CTA verb to the contact type. Mixing them creates
+      // nonsense like "drop it off at example.com" or "call us at 123 Main St".
+      if (chosen.kind === 'website') {
+        systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a website URL, the CTA verbs must match a URL — "visit", "book online", "head to", "check out", "learn more at", "details at". NEVER use physical-visit verbs ("walk in", "drop in", "drop it off", "pop in", "come by") with a URL — you cannot walk into a website. NEVER use call verbs ("call", "ring", "phone") with a URL. Even if the brand guidelines suggest walk-in or call CTAs, swap them for website-appropriate language for this post.`)
+      } else if (chosen.kind === 'phone') {
+        systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a phone number, the CTA verbs must match a phone — "call", "ring", "give us a call", "phone us", "text". NEVER use website verbs ("visit", "click", "head to") or physical-visit verbs ("walk in", "drop in") with a phone number. Even if the brand guidelines suggest walk-in or website CTAs, swap them for phone-appropriate language for this post.`)
+      } else {
+        systemParts.push(`CTA LANGUAGE RULE: Because the contact detail is a physical address, the CTA verbs must match a location — "visit us at", "come by", "walk in", "drop in", "pop in", "find us at". NEVER use website verbs ("click", "visit [url]", "book online") or phone verbs ("call", "ring") with an address. Even if the brand guidelines suggest website or call CTAs, swap them for location-appropriate language for this post.`)
+      }
     } else {
       systemParts.push(`Do NOT include any contact details (website, phone, or address) in this caption. Keep the CTA copy-only — an idea, a question, or a soft next step.`)
     }
