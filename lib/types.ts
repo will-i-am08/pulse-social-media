@@ -49,6 +49,8 @@ export interface Brand {
   name: string
   color: string
   website?: string
+  phone?: string
+  address?: string
   tone: 'professional' | 'casual' | 'playful' | 'luxury' | 'inspirational' | 'friendly'
   output_length: 'short' | 'medium' | 'long'
   brand_guidelines?: string
@@ -186,6 +188,8 @@ export interface WorkspaceBrand {
   industry: string
   location: string
   website: string
+  phone: string
+  address: string
   primaryColor: string
   logoUrl: string
   // Blog config

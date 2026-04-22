@@ -36,6 +36,7 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 
 const EMPTY_BRAND: Partial<WorkspaceBrand> = {
   name: '', tagline: '', businessName: '', industry: '', location: '', website: '',
+  phone: '', address: '',
   primaryColor: '#8b5cf6', logoUrl: '', authorName: '', blogPath: '/blog',
   brandVoice: '', postingInstructions: '', defaultAspectRatio: '', tone: 'professional', outputLength: 'medium', focusAreas: [],
   includeHashtags: true, includeEmojis: false, socialHandles: {},
@@ -163,6 +164,17 @@ function BrandForm({
               <label className="lbl">Location</label>
               <input className="inp" value={form.location || ''} onChange={e => set('location', e.target.value)} placeholder="City, State" />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="lbl">Phone</label>
+                <input className="inp" value={form.phone || ''} onChange={e => set('phone', e.target.value)} placeholder="(02) 1234 5678" />
+              </div>
+              <div>
+                <label className="lbl">Address</label>
+                <input className="inp" value={form.address || ''} onChange={e => set('address', e.target.value)} placeholder="12 Example St, Suburb" />
+              </div>
+            </div>
+            <p className="text-xs text-[#6b7280] -mt-2">Captions will rotate between website, phone, and address for CTAs — leave any blank to exclude it.</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="lbl">Author Name (blog)</label>

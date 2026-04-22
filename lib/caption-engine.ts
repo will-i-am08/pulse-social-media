@@ -570,6 +570,9 @@ export interface CaptionEngineInput {
     keyMessages?: string[]
     target_audience?: string
     targetAudience?: string
+    website?: string
+    phone?: string
+    address?: string
   }
   // Generation params
   platforms: string[]
@@ -619,6 +622,9 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
   const rules = brand.custom_rules || brand.customRules || []
   const keyMessages = brand.key_messages || brand.keyMessages || []
   const targetAudience = brand.target_audience || brand.targetAudience || ''
+  const website = (brand.website || '').trim()
+  const phone = (brand.phone || '').trim()
+  const address = (brand.address || '').trim()
 
   // 1. Analyse recent captions for context
   const analysis = analyseRecentCaptions(recentCaptions)
@@ -687,6 +693,28 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
   // Key messages
   if (keyMessages.length > 0) {
     systemParts.push(`\nKEY BRAND MESSAGES:\n${keyMessages.map(m => `- ${m}`).join('\n')}`)
+  }
+
+  // Contact rotation — stop every caption defaulting to the website.
+  // Pick one of the configured contact details (or none) per generation so
+  // posts rotate between website / phone / address naturally.
+  const contactPool: { kind: 'website' | 'phone' | 'address'; value: string }[] = []
+  if (website) contactPool.push({ kind: 'website', value: website })
+  if (phone) contactPool.push({ kind: 'phone', value: phone })
+  if (address) contactPool.push({ kind: 'address', value: address })
+
+  if (contactPool.length > 0) {
+    // Include a "none" option so ~1 in (N+1) captions skip contact details entirely.
+    const options: (typeof contactPool[number] | null)[] = [...contactPool, null]
+    const chosen = options[Math.floor(Math.random() * options.length)]
+    systemParts.push(`\n═══ CONTACT DETAIL FOR THIS POST ═══`)
+    if (chosen) {
+      const label = chosen.kind === 'website' ? 'website URL' : chosen.kind === 'phone' ? 'phone number' : 'address'
+      systemParts.push(`If the caption calls for a contact detail or CTA, use ONLY this ${label}: ${chosen.value}`)
+      systemParts.push(`Do NOT mention any other contact detail (website, phone, or address). Rotate naturally — do not force it if the caption reads better without one.`)
+    } else {
+      systemParts.push(`Do NOT include any contact details (website, phone, or address) in this caption. Keep the CTA copy-only — an idea, a question, or a soft next step.`)
+    }
   }
 
   // ─── DEFAULTS (subject to the brand section above) ────────────────

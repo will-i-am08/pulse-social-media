@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
 
   const { data: brand } = await supabase
     .from('workspace_brands')
-    .select('name, brand_voice, tone, output_length, include_hashtags, include_emojis, custom_rules, posting_instructions, brand_guidelines, key_messages, target_audience')
+    .select('name, brand_voice, tone, output_length, include_hashtags, include_emojis, custom_rules, posting_instructions, brand_guidelines, key_messages, target_audience, website, phone, address')
     .eq('id', brandId)
     .eq('user_id', user.id)
     .single()
