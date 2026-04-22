@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
@@ -712,6 +712,19 @@ export default function CreatePostPage() {
     !librarySearch || p.name?.toLowerCase().includes(librarySearch.toLowerCase()) || (p.tags || []).some(t => t.toLowerCase().includes(librarySearch.toLowerCase()))
   )
 
+  // URLs already used by a post for the currently-active brand. Covers single
+  // images (image_url) and carousel posts (image_urls). Scoped per-brand so
+  // the same photo reused across different clients doesn't flag as "used".
+  const usedPhotoUrls = useMemo(() => {
+    const s = new Set<string>()
+    for (const p of posts) {
+      if (activeBrandId && p.brand_profile_id !== activeBrandId) continue
+      if (p.image_url) s.add(p.image_url)
+      if (Array.isArray(p.image_urls)) for (const u of p.image_urls) if (u) s.add(u)
+    }
+    return s
+  }, [posts, activeBrandId])
+
   async function bulkSendToBuffer() {
     const bb = brands.find(b => b.id === bulkBrandId)
     if (!bb) { toast.error('Select a brand first'); return }
@@ -1089,10 +1102,14 @@ export default function CreatePostPage() {
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                   {filteredLibrary.map(photo => {
                     const selected = librarySelection.has(photo.url)
+                    const used = usedPhotoUrls.has(photo.url)
                     return (
                       <button key={photo.id} onClick={() => pickFromLibrary(photo.url)}
-                        className={`group relative rounded-lg overflow-hidden border transition-colors ${selected ? 'border-[#ff5473] ring-2 ring-[#ff5473]' : 'border-transparent hover:border-[#ff5473]'}`}>
-                        <img src={photo.url} alt={photo.name} className="w-full h-20 object-cover" />
+                        className={`group relative rounded-lg overflow-hidden border transition-colors ${selected ? 'border-[#ff5473] ring-2 ring-[#ff5473]' : used ? 'border-[#5a4042]' : 'border-transparent hover:border-[#ff5473]'}`}>
+                        <img src={photo.url} alt={photo.name} className={`w-full h-20 object-cover ${used && !selected ? 'opacity-50' : ''}`} />
+                        {used && !selected && (
+                          <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#2b2a29] text-[#e1bec0] border border-[#5a4042]">Used</span>
+                        )}
                         <div className={`absolute inset-0 bg-black/40 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity flex items-center justify-center`}>
                           {selected ? <span className="text-white text-lg font-bold">✓</span> : <PlusIcon className="w-6 h-6 text-white" />}
                         </div>
@@ -1505,10 +1522,14 @@ export default function CreatePostPage() {
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                   {filteredLibrary.map(photo => {
                     const selected = librarySelection.has(photo.url)
+                    const used = usedPhotoUrls.has(photo.url)
                     return (
                       <button key={photo.id} onClick={() => pickFromLibrary(photo.url)}
-                        className={`group relative rounded-lg overflow-hidden border transition-colors ${selected ? 'border-[#ff5473] ring-2 ring-[#ff5473]' : 'border-transparent hover:border-[#ff5473]'}`}>
-                        <img src={photo.url} alt={photo.name} className="w-full h-20 object-cover" />
+                        className={`group relative rounded-lg overflow-hidden border transition-colors ${selected ? 'border-[#ff5473] ring-2 ring-[#ff5473]' : used ? 'border-[#5a4042]' : 'border-transparent hover:border-[#ff5473]'}`}>
+                        <img src={photo.url} alt={photo.name} className={`w-full h-20 object-cover ${used && !selected ? 'opacity-50' : ''}`} />
+                        {used && !selected && (
+                          <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#2b2a29] text-[#e1bec0] border border-[#5a4042]">Used</span>
+                        )}
                         <div className={`absolute inset-0 bg-black/40 ${selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity flex items-center justify-center`}>
                           {selected ? (
                             <span className="text-white text-lg font-bold">✓</span>
