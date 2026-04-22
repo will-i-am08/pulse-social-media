@@ -30,6 +30,7 @@ import {
   PhotoIcon,
   PaperAirplaneIcon,
   VideoCameraIcon,
+  EyeIcon,
 } from '@heroicons/react/16/solid'
 import CaptionTemplates from '@/components/app/CaptionTemplates'
 import CaptionFeedback from '@/components/app/CaptionFeedback'
@@ -165,6 +166,7 @@ export default function CreatePostPage() {
   const [activeGoals, setActiveGoals] = useState<BrandGoal[]>([])
   const [useGoals, setUseGoals] = useState(true)
   const [showLibrary, setShowLibrary] = useState(false)
+  const [previewBulkIndex, setPreviewBulkIndex] = useState<number | null>(null)
   const [libraryTarget, setLibraryTarget] = useState<'single' | number>('single')
   const [librarySearch, setLibrarySearch] = useState('')
   const [showTemplates, setShowTemplates] = useState(false)
@@ -979,10 +981,18 @@ export default function CreatePostPage() {
                   {row.status === 'generating' && <p className="text-xs text-[#ffb2b9] flex items-center gap-1"><ArrowPathIcon className="w-3 h-3 animate-spin" /> Generating...</p>}
                   {row.status === 'done' && <span className="text-xs text-emerald-400">Ready</span>}
                 </div>
-                <button onClick={() => { if (bulkRows.length > 1) { const r = [...bulkRows]; r.splice(i, 1); setBulkRows(r) } }}
-                  className="text-[#5a4042] hover:text-[#f87171]">
-                  <XMarkIcon className="w-4 h-4" />
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button onClick={() => setPreviewBulkIndex(i)}
+                    title="Preview post"
+                    className="text-[#5a4042] hover:text-[#ff5473]">
+                    <EyeIcon className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => { if (bulkRows.length > 1) { const r = [...bulkRows]; r.splice(i, 1); setBulkRows(r) } }}
+                    title="Remove row"
+                    className="text-[#5a4042] hover:text-[#f87171]">
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -1110,6 +1120,72 @@ export default function CreatePostPage() {
           </div>
         </div>
       )}
+
+      {/* Bulk Row Preview Modal */}
+      {previewBulkIndex !== null && bulkRows[previewBulkIndex] && (() => {
+        const row = bulkRows[previewBulkIndex]
+        const bb = brands.find(b => b.id === bulkBrandId)
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setPreviewBulkIndex(null)}>
+            <div className="card p-5 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-[#e6e1e1] flex items-center gap-2">
+                  <EyeIcon className="w-5 h-5 text-[#ff5473]" /> Post Preview
+                  <span className="text-xs text-[#e1bec0] font-normal">#{previewBulkIndex + 1}</span>
+                </h3>
+                <button onClick={() => setPreviewBulkIndex(null)} className="text-[#5a4042] hover:text-[#e6e1e1]">
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="border border-[rgba(90,64,66,0.3)] rounded-lg overflow-hidden">
+                <div className="flex items-center gap-2 p-3 border-b border-[rgba(90,64,66,0.2)]">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ background: bb?.color || '#ff5473' }}>
+                    {(bb?.name || 'B')[0]}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#e6e1e1]">{bb?.name || 'Brand Name'}</p>
+                    <p className="text-xs text-[#e1bec0] capitalize">
+                      {bulkPlatforms.join(', ') || 'instagram'} · {bulkPostType}
+                    </p>
+                  </div>
+                </div>
+                {bulkPostType === 'reel' || bulkPostType === 'story' ? (
+                  row.video ? (
+                    <video src={row.video} controls className="w-full max-h-[400px] bg-black" />
+                  ) : (
+                    <div className="h-32 bg-[#2b2a29] flex items-center justify-center text-[#5a4042] text-sm">No video</div>
+                  )
+                ) : row.images.length > 0 ? (
+                  row.images.length > 1 ? (
+                    <div className="flex overflow-x-auto snap-x snap-mandatory" style={{ aspectRatio: bulkAspectRatio || 'auto', maxHeight: bulkAspectRatio ? undefined : '20rem' }}>
+                      {row.images.map((img, idx) => (
+                        <img key={idx} src={img} alt="" className="w-full h-full object-cover flex-shrink-0 snap-center" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ aspectRatio: bulkAspectRatio || 'auto', maxHeight: bulkAspectRatio ? undefined : '20rem', overflow: 'hidden' }}>
+                      <img src={row.images[0]} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )
+                ) : (
+                  <div className="h-32 bg-[#2b2a29] flex items-center justify-center text-[#5a4042] text-sm">No image</div>
+                )}
+                <div className="p-3">
+                  <p className="text-sm text-[#e6e1e1] whitespace-pre-wrap">
+                    {row.caption || <span className="text-[#5a4042]">Caption will appear here...</span>}
+                  </p>
+                </div>
+              </div>
+              {row.category && (
+                <p className="text-xs text-[#e1bec0] mt-3">
+                  <strong className="text-[#e6e1e1]">Category:</strong> {POST_CATEGORIES.find(c => c.id === row.category)?.label || row.category}
+                </p>
+              )}
+            </div>
+          </div>
+        )
+      })()}
       </div>
     )
   }
