@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { resolveAutomationUser } from '@/lib/automations/auth'
 import { getDecryptedClaudeKey } from '@/lib/account/getAccountSettings'
 import { buildEnhancedPrompt, type CaptionFeedback } from '@/lib/caption-engine'
 import { cleanCaption } from '@/lib/cleanCaption'
@@ -7,14 +7,14 @@ import { cleanCaption } from '@/lib/cleanCaption'
 export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const resolved = await resolveAutomationUser(req)
+  if (resolved instanceof NextResponse) return resolved
+  const { userId, supabase } = resolved
 
   const { brandId, platforms, prompt, tone, imageUrl, variationMode } = await req.json()
   if (!brandId) return NextResponse.json({ error: 'brandId required' }, { status: 400 })
 
-  const apiKey = await getDecryptedClaudeKey(user.id)
+  const apiKey = await getDecryptedClaudeKey(userId, supabase)
   if (!apiKey) return NextResponse.json({ error: 'No Claude API key configured.' }, { status: 400 })
 
   // Fetch brand (including custom_rules, brand_voice, etc.)
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     .from('workspace_brands')
     .select('name, brand_voice, tone, output_length, include_hashtags, include_emojis, custom_rules, posting_instructions, brand_guidelines, key_messages, target_audience')
     .eq('id', brandId)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .single()
 
   if (!brand) return NextResponse.json({ error: 'Brand not found' }, { status: 404 })
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     .from('caption_feedback')
     .select('*')
     .eq('brand_id', brandId)
-    .eq('user_id', user.id)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(50)
 

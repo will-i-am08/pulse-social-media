@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { resolveAutomationUser } from '@/lib/automations/auth'
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const resolved = await resolveAutomationUser(req)
+  if (resolved instanceof NextResponse) return resolved
+  const { userId, supabase } = resolved
 
   const { brandId, caption, platforms, status, scheduledAt, imageUrl, imageUrls, batchId, batchLabel } = await req.json()
   if (!brandId || !caption) return NextResponse.json({ error: 'brandId and caption required' }, { status: 400 })
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     .from('posts')
     .insert({
       id: postId,
-      workspace_id: user.id,
+      workspace_id: userId,
       brand_profile_id: brandId,
       client_visible: false,
       data: postData,

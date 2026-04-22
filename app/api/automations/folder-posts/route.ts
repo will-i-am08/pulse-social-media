@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { resolveAutomationUser } from '@/lib/automations/auth'
 import type { Photo } from '@/lib/types'
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const resolved = await resolveAutomationUser(req)
+  if (resolved instanceof NextResponse) return resolved
+  const { userId, supabase } = resolved
 
   const { folderId, brandId, platforms, status, count, prompt } = await req.json()
   if (!folderId || !brandId) return NextResponse.json({ error: 'folderId and brandId required' }, { status: 400 })
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const { data: photoRows, error: photoErr } = await supabase
     .from('photos')
     .select('data')
-    .eq('workspace_id', user.id)
+    .eq('workspace_id', userId)
 
   if (photoErr) return NextResponse.json({ error: photoErr.message }, { status: 500 })
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   const { data: postRows } = await supabase
     .from('posts')
     .select('data')
-    .eq('workspace_id', user.id)
+    .eq('workspace_id', userId)
 
   const usedUrls = new Set<string>()
   for (const row of (postRows || [])) {
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   const { data: brandRows } = await supabase
     .from('workspace_brands')
     .select('*')
-    .eq('workspace_id', user.id)
+    .eq('workspace_id', userId)
     .eq('id', brandId)
     .single()
 
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       .from('posts')
       .insert({
         id: postId,
-        workspace_id: user.id,
+        workspace_id: userId,
         brand_profile_id: brandId,
         client_visible: false,
         data: postData,

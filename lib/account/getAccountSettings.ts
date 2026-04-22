@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/geo/encrypt'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-export async function getDecryptedClaudeKey(userId: string): Promise<string | null> {
-  const supabase = await createClient()
+export async function getDecryptedClaudeKey(userId: string, client?: SupabaseClient): Promise<string | null> {
+  const supabase = client || await createClient()
   const { data } = await supabase
     .from('account_settings')
     .select('claude_key_enc, claude_key_iv, claude_key_tag')
@@ -16,8 +17,8 @@ export async function getDecryptedClaudeKey(userId: string): Promise<string | nu
   }
 }
 
-export async function getDecryptedBufferToken(userId: string): Promise<string | null> {
-  const supabase = await createClient()
+export async function getDecryptedBufferToken(userId: string, client?: SupabaseClient): Promise<string | null> {
+  const supabase = client || await createClient()
   const { data } = await supabase
     .from('account_settings')
     .select('buffer_token_enc, buffer_token_iv, buffer_token_tag')
@@ -31,8 +32,8 @@ export async function getDecryptedBufferToken(userId: string): Promise<string | 
   }
 }
 
-export async function getDecryptedBannerbearKey(userId: string): Promise<string | null> {
-  const supabase = await createClient()
+export async function getDecryptedBannerbearKey(userId: string, client?: SupabaseClient): Promise<string | null> {
+  const supabase = client || await createClient()
   const { data } = await supabase
     .from('account_settings')
     .select('bannerbear_key_enc, bannerbear_key_iv, bannerbear_key_tag')

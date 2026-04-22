@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ACTION_REGISTRY } from './actions'
 import type { Automation, AutomationStep, StepLog, TriggerType } from './types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 function rowToAutomation(row: Record<string, unknown>): Automation {
   return {
@@ -19,45 +21,22 @@ function rowToAutomation(row: Record<string, unknown>): Automation {
   }
 }
 
-export async function executeAutomation(
-  automationId: string,
-  userId: string,
-  triggerSource: TriggerType,
-  cookies: string
-): Promise<{ runId: string; status: 'success' | 'failed'; stepsLog: StepLog[] }> {
-  const supabase = await createClient()
+interface InternalAuth {
+  cronSecret: string
+  userId: string
+}
 
-  // Fetch automation
-  const { data: row } = await supabase
-    .from('automations')
-    .select('*')
-    .eq('id', automationId)
-    .eq('user_id', userId)
-    .single()
-
-  if (!row) throw new Error('Automation not found')
-  const automation = rowToAutomation(row)
-
-  // Create run record
-  const { data: run, error: runErr } = await supabase
-    .from('automation_runs')
-    .insert({ automation_id: automationId, user_id: userId, trigger_source: triggerSource })
-    .select('id')
-    .single()
-
-  if (runErr || !run) throw new Error('Could not create run record')
-
-  // Mark automation as running
-  await supabase.from('automations').update({ last_run_status: 'running' }).eq('id', automationId)
-
+async function runSteps(
+  steps: AutomationStep[],
+  baseUrl: string,
+  authHeaders: Record<string, string>
+): Promise<{ stepsLog: StepLog[]; overallStatus: 'success' | 'failed'; errorMessage?: string }> {
   const stepsLog: StepLog[] = []
   let overallStatus: 'success' | 'failed' = 'success'
   let errorMessage: string | undefined
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-
-  for (let i = 0; i < automation.steps.length; i++) {
-    const step = automation.steps[i]
+  for (let i = 0; i < steps.length; i++) {
+    const step = steps[i]
     const actionDef = ACTION_REGISTRY[step.actionType]
     const startTime = Date.now()
 
@@ -75,7 +54,6 @@ export async function executeAutomation(
       break
     }
 
-    // Handle internal notification action
     if (actionDef.endpoint === '__internal__') {
       stepsLog.push({
         stepIndex: i,
@@ -92,10 +70,7 @@ export async function executeAutomation(
       const body = actionDef.buildBody(step.config)
       const res = await fetch(`${baseUrl}${actionDef.endpoint}`, {
         method: actionDef.method,
-        headers: {
-          'Content-Type': 'application/json',
-          Cookie: cookies,
-        },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify(body),
       })
 
@@ -139,9 +114,18 @@ export async function executeAutomation(
     }
   }
 
-  const now = new Date().toISOString()
+  return { stepsLog, overallStatus, errorMessage }
+}
 
-  // Update run record
+async function finalizeRun(
+  supabase: SupabaseClient,
+  automationId: string,
+  runId: string,
+  stepsLog: StepLog[],
+  overallStatus: 'success' | 'failed',
+  errorMessage: string | undefined
+) {
+  const now = new Date().toISOString()
   await supabase
     .from('automation_runs')
     .update({
@@ -150,13 +134,84 @@ export async function executeAutomation(
       completed_at: now,
       error_message: errorMessage || null,
     })
-    .eq('id', run.id)
+    .eq('id', runId)
 
-  // Update automation
   await supabase
     .from('automations')
     .update({ last_run_at: now, last_run_status: overallStatus })
     .eq('id', automationId)
+}
+
+export async function executeAutomation(
+  automationId: string,
+  userId: string,
+  triggerSource: TriggerType,
+  cookies: string
+): Promise<{ runId: string; status: 'success' | 'failed'; stepsLog: StepLog[] }> {
+  const supabase = await createClient()
+
+  const { data: row } = await supabase
+    .from('automations')
+    .select('*')
+    .eq('id', automationId)
+    .eq('user_id', userId)
+    .single()
+
+  if (!row) throw new Error('Automation not found')
+  const automation = rowToAutomation(row)
+
+  const { data: run, error: runErr } = await supabase
+    .from('automation_runs')
+    .insert({ automation_id: automationId, user_id: userId, trigger_source: triggerSource })
+    .select('id')
+    .single()
+
+  if (runErr || !run) throw new Error('Could not create run record')
+
+  await supabase.from('automations').update({ last_run_status: 'running' }).eq('id', automationId)
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const { stepsLog, overallStatus, errorMessage } = await runSteps(automation.steps, baseUrl, { Cookie: cookies })
+
+  await finalizeRun(supabase, automationId, run.id, stepsLog, overallStatus, errorMessage)
+
+  return { runId: run.id, status: overallStatus, stepsLog }
+}
+
+export async function executeAutomationAsService(
+  automationId: string,
+  userId: string,
+  auth: InternalAuth
+): Promise<{ runId: string; status: 'success' | 'failed'; stepsLog: StepLog[] }> {
+  const supabase = createAdminClient()
+
+  const { data: row } = await supabase
+    .from('automations')
+    .select('*')
+    .eq('id', automationId)
+    .eq('user_id', userId)
+    .single()
+
+  if (!row) throw new Error('Automation not found')
+  const automation = rowToAutomation(row)
+
+  const { data: run, error: runErr } = await supabase
+    .from('automation_runs')
+    .insert({ automation_id: automationId, user_id: userId, trigger_source: 'schedule' })
+    .select('id')
+    .single()
+
+  if (runErr || !run) throw new Error('Could not create run record')
+
+  await supabase.from('automations').update({ last_run_status: 'running' }).eq('id', automationId)
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const { stepsLog, overallStatus, errorMessage } = await runSteps(automation.steps, baseUrl, {
+    'x-internal-cron-secret': auth.cronSecret,
+    'x-internal-user-id': auth.userId,
+  })
+
+  await finalizeRun(supabase, automationId, run.id, stepsLog, overallStatus, errorMessage)
 
   return { runId: run.id, status: overallStatus, stepsLog }
 }
