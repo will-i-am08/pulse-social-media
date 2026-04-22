@@ -75,14 +75,22 @@ const DETECTION_PATTERNS: { name: string; regex: RegExp }[] = [
   { name: 'more-than-its', regex: /\bmore than\b[^.?!]{2,80}[.?!]\s+it'?s\b/i },
 ]
 
-/** Replace em dashes (—) and en dashes (–) with hyphens. */
+/**
+ * Remove mid-sentence dashes entirely — split the clauses into separate
+ * sentences with proper capitalisation. Compound hyphens ("same-day",
+ * "on-the-fly") are left alone because they have no surrounding spaces.
+ *
+ * Targets:
+ *   " — " / " – " / " -- " / " - "  (any dash used as a sentence break)
+ *   "word—word" / "word–word"       (unspaced em/en dash between words)
+ */
 function replaceDashes(text: string): string {
-  // Spaced dashes: " — " or " – " → " - "
-  let result = text.replace(/\s[—–]\s/g, ' - ')
-  // Unspaced dashes between words: "word—word" → "word - word"
-  result = result.replace(/(\w)[—–](\w)/g, '$1 - $2')
-  // Any remaining standalone em/en dashes
-  result = result.replace(/[—–]/g, '-')
+  // Spaced dashes between clauses → ". " + uppercase the next letter.
+  let result = text.replace(/\s+(?:—|–|--|-)\s+([a-zA-Z])/g, (_, letter) => '. ' + letter.toUpperCase())
+  // Unspaced em/en dashes between words → ". " + uppercase. (Leave "-" alone: it's a compound.)
+  result = result.replace(/(\w)[—–](\w)/g, (_, a, b) => a + '. ' + b.toUpperCase())
+  // Any remaining stray em/en dashes → period.
+  result = result.replace(/[—–]/g, '.')
   return result
 }
 

@@ -15,8 +15,9 @@ export function buildHumanRules(brandTone?: BrandTone): string {
 
   const rules: string[] = [
     '═══ HUMAN VOICE RULES ═══',
-    'These rules apply to every caption. They are how real people write — not how AI defaults to writing.',
+    'These rules apply to every caption. They are how real people write, not how AI defaults to writing.',
     '',
+    '• NEVER use dashes or hyphens mid-sentence. No em dash (—), no en dash (–), no spaced hyphen (" - "), no double hyphen (" -- "). If you want a beat or pause, start a new sentence with a full stop. Hyphens are ONLY allowed inside compound words ("same-day", "state-of-the-art", "on-the-fly") where there are no surrounding spaces. This is non-negotiable.',
     '• Vary sentence length. Mix short punchy lines with longer ones. Never three same-length sentences in a row.',
     formal
       ? '• Use contractions where natural ("it\'s", "you\'re") unless the brand voice explicitly calls for formality. Don\'t force stilted phrasing.'

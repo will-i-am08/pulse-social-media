@@ -704,8 +704,15 @@ export function buildEnhancedPrompt(input: CaptionEngineInput): CaptionEngineOut
   if (address) contactPool.push({ kind: 'address', value: address })
 
   if (contactPool.length > 0) {
-    // Include a "none" option so ~1 in (N+1) captions skip contact details entirely.
-    const options: (typeof contactPool[number] | null)[] = [...contactPool, null]
+    // Weight the contact options 3x against a single "none" slot so only
+    // ~1 in (3N+1) captions skip contact details entirely (roughly 10%
+    // with three contacts configured). Most posts should have a CTA.
+    const options: (typeof contactPool[number] | null)[] = [
+      ...contactPool,
+      ...contactPool,
+      ...contactPool,
+      null,
+    ]
     const chosen = options[Math.floor(Math.random() * options.length)]
     systemParts.push(`\n═══ CONTACT DETAIL FOR THIS POST ═══`)
     if (chosen) {
