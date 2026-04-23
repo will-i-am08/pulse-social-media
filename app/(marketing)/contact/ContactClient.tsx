@@ -94,9 +94,8 @@ const CSS = `
 .pulse-contact .audit .site-insight .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ff5473;background:#fff;border-radius:999px;padding:6px 12px;margin-bottom:14px;border:1px solid #ffc4cc}
 .pulse-contact .audit .site-insight h3{font-size:1.15rem;font-weight:600;color:#111;margin:0 0 8px}
 .pulse-contact .audit .site-insight .snapshot{color:#374151;font-size:.95rem;line-height:1.6;margin:0 0 18px}
-.pulse-contact .audit .site-insight .rec-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
-.pulse-contact .audit .site-insight .rec-list li{display:flex;gap:12px;align-items:flex-start;color:#374151;font-size:.9rem;line-height:1.5}
-.pulse-contact .audit .site-insight .rec-list li::before{content:"→";color:#ff5473;font-weight:700;flex-shrink:0}
+.pulse-contact .audit .site-insight .rec-list{display:flex;flex-direction:column;gap:14px;padding:14px 0 0;border-top:1px solid rgba(255,84,115,0.18)}
+.pulse-contact .audit .site-insight .rec-list p{margin:0;color:#374151;font-size:.92rem;line-height:1.6}
 .pulse-contact .audit .site-unreachable{background:#fff;border:1px dashed #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:16px;color:#6b7280;font-size:.88rem;line-height:1.5}
 .pulse-contact .audit .cta-section{background:#0a0a0a;border-radius:16px;padding:48px 36px;text-align:center;margin:40px 0 20px;color:#fff}
 .pulse-contact .audit .cta-section h3{font-size:1.6rem;font-weight:600;margin-bottom:12px;color:#fff}
@@ -299,13 +298,13 @@ export default function ContactClient() {
     const improvements = QUESTIONS
       .map(q => q.options.find(o => o.value === a[q.id]))
       .filter((o): o is NonNullable<typeof o> => !!o && !!o.improve)
-      .map(o => `• ${o.improve}`)
+      .map(o => o.improve)
       .join('\n')
 
     const personalised = insight && insight.recommendations.length
-      ? `\n\nWhat the AI flagged from my website:\n${insight.recommendations.map(r => `• ${r}`).join('\n')}`
+      ? `\n\nWhat the AI flagged from my website:\n${insight.recommendations.join('\n')}`
       : ''
-    const summary = `Hi William — I just ran your audit for ${bizName} and scored ${pct}/100.\n\nThings I need help with:\n${improvements}${personalised}\n\nKeen to chat.`
+    const summary = `Hi team — I just ran your audit for ${bizName} and scored ${pct}/100.\n\nThings I need help with:\n${improvements}${personalised}\n\nKeen to chat.`
     setBriefValue(summary)
     if (userName) setNameValue(userName)
     if (userEmail) setEmailValue(userEmail)
@@ -401,7 +400,7 @@ export default function ContactClient() {
           <p className="mono-label">Get in touch</p>
           <h1>Let&apos;s make<br />something <em>loud.</em></h1>
         </div>
-        <p>Tell me a little about the brand, the brief, and the headache. Every enquiry comes directly to me — usually same-day, always within two working days.</p>
+        <p>Tell us a little about the brand, the brief, and the headache. Every enquiry comes directly to us — usually same-day, always within two working days.</p>
       </section>
 
       <section className="audit">
@@ -492,9 +491,9 @@ export default function ContactClient() {
                 <h3>What we read on your website</h3>
                 {websiteInsight.snapshot && <p className="snapshot">{websiteInsight.snapshot}</p>}
                 {websiteInsight.recommendations.length > 0 && (
-                  <ul className="rec-list">
-                    {websiteInsight.recommendations.map((r, i) => <li key={i}>{r}</li>)}
-                  </ul>
+                  <div className="rec-list">
+                    {websiteInsight.recommendations.map((r, i) => <p key={i}>{r}</p>)}
+                  </div>
                 )}
               </div>
             )}
@@ -534,10 +533,10 @@ export default function ContactClient() {
       <section className="contact-wrap">
         <div className="contact-left">
           <h2>Not quite ready<br />for a <em>form?</em></h2>
-          <p>Totally fine. Here are the other ways in. Pulse is a one-person studio, so whichever channel you pick, you&apos;ll hear back from me directly.</p>
+          <p>Totally fine. Here are the other ways in. Whichever channel you pick, you&apos;ll hear back from us directly.</p>
           <div className="contact-rows">
-            <div className="crow"><div className="k">New business</div><div className="v"><a href="mailto:william@pulsesocialmedia.com.au">william@pulsesocialmedia.com.au</a><div className="sub">Replies from William, usually same-day</div></div></div>
-            <div className="crow"><div className="k">Press &amp; speaking</div><div className="v"><a href="mailto:william@pulsesocialmedia.com.au">william@pulsesocialmedia.com.au</a><div className="sub">Interviews, podcasts, conferences</div></div></div>
+            <div className="crow"><div className="k">New business</div><div className="v"><a href="mailto:hello@pulsesocialmedia.com.au">hello@pulsesocialmedia.com.au</a><div className="sub">Replies from the team, usually same-day</div></div></div>
+            <div className="crow"><div className="k">Press &amp; speaking</div><div className="v"><a href="mailto:hello@pulsesocialmedia.com.au">hello@pulsesocialmedia.com.au</a><div className="sub">Interviews, podcasts, conferences</div></div></div>
             <div className="crow"><div className="k">Phone</div><div className="v"><a href="tel:+61480436685">0480 436 685</a><div className="sub">7 days, 9am–5pm AEST</div></div></div>
             <div className="crow"><div className="k">Social</div><div className="v">Instagram · LinkedIn<div className="sub">DMs open — just maybe not at 2am</div></div></div>
           </div>
@@ -618,11 +617,11 @@ export default function ContactClient() {
       <section className="faq">
         <div className="faq-inner">
           <h2>Questions people <em>always</em> ask.</h2>
-          <details open><summary>How does pricing work?</summary><p>Retainers are scoped per engagement — I send a flat-rate SOW within 48 hours of a brief. No hourly games, no tiered pricing wall. One-off projects (a launch campaign, a content audit, a CaptionCraft rollout) can be scoped independently.</p></details>
+          <details open><summary>How does pricing work?</summary><p>Retainers are scoped per engagement — we send a flat-rate SOW within 48 hours of a brief. No hourly games, no tiered pricing wall. One-off projects (a launch campaign, a content audit, a CaptionCraft rollout) can be scoped independently.</p></details>
           <details><summary>How long does it take to get started?</summary><p>From signed scope to first post in-market is usually 2–3 weeks. That covers kickoff, brand immersion, tool setup, a first content sprint, and review.</p></details>
           <details><summary>Do you work with brands outside Bendigo?</summary><p>Yes — everything runs remote-first, so location doesn&apos;t matter much. Happy to take on brands anywhere in Australia and beyond, as long as the time zones aren&apos;t completely silly.</p></details>
-          <details><summary>Do you use AI? Should I be worried?</summary><p>AI handles the boring parts — drafting, tagging, scheduling, transcription — while I stay firmly in charge of voice, strategy, and anything creative. CaptionCraft is my in-house tool for exactly this, and nothing ships without my eyes on it.</p></details>
-          <details><summary>Can you work with our existing team?</summary><p>Yes — I often slot alongside in-house marketing, creative, or comms teams. Whatever shape the problem needs.</p></details>
+          <details><summary>Do you use AI? Should I be worried?</summary><p>AI handles the boring parts — drafting, tagging, scheduling, transcription — while we stay firmly in charge of voice, strategy, and anything creative. CaptionCraft is our in-house tool for exactly this, and nothing ships without our eyes on it.</p></details>
+          <details><summary>Can you work with our existing team?</summary><p>Yes — we often slot alongside in-house marketing, creative, or comms teams. Whatever shape the problem needs.</p></details>
           <details><summary>Do you offer discovery workshops?</summary><p>Yes. A short Discovery Sprint produces a tone-of-voice doc, a content engine setup, a 90-day intent map, and a measurement framework. Good way to test-drive the working style before a longer engagement.</p></details>
         </div>
       </section>
@@ -631,7 +630,7 @@ export default function ContactClient() {
         <p className="mono-label">One more thing</p>
         <h2>Prefer a <em>call?</em></h2>
         <p className="sub">Pick a 20-minute slot that suits. No sales pitch, no pressure — just a chat about what you&apos;re trying to do.</p>
-        <a className="btn-pill btn-grad" href="mailto:william@pulsesocialmedia.com.au" style={{ padding: '18px 36px', fontSize: 15 }}>Book a call →</a>
+        <a className="btn-pill btn-grad" href="mailto:hello@pulsesocialmedia.com.au" style={{ padding: '18px 36px', fontSize: 15 }}>Book a call →</a>
       </section>
     </main>
   )

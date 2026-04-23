@@ -128,11 +128,16 @@ WEBSITE CONTENT (trimmed)
 ${site.text}
 """
 
+IMPORTANT RULES
+- Do NOT reference, recommend, or mention any third-party agencies, tools, products, or services — including (but not limited to) Pulse Social Media, CaptionCraft, or anything else that might appear on the site itself. The advice must be for the business to execute themselves.
+- Do NOT use bullet points, dashes, arrows, numbering, or any list markers inside the text. Write each recommendation as a single clean sentence of flowing prose.
+- Do NOT use em-dashes or hyphens to join clauses. Use full stops or commas instead.
+
 Write a JSON object with EXACTLY this shape — no commentary, no markdown fences:
 {
   "snapshot": "One or two sentences describing what this business actually does and who it's for. Specific, not generic. Reference something real from the site.",
   "recommendations": [
-    "Five short, specific, actionable social media recommendations tailored to THIS business. Each one should reference something concrete you learned from the site (a product, service, location, audience, tone, offer). Each recommendation max 220 characters. No bullet markers, no numbering — just the sentence."
+    "Five short, specific, actionable social media recommendations tailored to THIS business. Each one should reference something concrete you learned from the site (a product, service, location, audience, tone, offer). Each recommendation max 220 characters. Plain sentence only, no markers of any kind."
   ]
 }
 
