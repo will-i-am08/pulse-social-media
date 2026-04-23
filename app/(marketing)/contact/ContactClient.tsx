@@ -90,6 +90,14 @@ const CSS = `
 .pulse-contact .audit .finding .icon.pass{background:#ecfdf5;color:#059669}
 .pulse-contact .audit .finding .icon.fail{background:#fff1f2;color:#e11d48}
 .pulse-contact .audit .finding .icon.warn{background:#fffbeb;color:#d97706}
+.pulse-contact .audit .site-insight{background:linear-gradient(135deg,#fff7f8 0%,#ffe8ec 100%);border:1px solid #ffc4cc;border-radius:14px;padding:28px;margin-bottom:16px}
+.pulse-contact .audit .site-insight .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ff5473;background:#fff;border-radius:999px;padding:6px 12px;margin-bottom:14px;border:1px solid #ffc4cc}
+.pulse-contact .audit .site-insight h3{font-size:1.15rem;font-weight:600;color:#111;margin:0 0 8px}
+.pulse-contact .audit .site-insight .snapshot{color:#374151;font-size:.95rem;line-height:1.6;margin:0 0 18px}
+.pulse-contact .audit .site-insight .rec-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
+.pulse-contact .audit .site-insight .rec-list li{display:flex;gap:12px;align-items:flex-start;color:#374151;font-size:.9rem;line-height:1.5}
+.pulse-contact .audit .site-insight .rec-list li::before{content:"→";color:#ff5473;font-weight:700;flex-shrink:0}
+.pulse-contact .audit .site-unreachable{background:#fff;border:1px dashed #e5e7eb;border-radius:14px;padding:20px 24px;margin-bottom:16px;color:#6b7280;font-size:.88rem;line-height:1.5}
 .pulse-contact .audit .cta-section{background:#0a0a0a;border-radius:16px;padding:48px 36px;text-align:center;margin:40px 0 20px;color:#fff}
 .pulse-contact .audit .cta-section h3{font-size:1.6rem;font-weight:600;margin-bottom:12px;color:#fff}
 .pulse-contact .audit .cta-section p{color:#9ca3af;font-size:.95rem;max-width:440px;margin:0 auto 28px;line-height:1.6}
@@ -202,6 +210,12 @@ export default function ContactClient() {
   const [nameValue, setNameValue] = useState('')
   const [emailValue, setEmailValue] = useState('')
   const [companyValue, setCompanyValue] = useState('')
+  const [websiteValue, setWebsiteValue] = useState('')
+  const [websiteInsight, setWebsiteInsight] = useState<{
+    snapshot: string
+    recommendations: string[]
+    reachable: boolean
+  } | null>(null)
   const [sentEnquiry, setSentEnquiry] = useState(false)
   const [sendingEnquiry, setSendingEnquiry] = useState(false)
   const [enquiryError, setEnquiryError] = useState<string | null>(null)
@@ -218,18 +232,13 @@ export default function ContactClient() {
     })
     setAnswers(a)
     setAuditStage('progress')
+    setWebsiteInsight(null)
 
-    const steps = [
-      { pct: 25, msg: 'Analysing your profile…' },
-      { pct: 55, msg: 'Checking content cadence…' },
-      { pct: 80, msg: 'Scoring each category…' },
-      { pct: 100, msg: 'Generating recommendations…' },
-    ]
-    for (const s of steps) {
-      setProgress(s.pct)
-      setProgressLabel(s.msg)
-      await new Promise(r => setTimeout(r, 400))
-    }
+    const bizName = (data.get('bizName') as string) || 'our brand'
+    const userName = (data.get('userName') as string) || ''
+    const userEmail = (data.get('userEmail') as string) || ''
+    const industry = (data.get('industry') as string) || ''
+    const websiteUrl = ((data.get('website') as string) || '').trim()
 
     let total = 0
     QUESTIONS.forEach(q => {
@@ -237,7 +246,54 @@ export default function ContactClient() {
       total += opt?.score ?? 0
     })
     const pct = Math.round((total / (QUESTIONS.length * 10)) * 100)
+
+    const baseSteps = [
+      { pct: 20, msg: 'Analysing your profile…', delay: 400 },
+      { pct: 45, msg: 'Checking content cadence…', delay: 400 },
+      { pct: 65, msg: 'Scoring each category…', delay: 400 },
+    ] as const
+
+    for (const s of baseSteps) {
+      setProgress(s.pct)
+      setProgressLabel(s.msg)
+      await new Promise(r => setTimeout(r, s.delay))
+    }
+
+    let insight: { snapshot: string; recommendations: string[]; reachable: boolean } | null = null
+    if (websiteUrl) {
+      setProgress(80)
+      setProgressLabel('Visiting your website…')
+      try {
+        const res = await fetch('/api/audit-website', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: websiteUrl,
+            bizName,
+            industry,
+            score: pct,
+            answers: a,
+          }),
+        })
+        if (res.ok) {
+          const json = await res.json()
+          insight = {
+            snapshot: typeof json.snapshot === 'string' ? json.snapshot : '',
+            recommendations: Array.isArray(json.recommendations) ? json.recommendations : [],
+            reachable: Boolean(json.reachable),
+          }
+        }
+      } catch {
+        insight = null
+      }
+    }
+
+    setProgress(100)
+    setProgressLabel('Generating recommendations…')
+    await new Promise(r => setTimeout(r, 400))
+
     setScore(pct)
+    setWebsiteInsight(insight)
     setAuditStage('results')
 
     const improvements = QUESTIONS
@@ -246,14 +302,15 @@ export default function ContactClient() {
       .map(o => `• ${o.improve}`)
       .join('\n')
 
-    const bizName = (data.get('bizName') as string) || 'our brand'
-    const userName = (data.get('userName') as string) || ''
-    const userEmail = (data.get('userEmail') as string) || ''
-    const summary = `Hi William — I just ran your audit for ${bizName} and scored ${pct}/100.\n\nThings I need help with:\n${improvements}\n\nKeen to chat.`
+    const personalised = insight && insight.recommendations.length
+      ? `\n\nWhat the AI flagged from my website:\n${insight.recommendations.map(r => `• ${r}`).join('\n')}`
+      : ''
+    const summary = `Hi William — I just ran your audit for ${bizName} and scored ${pct}/100.\n\nThings I need help with:\n${improvements}${personalised}\n\nKeen to chat.`
     setBriefValue(summary)
     if (userName) setNameValue(userName)
     if (userEmail) setEmailValue(userEmail)
     if (bizName && bizName !== 'our brand') setCompanyValue(bizName)
+    if (websiteUrl) setWebsiteValue(websiteUrl)
   }
 
   function scrollToBrief() {
@@ -366,6 +423,10 @@ export default function ContactClient() {
                 <div className="form-group"><label>Instagram Handle (optional)</label><input type="text" name="igHandle" placeholder="@yourbusiness" /></div>
               </div>
               <div className="form-group">
+                <label>Business Website (optional) <span style={{ fontWeight: 400, color: '#6b7280', fontSize: '.85em' }}>— we&apos;ll read it and tailor your report</span></label>
+                <input type="text" name="website" placeholder="e.g. yourbusiness.com.au" />
+              </div>
+              <div className="form-group">
                 <label>Industry</label>
                 <select name="industry" required defaultValue="">
                   <option value="">Select your industry</option>
@@ -425,6 +486,24 @@ export default function ContactClient() {
               <div className="score-subtitle">{scoreSub}</div>
             </div>
 
+            {websiteInsight && (websiteInsight.snapshot || websiteInsight.recommendations.length > 0) && (
+              <div className="site-insight">
+                <span className="tag">AI · Tailored to your site</span>
+                <h3>What we read on your website</h3>
+                {websiteInsight.snapshot && <p className="snapshot">{websiteInsight.snapshot}</p>}
+                {websiteInsight.recommendations.length > 0 && (
+                  <ul className="rec-list">
+                    {websiteInsight.recommendations.map((r, i) => <li key={i}>{r}</li>)}
+                  </ul>
+                )}
+              </div>
+            )}
+            {websiteInsight && !websiteInsight.reachable && (
+              <div className="site-unreachable">
+                We couldn&apos;t reach your website this time — the rest of your report is based on your answers. Double-check the URL and re-run the audit for a site-specific section.
+              </div>
+            )}
+
             {categories.map(c => (
               <div className="category-card" key={c.cat}>
                 <div className="category-header">
@@ -474,7 +553,7 @@ export default function ContactClient() {
             </div>
             <div className="row-2">
               <div className="field"><label>Email</label><input name="email" type="email" placeholder="jane@company.com" required value={emailValue} onChange={e => setEmailValue(e.target.value)} /></div>
-              <div className="field"><label>Website</label><input name="website" placeholder="kapoor.co" /></div>
+              <div className="field"><label>Website</label><input name="website" placeholder="kapoor.co" value={websiteValue} onChange={e => setWebsiteValue(e.target.value)} /></div>
             </div>
             <div className="field">
               <label>What are you looking for?</label>
