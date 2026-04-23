@@ -199,6 +199,9 @@ export default function ContactClient() {
   const [score, setScore] = useState(0)
   const briefRef = useRef<HTMLTextAreaElement>(null)
   const [briefValue, setBriefValue] = useState('')
+  const [nameValue, setNameValue] = useState('')
+  const [emailValue, setEmailValue] = useState('')
+  const [companyValue, setCompanyValue] = useState('')
   const [sentEnquiry, setSentEnquiry] = useState(false)
   const [sendingEnquiry, setSendingEnquiry] = useState(false)
   const [enquiryError, setEnquiryError] = useState<string | null>(null)
@@ -244,8 +247,13 @@ export default function ContactClient() {
       .join('\n')
 
     const bizName = (data.get('bizName') as string) || 'our brand'
+    const userName = (data.get('userName') as string) || ''
+    const userEmail = (data.get('userEmail') as string) || ''
     const summary = `Hi William — I just ran your audit for ${bizName} and scored ${pct}/100.\n\nThings I need help with:\n${improvements}\n\nKeen to chat.`
     setBriefValue(summary)
+    if (userName) setNameValue(userName)
+    if (userEmail) setEmailValue(userEmail)
+    if (bizName && bizName !== 'our brand') setCompanyValue(bizName)
   }
 
   function scrollToBrief() {
@@ -461,11 +469,11 @@ export default function ContactClient() {
             <p className="mono-label">Project enquiry</p>
             <h3>Tell us about it.</h3>
             <div className="row-2">
-              <div className="field"><label>Name</label><input name="name" placeholder="Jane Kapoor" required /></div>
-              <div className="field"><label>Company</label><input name="company" placeholder="Kapoor &amp; Co." /></div>
+              <div className="field"><label>Name</label><input name="name" placeholder="Jane Kapoor" required value={nameValue} onChange={e => setNameValue(e.target.value)} /></div>
+              <div className="field"><label>Company</label><input name="company" placeholder="Kapoor &amp; Co." value={companyValue} onChange={e => setCompanyValue(e.target.value)} /></div>
             </div>
             <div className="row-2">
-              <div className="field"><label>Email</label><input name="email" type="email" placeholder="jane@company.com" required /></div>
+              <div className="field"><label>Email</label><input name="email" type="email" placeholder="jane@company.com" required value={emailValue} onChange={e => setEmailValue(e.target.value)} /></div>
               <div className="field"><label>Website</label><input name="website" placeholder="kapoor.co" /></div>
             </div>
             <div className="field">
