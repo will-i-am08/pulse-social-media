@@ -3,9 +3,22 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Services · Pulse Social Media',
-  description: 'Founder-led social media management — strategy, content, community, paid, analytics and AI tooling, rolled into a flat monthly retainer.',
+  title: 'Social Media Management Services · Bendigo',
+  description: 'Social media management, content strategy, community management, paid social and AI tooling — rolled into one flat monthly retainer. Built in Bendigo for Australian brands.',
+  keywords: [
+    'social media management services',
+    'social media management Bendigo',
+    'social media agency services',
+    'content strategy',
+    'community management',
+    'paid social Australia',
+  ],
   alternates: { canonical: '/services' },
+  openGraph: {
+    title: 'Social Media Management Services · Pulse Social Media, Bendigo',
+    description: 'Strategy, content, community, paid and AI tooling in one flat monthly retainer. Built in Bendigo for Australian brands.',
+    url: '/services',
+  },
 }
 
 const CSS = `
@@ -153,11 +166,11 @@ export default function ServicesPage() {
 
       <section className="svc-head">
         <div>
-          <p className="mono-label">Services · What we do</p>
+          <p className="mono-label">Social media management · Bendigo</p>
           <h1>The full <em>engine,</em><br />one flat <em>fee.</em></h1>
         </div>
         <div className="right">
-          <p>Six disciplines, one operator, one invoice. Pulse runs your social the way an in-house hire would — strategy, creative, community, paid, analytics and AI tooling — without the overhead of a ten-person agency.</p>
+          <p>Pulse is a Bendigo social media management agency running strategy, content, community, paid social, analytics and AI tooling on a flat monthly retainer — the way an in-house hire would, without the overhead of a ten-person agency.</p>
           <div className="meta">
             <div><b>6</b>Disciplines</div>
             <div><b>30d</b>Rolling</div>

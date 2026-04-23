@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import LegalShell from '@/components/marketing/LegalShell'
 
 export const metadata: Metadata = {
-  title: 'Terms · Pulse Social Media',
+  title: 'Terms of Service',
   description: 'The rules of the road for using pulsesocialmedia.com.au and CaptionCraft.',
   alternates: { canonical: '/terms' },
 }

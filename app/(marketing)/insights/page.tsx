@@ -5,9 +5,21 @@ import { getPublishedPosts } from '@/lib/blog'
 import type { BlogPost } from '@/lib/types'
 
 export const metadata: Metadata = {
-  title: 'Insights · Pulse Social Media',
-  description: 'Playbooks, teardowns, and quiet opinions on what\'s working on social right now. Updated weekly.',
+  title: 'Social Media Insights & Playbooks',
+  description: 'Field notes from a working social media agency — playbooks, teardowns and opinions on what\'s actually working on Instagram, TikTok, Facebook and LinkedIn. Updated weekly.',
+  keywords: [
+    'social media insights',
+    'social media playbooks',
+    'social media strategy blog',
+    'Instagram growth tips',
+    'TikTok strategy',
+  ],
   alternates: { canonical: '/insights' },
+  openGraph: {
+    title: 'Social Media Insights & Playbooks · Pulse Social Media',
+    description: 'Field notes from a working social media agency — playbooks, teardowns and opinions on what\'s actually working.',
+    url: '/insights',
+  },
 }
 
 // Revalidate the list every 5 minutes so newly-published posts show up

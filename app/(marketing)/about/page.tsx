@@ -3,9 +3,20 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'About · Pulse Social Media',
-  description: 'A founder-led social media studio based in Bendigo, Victoria. Human doing the creative, AI doing the admin — built for brands that refuse to sound like everyone else.',
+  title: 'About · Bendigo Social Media Agency',
+  description: 'Pulse Social Media is a founder-led social media agency in Bendigo, Victoria. Human-led strategy, AI-assisted tooling, built for Australian brands that refuse to sound like everyone else.',
+  keywords: [
+    'Bendigo social media agency',
+    'about Pulse Social Media',
+    'social media agency Victoria',
+    'founder-led social media',
+  ],
   alternates: { canonical: '/about' },
+  openGraph: {
+    title: 'About Pulse Social Media · Bendigo Social Media Agency',
+    description: 'Founder-led social media agency in Bendigo, Victoria. Human-led strategy, AI-assisted tooling, built for Australian brands.',
+    url: '/about',
+  },
 }
 
 const CSS = `

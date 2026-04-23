@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import LegalShell from '@/components/marketing/LegalShell'
 
 export const metadata: Metadata = {
-  title: 'Privacy · Pulse Social Media',
+  title: 'Privacy Policy',
   description: 'We collect the least we can. We store it for the shortest time we can. We never sell it.',
   alternates: { canonical: '/privacy' },
 }

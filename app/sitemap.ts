@@ -4,7 +4,7 @@ import { getPublishedPosts } from '@/lib/blog'
 export const revalidate = 3600 // revalidate hourly
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsedigital.com.au'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsesocialmedia.com.au'
 
   const staticPages: MetadataRoute.Sitemap = [
     {

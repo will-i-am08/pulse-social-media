@@ -3,19 +3,31 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Pulse Social Media | Founder-led Social Media Agency',
-  description: 'Founder-led social media management — strategy, community, content and AI tooling. Based in Bendigo, VIC. Working with brands that want to sound like themselves.',
-  keywords: ['social media agency', 'social media management', 'AI content creation', 'content strategy', 'Bendigo social media agency', 'Pulse Social Media'],
+  title: {
+    absolute: 'Pulse Social Media | Social Media Management Agency in Bendigo, VIC',
+  },
+  description: 'Pulse is a Bendigo social media management agency running always-on Instagram, TikTok, Facebook and LinkedIn for Australian brands. Strategy, content, community and AI tooling on a flat monthly retainer.',
+  keywords: [
+    'social media management',
+    'social media agency Bendigo',
+    'social media management Bendigo',
+    'Bendigo social media marketing',
+    'Instagram management Australia',
+    'TikTok management',
+    'content strategy agency',
+    'AI social media',
+    'Pulse Social Media',
+  ],
   openGraph: {
-    title: 'Pulse Social Media | Founder-led Social Media Agency',
-    description: 'Founder-led social media management — strategy, community, content and AI tooling. Bendigo, Victoria.',
+    title: 'Pulse Social Media | Social Media Management Agency in Bendigo, VIC',
+    description: 'Bendigo-based social media management for Australian brands. Always-on strategy, content, community and AI tooling — on a flat monthly retainer.',
     url: '/',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Social Media' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Pulse Social Media — Bendigo Social Media Management Agency' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Pulse Social Media | Founder-led Social Media Agency',
-    description: 'Founder-led social media management — strategy, community, content and AI tooling.',
+    title: 'Pulse Social Media | Social Media Management Agency in Bendigo, VIC',
+    description: 'Bendigo-based social media management for Australian brands. Always-on strategy, content, community and AI tooling.',
     images: ['/og-image.png'],
   },
   alternates: { canonical: '/' },
@@ -163,7 +175,7 @@ export default function HomePage() {
         </h1>
 
         <div className="hero-lower">
-          <p className="hero-sub">We help brands grow through smart social media strategy, AI-powered tools, and content that actually connects.</p>
+          <p className="hero-sub">Pulse is a Bendigo social media management agency. We run always-on Instagram, TikTok, Facebook and LinkedIn for Australian brands — strategy, content, community and AI tooling on a flat monthly retainer.</p>
           <div className="hero-cta">
             <Link className="btn-pill btn-grad" href="/contact">Start the project →</Link>
             <Link className="btn-pill btn-ghost" href="/insights">Read our thinking</Link>
