@@ -200,6 +200,8 @@ export default function ContactClient() {
   const briefRef = useRef<HTMLTextAreaElement>(null)
   const [briefValue, setBriefValue] = useState('')
   const [sentEnquiry, setSentEnquiry] = useState(false)
+  const [sendingEnquiry, setSendingEnquiry] = useState(false)
+  const [enquiryError, setEnquiryError] = useState<string | null>(null)
   const formCardRef = useRef<HTMLDivElement>(null)
 
   async function runAudit(e: FormEvent<HTMLFormElement>) {
@@ -254,9 +256,53 @@ export default function ContactClient() {
     }
   }
 
-  function onEnquirySubmit(e: FormEvent<HTMLFormElement>) {
+  async function onEnquirySubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setSentEnquiry(true)
+    if (sendingEnquiry || sentEnquiry) return
+
+    const form = e.currentTarget
+    const data = new FormData(form)
+    const name = String(data.get('name') ?? '').trim()
+    const email = String(data.get('email') ?? '').trim()
+    const company = String(data.get('company') ?? '').trim()
+    const website = String(data.get('website') ?? '').trim()
+    const intent = String(data.get('type') ?? '').trim()
+    const budgetId = String(data.get('b') ?? '')
+    const budgetMap: Record<string, string> = {
+      b1: '< $5k',
+      b2: '$5–15k',
+      b3: '$15–40k',
+      b4: '$40k+',
+      b5: 'Not sure',
+    }
+    const budget = budgetMap[budgetId] ?? ''
+    const brief = String(data.get('brief') ?? '').trim()
+
+    const message = [
+      company && `Company: ${company}`,
+      website && `Website: ${website}`,
+      budget && `Budget: ${budget}`,
+      brief && `\n${brief}`,
+    ].filter(Boolean).join('\n')
+
+    setSendingEnquiry(true)
+    setEnquiryError(null)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, intent, message }),
+      })
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({ error: '' }))
+        throw new Error(error || 'Something went wrong sending your enquiry.')
+      }
+      setSentEnquiry(true)
+    } catch (err) {
+      setEnquiryError(err instanceof Error ? err.message : 'Something went wrong sending your enquiry.')
+    } finally {
+      setSendingEnquiry(false)
+    }
   }
 
   const scoreClass = score >= 75 ? 'good' : score >= 50 ? 'ok' : 'bad'
@@ -454,9 +500,19 @@ export default function ContactClient() {
               />
             </div>
             <div className="submit-row">
-              <span className="micro">→ We reply in 1–2 working days</span>
-              <button className="btn-pill btn-grad" type="submit" style={{ padding: '14px 24px', fontSize: 14 }} disabled={sentEnquiry}>
-                {sentEnquiry ? "Sent ✓ — we'll be in touch" : 'Send enquiry →'}
+              <span className="micro">
+                {enquiryError
+                  ? `⚠ ${enquiryError}`
+                  : sentEnquiry
+                    ? '✓ Check your inbox for a confirmation'
+                    : '→ We reply in 1–2 working days'}
+              </span>
+              <button className="btn-pill btn-grad" type="submit" style={{ padding: '14px 24px', fontSize: 14 }} disabled={sendingEnquiry || sentEnquiry}>
+                {sentEnquiry
+                  ? "Sent ✓ — we'll be in touch"
+                  : sendingEnquiry
+                    ? 'Sending…'
+                    : 'Send enquiry →'}
               </button>
             </div>
           </form>
