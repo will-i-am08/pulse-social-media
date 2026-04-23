@@ -20,13 +20,13 @@ export default function CookiesClient() {
     <LegalShell
       eyebrow="Legal · Cookies"
       title={<>Cookies,<br />honestly <em>explained.</em></>}
-      intro="I use the smallest sensible set of cookies to keep this site working and to understand what's useful on it. No ad tech, no third-party trackers, no dark patterns."
+      intro="We use the smallest sensible set of cookies to keep this site working and to understand what's useful on it. No ad tech, no third-party trackers, no dark patterns."
       updated="12 April 2026"
       nav={NAV}
     >
       <h2 id="what">What are <em>cookies?</em></h2>
       <p>Small text files a website puts on your device so it can remember things between visits — whether you&apos;re signed in, what you last looked at, whether you&apos;ve already dismissed a banner. Some are strictly necessary; others are there to help the site owner understand usage.</p>
-      <p>I only set cookies that are either <strong>strictly necessary</strong> to run the site or that you&apos;ve <strong>explicitly consented to</strong> via the preferences panel below.</p>
+      <p>We only set cookies that are either <strong>strictly necessary</strong> to run the site or that you&apos;ve <strong>explicitly consented to</strong> via the preferences panel below.</p>
 
       <h2 id="prefs">Your <em>preferences</em></h2>
       <div className="pref-card">
@@ -85,8 +85,8 @@ export default function CookiesClient() {
       </ul>
 
       <h2 id="changes">Changes</h2>
-      <p>If I add or remove any cookie, this page gets updated and the &ldquo;last updated&rdquo; date at the top changes. Material changes get flagged in a banner for 30 days.</p>
-      <p>Anything unclear? Email <a href="mailto:william@pulsesocialmedia.com.au">william@pulsesocialmedia.com.au</a>.</p>
+      <p>If we add or remove any cookie, this page gets updated and the &ldquo;last updated&rdquo; date at the top changes. Material changes get flagged in a banner for 30 days.</p>
+      <p>Anything unclear? Email <a href="mailto:hello@pulsesocialmedia.com.au">hello@pulsesocialmedia.com.au</a>.</p>
     </LegalShell>
   )
 }

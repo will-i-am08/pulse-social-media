@@ -75,13 +75,13 @@ export default function ContentEngineArticle() {
       </div>
 
       <div className="prose">
-        <p>I&apos;ve quietly stopped using content calendars on new accounts — and nobody&apos;s noticed, except that the work has gotten faster and the numbers have gotten better.</p>
+        <p>We&apos;ve quietly stopped using content calendars on new accounts — and nobody&apos;s noticed, except that the work has gotten faster and the numbers have gotten better.</p>
         <h2>The problem with the monthly calendar</h2>
         <p>A content calendar is a commitment device. It says: <em>on the 14th, we are posting a carousel about sustainability.</em> It was a useful artifact in a world where brands shipped twelve posts a month and the algorithm rewarded consistency over relevance.</p>
         <p>That world is gone. The best post is almost always the one that reacts to something that just happened — a trend, a meme, a customer comment. Those posts die a little every day they sit in a Google sheet waiting for their calendar slot.</p>
         <blockquote>The best post is almost always the one that reacts to something that just happened.</blockquote>
         <h2>What changed</h2>
-        <p>I started keeping two artifacts instead of one:</p>
+        <p>We started keeping two artifacts instead of one:</p>
         <ul>
           <li>A <b>rolling 14-day engine</b> that contains every piece of content in-flight.</li>
           <li>A <b>90-day intent map</b> that lists the themes, launches, and campaigns — but not the specific posts.</li>
@@ -105,10 +105,10 @@ export default function ContentEngineArticle() {
           <li><b>Maximum age</b> — no card older than 14 days.</li>
           <li><b>Weekly pulse</b> — Friday review of map, engine, and analytics.</li>
         </ul>
-        <h2>What happened when I tried it</h2>
-        <p>Ship rate went up. Posts felt fresher because they were responding to the week, not a month-old plan. And the weekly Friday pulse turned into the one meeting I actually look forward to.</p>
+        <h2>What happened when we tried it</h2>
+        <p>Ship rate went up. Posts felt fresher because they were responding to the week, not a month-old plan. And the weekly Friday pulse turned into the one meeting we actually look forward to.</p>
         <h2>Want to try it?</h2>
-        <p>Steal it. <Link href="/contact">Get in touch</Link> and I&apos;ll send the template over.</p>
+        <p>Steal it. <Link href="/contact">Get in touch</Link> and we&apos;ll send the template over.</p>
       </div>
 
       <section className="related">

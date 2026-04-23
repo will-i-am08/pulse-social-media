@@ -109,7 +109,7 @@ export default function CaptionCraftPage() {
         <div>
           <span className="eyebrow"><span className="dot" />A Pulse product · v2.4</span>
           <h1>Captions that<br />sound like <em>you.</em><br />Not like a bot.</h1>
-          <p>CaptionCraft is the AI writing tool I built in-house because every other one made brands sound the same. It learns your brand voice in an afternoon and drafts every post from there.</p>
+          <p>CaptionCraft is the AI writing tool we built in-house because every other one made brands sound the same. It learns your brand voice in an afternoon and drafts every post from there.</p>
           <div className="cc-btns">
             <Link className="btn-pill btn-grad" href="#pricing" style={{ padding: '16px 28px' }}>Try it free for 14 days →</Link>
             <Link className="btn-pill" href="#how" style={{ padding: '16px 28px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--hair)' }}>See how it works</Link>
@@ -161,7 +161,7 @@ export default function CaptionCraftPage() {
         <div className="feat-inner">
           <div className="feat-head">
             <h2>Everything an in-house<br />writer <em>wishes</em> they had.</h2>
-            <p>Built for my own studio floor first — then opened up. It&apos;s the only caption tool I let touch a client&apos;s account, because it&apos;s the only one I trust.</p>
+            <p>Built for our own studio floor first — then opened up. It&apos;s the only caption tool we let touch a client&apos;s account, because it&apos;s the only one we trust.</p>
           </div>
           <div className="feat-grid">
             <div className="fc"><span className="num">01</span><h3>Voice tuning in an afternoon</h3><p>Paste 20 posts, answer 8 questions, done. CaptionCraft builds a voice profile that gets within 90% of your house style on the first draft.</p><div className="mini">~20 min setup</div></div>

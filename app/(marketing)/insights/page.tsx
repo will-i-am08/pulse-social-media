@@ -88,7 +88,7 @@ export default async function InsightsPage() {
       <section className="page-head">
         <div>
           <p className="mono-label">Insights &amp; field notes</p>
-          <h1>What I&apos;ve learned<br />from <em>shipping daily.</em></h1>
+          <h1>What we&apos;ve learned<br />from <em>shipping daily.</em></h1>
         </div>
         <p>Playbooks, teardowns, and quiet opinions on what&apos;s working on social right now. Updated weekly.</p>
       </section>
@@ -133,7 +133,7 @@ export default async function InsightsPage() {
               <span>Apr 18, 2026</span>
             </div>
             <h2>The content calendar is <em>dead.</em> Long live the content engine.</h2>
-            <p>Most brands are still planning social the way they planned print ads in 2007. I broke the monthly calendar and replaced it with a rolling 14-day engine.</p>
+            <p>Most brands are still planning social the way they planned print ads in 2007. We broke the monthly calendar and replaced it with a rolling 14-day engine.</p>
             <Link className="btn-pill btn-ink" href="/insights/the-content-engine">Read the article →</Link>
           </div>
         </article>
@@ -186,7 +186,7 @@ export default async function InsightsPage() {
           </div>
           <div>
             <p style={{ color: 'rgba(255,255,255,.6)', lineHeight: 1.6, maxWidth: 420, margin: 0 }}>
-              The three things I saw on social this week that are worth your time. No roundups. Unsubscribe in one click.
+              The three things we saw on social this week that are worth your time. No roundups. Unsubscribe in one click.
             </p>
             <form className="ns-form" action="#" method="post">
               <input placeholder="you@company.com" type="email" required />

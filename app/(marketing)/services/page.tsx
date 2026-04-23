@@ -224,7 +224,7 @@ export default function ServicesPage() {
             <div className="side">
               <div className="num">How we&apos;re staffed</div>
               <h3>One operator, <em>never a pool.</em></h3>
-              <p>You deal with me from day one — brief, draft, ship, review. No account-manager layer, no junior ghostwriters, no work shipping without my eyes on it.</p>
+              <p>You deal with us from day one — brief, draft, ship, review. No account-manager layer, no junior ghostwriters, no work shipping without our eyes on it.</p>
             </div>
           </div>
         </div>
@@ -235,10 +235,10 @@ export default function ServicesPage() {
           <div className="cc-left">
             <p className="mono-label pink">Our in-house tool</p>
             <h2>Meet <em>CaptionCraft.</em></h2>
-            <p className="cc-lead">Every Pulse retainer comes with access to CaptionCraft — the AI caption engine I built in-house, trained on your brand voice. It drafts on-brand copy in seconds, so my time goes on strategy, community and the work that actually moves numbers.</p>
+            <p className="cc-lead">Every Pulse retainer comes with access to CaptionCraft — the AI caption engine we built in-house, trained on your brand voice. It drafts on-brand copy in seconds, so our time goes on strategy, community and the work that actually moves numbers.</p>
             <ul className="cc-points">
               <li><b>Voice-trained on your archive</b> — the longer you use it, the more it sounds like you.</li>
-              <li><b>Human QA on every caption</b> — nothing ships without my sign-off.</li>
+              <li><b>Human QA on every caption</b> — nothing ships without our sign-off.</li>
               <li><b>Variants on tap</b> — three angles, three lengths, three CTAs, in one click.</li>
             </ul>
             <div className="cc-cta">
@@ -299,7 +299,7 @@ export default function ServicesPage() {
         </div>
         <div className="proc-grid">
           <div className="proc-step"><div className="n">i.</div><h3>Scope &amp; sign</h3><p>Flat-fee SOW back within 48 hours of the brief. No pricing games, no surprise contractors.</p><div className="mono-label">Week 0</div></div>
-          <div className="proc-step"><div className="n">ii.</div><h3>Tune in</h3><p>Audit, voice doc, channel reset, tooling plug-in. I meet your team, you meet me.</p><div className="mono-label">Week 1–2</div></div>
+          <div className="proc-step"><div className="n">ii.</div><h3>Tune in</h3><p>Audit, voice doc, channel reset, tooling plug-in. We meet your team, you meet us.</p><div className="mono-label">Week 1–2</div></div>
           <div className="proc-step"><div className="n">iii.</div><h3>Plug in</h3><p>Content engine live. First wave of posts, first campaign brief, first community shift.</p><div className="mono-label">Week 3–4</div></div>
           <div className="proc-step"><div className="n">iv.</div><h3>Turn up</h3><p>Always-on rhythm. Weekly ship, monthly review, quarterly reset. Month-to-month forever.</p><div className="mono-label">Week 5+</div></div>
         </div>
@@ -308,12 +308,12 @@ export default function ServicesPage() {
       <section className="faq">
         <p className="mono-label">Short answers</p>
         <h2>Before you <em>enquire.</em></h2>
-        <details open><summary>How does pricing work?</summary><p>Retainers are scoped per engagement — I send a flat-rate SOW within 48 hours of a brief. No hourly games, no mystery line items.</p></details>
-        <details><summary>Is platform ad spend included?</summary><p>No. The retainer covers management only. Platform spend (Meta, TikTok, LinkedIn) is billed directly against a card you give me, or to your own ad account.</p></details>
+        <details open><summary>How does pricing work?</summary><p>Retainers are scoped per engagement — we send a flat-rate SOW within 48 hours of a brief. No hourly games, no mystery line items.</p></details>
+        <details><summary>Is platform ad spend included?</summary><p>No. The retainer covers management only. Platform spend (Meta, TikTok, LinkedIn) is billed directly against a card you give us, or to your own ad account.</p></details>
         <details><summary>Who owns what we make?</summary><p>You do. Every raw file, caption, strategy doc and dashboard lives in your drive from day one. On exit, you keep the keys.</p></details>
         <details><summary>Can I pause or cancel?</summary><p>Yes. Month-to-month, cancel at the end of any billing cycle with 30 days&apos; notice. No lock-ins.</p></details>
         <details><summary>Can you work with our existing in-house team?</summary><p>Yes — happy to slot alongside in-house marketing, comms or creative. Hybrid setups work well.</p></details>
-        <details><summary>What if I just need a one-off project?</summary><p>I run short <em>Strategy Intensives</em> — a tight two-week engagement that ships a voice doc, channel mix, content pillars and a 90-day calendar. Ask and I&apos;ll scope one.</p></details>
+        <details><summary>What if I just need a one-off project?</summary><p>We run short <em>Strategy Intensives</em> — a tight two-week engagement that ships a voice doc, channel mix, content pillars and a 90-day calendar. Ask and we&apos;ll scope one.</p></details>
       </section>
 
       <section className="final-cta">

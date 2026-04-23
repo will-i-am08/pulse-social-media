@@ -41,7 +41,7 @@ export default function MarketingFooter() {
       </div>
       <div className="footer-bottom">
         <div>© Pulse Social Media {new Date().getFullYear()} · Bendigo VIC</div>
-        <div>william@pulsesocialmedia.com.au</div>
+        <div>hello@pulsesocialmedia.com.au</div>
         <div>Instagram · LinkedIn</div>
       </div>
     </footer>

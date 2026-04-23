@@ -109,7 +109,7 @@ export default function AboutPage() {
           <p className="mono-label">About Pulse</p>
           <h1>A small studio<br />for big <em>voices.</em></h1>
         </div>
-        <p>Pulse Social Media is a founder-led social media studio based in Bendigo, Victoria. I build always-on social for brands who refuse to sound like everyone else.</p>
+        <p>Pulse Social Media is a founder-led social media studio based in Bendigo, Victoria. We build always-on social for brands who refuse to sound like everyone else.</p>
       </section>
 
       <section className="manifesto">
@@ -117,9 +117,9 @@ export default function AboutPage() {
           <Image src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1600&q=75&auto=format" alt="The Pulse studio, golden hour" fill sizes="(max-width: 820px) 100vw, 45vw" style={{ objectFit: 'cover' }} />
         </div>
         <div className="text">
-          <p>I started Pulse because social media kept <em>feeling</em> like an afterthought — even for brands spending real money on it.</p>
-          <p>The best work I&apos;d seen came from operators who respected the craft: people who rewrote captions until they sang, watched comments like a weather system, and cared about the third frame.</p>
-          <p>So I built a studio around that standard — and built tools so I&apos;d never waste an hour on a task a machine could do.</p>
+          <p>We started Pulse because social media kept <em>feeling</em> like an afterthought — even for brands spending real money on it.</p>
+          <p>The best work we&apos;d seen came from operators who respected the craft: people who rewrote captions until they sang, watched comments like a weather system, and cared about the third frame.</p>
+          <p>So we built a studio around that standard — and built tools so we&apos;d never waste an hour on a task a machine could do.</p>
           <p>That&apos;s the whole idea. A human doing the creative, AI doing the admin, and a brand that sounds like itself every single day.</p>
         </div>
       </section>
@@ -131,12 +131,12 @@ export default function AboutPage() {
               <p className="mono-label" style={{ color: 'rgba(255,255,255,.45)' }}>Principles</p>
               <h2>Four rules<br />we <em>actually</em> live by.</h2>
             </div>
-            <p>These aren&apos;t a poster on the wall. They&apos;re how I price work, run accounts, and decide which clients to take on.</p>
+            <p>These aren&apos;t a poster on the wall. They&apos;re how we price work, run accounts, and decide which clients to take on.</p>
           </div>
           <div className="values-grid">
-            <div className="value"><div className="num">i.</div><h3>Strategy before content</h3><p>I won&apos;t write a caption until I understand the business underneath it.</p></div>
-            <div className="value"><div className="num">ii.</div><h3>Humans edit everything</h3><p>AI drafts, I decide. Every post that ships has had my eyes on it.</p></div>
-            <div className="value"><div className="num">iii.</div><h3>Flat-rate, month-to-month</h3><p>No lock-in, no hourly games. If I&apos;m not worth keeping, you shouldn&apos;t have to sue to leave.</p></div>
+            <div className="value"><div className="num">i.</div><h3>Strategy before content</h3><p>We won&apos;t write a caption until we understand the business underneath it.</p></div>
+            <div className="value"><div className="num">ii.</div><h3>Humans edit everything</h3><p>AI drafts, we decide. Every post that ships has had our eyes on it.</p></div>
+            <div className="value"><div className="num">iii.</div><h3>Flat-rate, month-to-month</h3><p>No lock-in, no hourly games. If we&apos;re not worth keeping, you shouldn&apos;t have to sue to leave.</p></div>
             <div className="value"><div className="num">iv.</div><h3>Honest numbers</h3><p>Reporting on what drives the business — not what flatters the agency.</p></div>
           </div>
         </div>
@@ -152,10 +152,10 @@ export default function AboutPage() {
         </div>
 
         <div className="whywe-pull">
-          <blockquote>&ldquo;Most social media feels like it was written by <em>nobody</em>, for <em>everybody.</em> I started Pulse to prove it didn&apos;t have to.&rdquo;</blockquote>
+          <blockquote>&ldquo;Most social media feels like it was written by <em>nobody</em>, for <em>everybody.</em> We started Pulse to prove it didn&apos;t have to.&rdquo;</blockquote>
           <div className="whywe-aside">
             <p className="mono-label">The founding brief</p>
-            <p>After watching brilliant brand voices get flattened — by committee, by templates, by the sheer volume of daily posting — I built the studio I wished existed. One operator, senior-led, AI-assisted, and answerable directly to the person paying the invoice.</p>
+            <p>After watching brilliant brand voices get flattened — by committee, by templates, by the sheer volume of daily posting — we built the studio we wished existed. Senior-led, AI-assisted, and answerable directly to the person paying the invoice.</p>
           </div>
         </div>
 
@@ -163,25 +163,25 @@ export default function AboutPage() {
           <div className="why-card">
             <div className="wn">i.</div>
             <h3>Because a brand is a <em>voice,</em> not a volume knob.</h3>
-            <p>Feeds full of filler don&apos;t grow brands — they anaesthetise them. I&apos;d rather ship four posts that sound like you than forty that sound like the algorithm.</p>
+            <p>Feeds full of filler don&apos;t grow brands — they anaesthetise them. We&apos;d rather ship four posts that sound like you than forty that sound like the algorithm.</p>
             <div className="tag">On craft</div>
           </div>
           <div className="why-card">
             <div className="wn">ii.</div>
             <h3>Because the best <em>thinking</em> shouldn&apos;t cost the most hours.</h3>
-            <p>Senior thinking should go into strategy and judgement — not into the busywork a machine can finish in seconds. I built the tooling so it can.</p>
+            <p>Senior thinking should go into strategy and judgement — not into the busywork a machine can finish in seconds. We built the tooling so it can.</p>
             <div className="tag">On tools</div>
           </div>
           <div className="why-card">
             <div className="wn">iii.</div>
             <h3>Because AI is a <em>studio assistant,</em> not a ghostwriter.</h3>
-            <p>AI drafts, I decide. Used well, it buys back the hours that kill great work — so the thinking gets deeper, not faster and worse.</p>
+            <p>AI drafts, we decide. Used well, it buys back the hours that kill great work — so the thinking gets deeper, not faster and worse.</p>
             <div className="tag">On AI</div>
           </div>
           <div className="why-card">
             <div className="wn">iv.</div>
             <h3>Because great work needs <em>one clear owner,</em> not a handoff chain.</h3>
-            <p>No junior account managers translating what you said into what they think you meant. You deal with me from brief to ship — same person, every week.</p>
+            <p>No junior account managers translating what you said into what they think you meant. You deal with us from brief to ship — same team, every week.</p>
             <div className="tag">On how we work</div>
           </div>
         </div>
@@ -190,11 +190,11 @@ export default function AboutPage() {
           <div className="ai-body">
             <p className="mono-label">On AI, specifically</p>
             <h3>We use AI to buy back <em>taste.</em></h3>
-            <p className="italic">Most operators use AI to do <em>more.</em> I use it to do the same, <em>better</em> — and to free up the hours a ten-person agency normally spends on drafting and reformatting.</p>
+            <p className="italic">Most operators use AI to do <em>more.</em> We use it to do the same, <em>better</em> — and to free up the hours a ten-person agency normally spends on drafting and reformatting.</p>
             <p>Before CaptionCraft, drafting cross-channel captions ate roughly a third of the working week. Now that time goes into watching competitor feeds, handling community inboxes, and sharpening the things only a human can.</p>
           </div>
           <div className="ai-list">
-            <div className="ai-row"><div className="k">i.</div><div className="v"><b>It drafts. I decide.</b><p>Every caption, reply and report is reviewed by me before it ships. AI never gets a publish button.</p></div></div>
+            <div className="ai-row"><div className="k">i.</div><div className="v"><b>It drafts. We decide.</b><p>Every caption, reply and report is reviewed by us before it ships. AI never gets a publish button.</p></div></div>
             <div className="ai-row"><div className="k">ii.</div><div className="v"><b>Trained on <u>your</u> voice, not the internet&apos;s.</b><p>CaptionCraft is fine-tuned on your own archive — the posts you&apos;ve approved, the phrases you use, the ones you don&apos;t. It sounds like you, not like everyone.</p></div></div>
             <div className="ai-row"><div className="k">iii.</div><div className="v"><b>It replaces tasks, never judgement.</b><p>Reformatting for TikTok. Alt text. Monthly recap drafts. The admin gets automated so the craft gets more attention, not less.</p></div></div>
           </div>
@@ -214,14 +214,14 @@ export default function AboutPage() {
             <p className="mono-label">The bet</p>
             <h3>If we make the <em>work</em> better, the numbers follow.</h3>
           </div>
-          <p>The pattern I keep seeing: the brand starts sounding sharper first, and the metrics catch up three months later. I&apos;m betting the studio on that order of operations being right.</p>
+          <p>The pattern we keep seeing: the brand starts sounding sharper first, and the metrics catch up three months later. We&apos;re betting the studio on that order of operations being right.</p>
         </div>
       </section>
 
       <section className="final-cta">
         <p className="mono-label">Work with us</p>
         <h2>Let&apos;s<br />make <em>something.</em></h2>
-        <p className="sub">I take on a small number of new clients each quarter. If the brand fits, I&apos;ll tell you.</p>
+        <p className="sub">We take on a small number of new clients each quarter. If the brand fits, we&apos;ll tell you.</p>
         <Link className="btn-pill btn-grad" href="/contact" style={{ padding: '18px 36px', fontSize: 15 }}>Start the project →</Link>
       </section>
     </main>

@@ -630,7 +630,7 @@ export default function ContactClient() {
         <p className="mono-label">One more thing</p>
         <h2>Prefer a <em>call?</em></h2>
         <p className="sub">Pick a 20-minute slot that suits. No sales pitch, no pressure — just a chat about what you&apos;re trying to do.</p>
-        <a className="btn-pill btn-grad" href="mailto:hello@pulsesocialmedia.com.au" style={{ padding: '18px 36px', fontSize: 15 }}>Book a call →</a>
+        <a className="btn-pill btn-grad" href="https://cal.eu/pulsesocialmedia/discovery-call" target="_blank" rel="noopener noreferrer" style={{ padding: '18px 36px', fontSize: 15 }}>Book a call →</a>
       </section>
     </main>
   )
