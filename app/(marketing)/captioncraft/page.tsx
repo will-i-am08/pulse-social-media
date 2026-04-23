@@ -2,9 +2,21 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'CaptionCraft · Pulse Social Media',
-  description: 'Captions that sound like you. Not like a bot. CaptionCraft is the AI writing tool built in-house at Pulse because every other one made brands sound the same.',
+  title: 'CaptionCraft · AI Caption Writer for Social Media',
+  description: 'CaptionCraft is an AI caption writer trained on your brand voice. Drafts on-brand Instagram, TikTok, Facebook and LinkedIn captions in seconds — built in-house at Pulse Social Media, Bendigo.',
+  keywords: [
+    'AI caption writer',
+    'AI social media captions',
+    'Instagram caption generator',
+    'social media AI tool',
+    'CaptionCraft',
+  ],
   alternates: { canonical: '/captioncraft' },
+  openGraph: {
+    title: 'CaptionCraft · AI Caption Writer for Social Media',
+    description: 'AI caption writer trained on your brand voice. On-brand social captions in seconds — built at Pulse Social Media, Bendigo.',
+    url: '/captioncraft',
+  },
 }
 
 const CSS = `
@@ -111,7 +123,7 @@ export default function CaptionCraftPage() {
           <h1>Captions that<br />sound like <em>you.</em><br />Not like a bot.</h1>
           <p>CaptionCraft is the AI writing tool we built in-house because every other one made brands sound the same. It learns your brand voice in an afternoon and drafts every post from there.</p>
           <div className="cc-btns">
-            <Link className="btn-pill btn-grad" href="#pricing" style={{ padding: '16px 28px' }}>Try it free for 14 days →</Link>
+            <Link className="btn-pill btn-grad" href="/contact" style={{ padding: '16px 28px' }}>Coming soon</Link>
             <Link className="btn-pill" href="#how" style={{ padding: '16px 28px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--hair)' }}>See how it works</Link>
           </div>
           <div className="cc-stats">
@@ -199,23 +211,23 @@ export default function CaptionCraftPage() {
             <div className="plan">
               <span className="tname">Starter</span>
               <h3>Studio</h3>
-              <div className="price">$49<small>/ brand / mo</small></div>
+              <div className="price">Coming soon</div>
               <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 14, lineHeight: 1.5, margin: 0 }}>For a single brand, a small team, and unlimited curiosity.</p>
               <ul><li>1 brand voice</li><li>Unlimited drafts</li><li>4 social channels</li><li>2 team seats</li><li>Email support</li></ul>
-              <Link className="btn-pill btn-line" href="/contact">Start free trial →</Link>
+              <Link className="btn-pill btn-line" href="/contact">Coming soon</Link>
             </div>
             <div className="plan featured">
               <span className="tname">Most popular</span>
               <h3>Studio+</h3>
-              <div className="price">$149<small>/ brand / mo</small></div>
+              <div className="price">Coming soon</div>
               <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 14, lineHeight: 1.5, margin: 0 }}>For growing teams with serious content cadence.</p>
               <ul><li>3 brand voices</li><li>All channels</li><li>Unlimited seats</li><li>Approval workflows</li><li>Priority support</li><li>Analytics &amp; API</li></ul>
-              <Link className="btn-pill btn-grad" href="/contact">Start free trial →</Link>
+              <Link className="btn-pill btn-grad" href="/contact">Coming soon</Link>
             </div>
             <div className="plan">
               <span className="tname">Enterprise</span>
               <h3>Atelier</h3>
-              <div className="price">Custom</div>
+              <div className="price">Coming soon</div>
               <p style={{ color: 'rgba(255,255,255,.55)', fontSize: 14, lineHeight: 1.5, margin: 0 }}>For agencies and brands running 10+ voices in parallel.</p>
               <ul><li>Unlimited voices</li><li>SSO / SAML</li><li>Custom model tuning</li><li>Dedicated CSM</li><li>SOC 2 · DPA · MSA</li><li>99.95% SLA</li></ul>
               <Link className="btn-pill btn-line" href="/contact">Talk to sales →</Link>
@@ -237,7 +249,7 @@ export default function CaptionCraftPage() {
         <p className="mono-label">Ready to try it?</p>
         <h2>14 days.<br />No credit <em>card.</em></h2>
         <p className="sub">Tune your voice, ship a week of content, decide whether it belongs in your stack. That&apos;s the whole offer.</p>
-        <Link className="btn-pill btn-grad" href="/contact" style={{ padding: '18px 36px', fontSize: 15 }}>Start free trial →</Link>
+        <Link className="btn-pill btn-grad" href="/contact" style={{ padding: '18px 36px', fontSize: 15 }}>Coming soon</Link>
       </section>
     </main>
   )
