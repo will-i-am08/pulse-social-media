@@ -400,7 +400,7 @@ export default function ContactClient() {
           <p className="mono-label">Get in touch</p>
           <h1>Let&apos;s make<br />something <em>loud.</em></h1>
         </div>
-        <p>Tell us a little about the brand, the brief, and the headache. Every enquiry comes directly to us — usually same-day, always within two working days.</p>
+        <p>Tell us a little about the brand, the brief, and the headache. Every enquiry comes directly to us and we reply within 1–2 business days.</p>
       </section>
 
       <section className="audit">
@@ -535,7 +535,7 @@ export default function ContactClient() {
           <h2>Not quite ready<br />for a <em>form?</em></h2>
           <p>Totally fine. Here are the other ways in. Whichever channel you pick, you&apos;ll hear back from us directly.</p>
           <div className="contact-rows">
-            <div className="crow"><div className="k">Enquiries</div><div className="v"><a href="mailto:hello@pulsesocialmedia.com.au">hello@pulsesocialmedia.com.au</a><div className="sub">Replies from the team, usually same-day</div></div></div>
+            <div className="crow"><div className="k">Enquiries</div><div className="v"><a href="mailto:hello@pulsesocialmedia.com.au">hello@pulsesocialmedia.com.au</a><div className="sub">Reply within 1–2 business days</div></div></div>
             <div className="crow"><div className="k">Call</div><div className="v"><a className="btn-pill btn-grad" href="https://cal.eu/pulsesocialmedia/discovery-call" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '10px 20px', fontSize: 13, borderBottom: 'none' }}>Book a call →</a><div className="sub">20-minute discovery call, no pitch</div></div></div>
             <div className="crow"><div className="k">Social</div><div className="v">Instagram · LinkedIn<div className="sub">DMs open — just maybe not at 2am</div></div></div>
           </div>
