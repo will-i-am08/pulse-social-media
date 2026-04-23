@@ -419,7 +419,7 @@ export default function ContactClient() {
               </div>
               <div className="form-row">
                 <div className="form-group"><label>Email Address</label><input type="email" name="userEmail" placeholder="you@business.com" required /></div>
-                <div className="form-group"><label>Instagram Handle (optional)</label><input type="text" name="igHandle" placeholder="@yourbusiness" /></div>
+                <div className="form-group"><label>Instagram or Facebook (optional)</label><input type="text" name="igHandle" placeholder="@yourbusiness or facebook.com/yourbusiness" /></div>
               </div>
               <div className="form-group">
                 <label>Business Website (optional) <span style={{ fontWeight: 400, color: '#6b7280', fontSize: '.85em' }}>— we&apos;ll read it and tailor your report</span></label>
