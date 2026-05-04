@@ -287,16 +287,15 @@ export default function ServicesPage() {
       <section className="proof">
         <div className="proof-inner">
           <div className="ph dark has-img">
-            <Image src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=1400&q=75&auto=format" alt="Client portrait" fill sizes="(max-width: 960px) 100vw, 35vw" style={{ objectFit: 'cover' }} />
+            <Image src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=1400&q=75&auto=format" alt="Pulse studio" fill sizes="(max-width: 960px) 100vw, 35vw" style={{ objectFit: 'cover' }} />
           </div>
           <div>
-            <p className="mono-label" style={{ color: 'rgba(255,255,255,.4)' }}>Client · Geekly, Bendigo VIC</p>
-            <blockquote>&ldquo;Pulse turned our shopfront into a <em>conversation.</em> We went from posting when we remembered to being the most <em>recognised</em> repair shop in the region.&rdquo;</blockquote>
-            <cite><b>Geekly Computers &amp; Mobile Repair</b>Bendigo VIC</cite>
+            <p className="mono-label" style={{ color: 'rgba(255,255,255,.4)' }}>Why social · market benchmarks</p>
+            <blockquote>The bar got higher. Generic posting doesn&apos;t move the needle anymore — <em>strategy</em> does.</blockquote>
             <div className="proof-stats">
-              <div className="proof-stat"><div className="v">~1.5<span className="u">%</span></div><div className="l">Market avg IG engagement · Social Insider benchmark</div></div>
-              <div className="proof-stat"><div className="v">3–5<span className="u">/wk</span></div><div className="l">Posting cadence proven to sustain reach</div></div>
-              <div className="proof-stat"><div className="v">3<span className="u">×</span></div><div className="l">Short-form video reach vs static · platform data</div></div>
+              <div className="proof-stat"><div className="v">~0.5<span className="u">%</span></div><div className="l">Market avg IG engagement, down from ~1.5% pre-2023 · Social Insider, 2025</div></div>
+              <div className="proof-stat"><div className="v">3–5<span className="u">/wk</span></div><div className="l">Posting cadence we see hold reach</div></div>
+              <div className="proof-stat"><div className="v">~2.3<span className="u">×</span></div><div className="l">Reels reach vs static photos · Social Insider</div></div>
             </div>
           </div>
         </div>
@@ -312,7 +311,7 @@ export default function ServicesPage() {
         </div>
         <div className="proc-grid">
           <div className="proc-step"><div className="n">i.</div><h3>Scope &amp; sign</h3><p>Flat-fee SOW back within 48 hours of the brief. No pricing games, no surprise contractors.</p><div className="mono-label">Week 0</div></div>
-          <div className="proc-step"><div className="n">ii.</div><h3>Tune in</h3><p>Audit, voice doc, channel reset, tooling plug-in. We meet your team, you meet us.</p><div className="mono-label">Week 1–2</div></div>
+          <div className="proc-step"><div className="n">ii.</div><h3>Story Session</h3><p>A 60-minute deep-dive into your origin, voice and audience, plus an audit and voice doc. The conversation everything we ship is built on.</p><div className="mono-label">Week 1–2</div></div>
           <div className="proc-step"><div className="n">iii.</div><h3>Plug in</h3><p>Content engine live. First wave of posts, first campaign brief, first community shift.</p><div className="mono-label">Week 3–4</div></div>
           <div className="proc-step"><div className="n">iv.</div><h3>Turn up</h3><p>Always-on rhythm. Weekly ship, monthly review, quarterly reset. Month-to-month forever.</p><div className="mono-label">Week 5+</div></div>
         </div>

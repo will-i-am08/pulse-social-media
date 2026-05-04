@@ -86,6 +86,23 @@ const HOME_CSS = `
 .pulse-home .quote-inner blockquote em{color:var(--accent-soft);font-style:italic}
 .pulse-home .quote-inner cite{display:block;margin-top:40px;font-style:normal;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5)}
 .pulse-home .quote-inner cite b{color:#fff;font-weight:500;display:block;margin-bottom:4px;letter-spacing:.05em}
+.pulse-home .framework{max-width:1320px;margin:0 auto;padding:100px 48px;border-top:1px solid var(--hair)}
+.pulse-home .framework-head{display:grid;grid-template-columns:1fr 1.3fr;gap:64px;align-items:end;margin-bottom:48px}
+.pulse-home .framework-head h2{font-size:clamp(48px,6vw,84px);font-weight:200;letter-spacing:-0.035em;line-height:.95;margin:12px 0 0}
+.pulse-home .framework-head h2 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:300}
+.pulse-home .framework-head p{color:#333;font-size:17px;line-height:1.6;margin:0;max-width:520px}
+.pulse-home .framework-head p b{color:var(--ink);font-weight:600}
+.pulse-home .framework-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--hair);border:1px solid var(--hair);border-radius:18px;overflow:hidden}
+.pulse-home .framework-card{background:var(--paper);padding:36px 28px;display:flex;flex-direction:column;gap:14px;min-height:300px}
+.pulse-home .framework-card .pillar-tag{display:flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.pulse-home .framework-card .pillar-tag .roman{font-family:'Fraunces',serif;font-style:italic;font-size:28px;font-weight:300;color:var(--accent);letter-spacing:-0.02em;text-transform:none}
+.pulse-home .framework-card .pillar-tag b{color:var(--ink);font-weight:600;letter-spacing:.18em}
+.pulse-home .framework-card h3{font-size:22px;font-weight:500;letter-spacing:-0.02em;line-height:1.15;margin:6px 0 4px;color:var(--ink)}
+.pulse-home .framework-card h3 em{font-family:'Fraunces',serif;font-style:italic;color:var(--accent);font-weight:400}
+.pulse-home .framework-card p{font-size:14.5px;line-height:1.6;color:#333;margin:0}
+.pulse-home .framework-card .feed-pct{margin-top:auto;padding-top:18px;border-top:1px solid var(--hair);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.pulse-home .framework-card .feed-pct b{color:var(--accent);font-weight:600}
+
 .pulse-home .proc{max-width:1320px;margin:0 auto;padding:100px 48px}
 .pulse-home .proc-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:48px;gap:48px}
 .pulse-home .proc-head p{color:var(--muted);max-width:340px;margin:0}
@@ -115,6 +132,10 @@ const HOME_CSS = `
   .pulse-home .quote-sec{padding:60px 24px}
   .pulse-home .quote-inner{grid-template-columns:1fr;gap:32px}
   .pulse-home .quote-inner .ph{height:360px}.pulse-home .quote-inner blockquote{font-size:30px}
+  .pulse-home .framework{padding:56px 24px}
+  .pulse-home .framework-head{grid-template-columns:1fr;gap:20px}
+  .pulse-home .framework-grid{grid-template-columns:1fr;border-radius:14px}
+  .pulse-home .framework-card{min-height:0;padding:28px 22px}
   .pulse-home .proc{padding:48px 24px}
   .pulse-home .proc-grid{grid-template-columns:1fr}
   .pulse-home .proc-head{flex-direction:column;align-items:flex-start;gap:8px}
@@ -175,7 +196,7 @@ export default function HomePage() {
         </h1>
 
         <div className="hero-lower">
-          <p className="hero-sub">Pulse is a Bendigo social media management agency. We run always-on Instagram, TikTok, Facebook and LinkedIn for Australian brands — strategy, content, community and AI tooling on a flat monthly retainer.</p>
+          <p className="hero-sub">Pulse is a Bendigo social media management agency for brands that want to sound like a person — not a press release. Always-on Instagram, TikTok, Facebook and LinkedIn — strategy, content, community and AI tooling on a flat monthly retainer.</p>
           <div className="hero-cta">
             <Link className="btn-pill btn-grad" href="/contact">Start the project →</Link>
             <Link className="btn-pill btn-ghost" href="/insights">Read our thinking</Link>
@@ -213,9 +234,9 @@ export default function HomePage() {
         </div>
         <div className="grid">
           <div className="cell"><div className="num">5.24<span className="unit">B</span></div><div className="lbl">Global social users (DataReportal, 2024)</div></div>
-          <div className="cell"><div className="num">2<span className="unit">h 20m</span></div><div className="lbl">Avg. daily time on social</div></div>
-          <div className="cell"><div className="num">80<span className="unit">%</span></div><div className="lbl">Consumers follow brands on social</div></div>
-          <div className="cell"><div className="num">73<span className="unit">%</span></div><div className="lbl">Marketers say social drives results</div></div>
+          <div className="cell"><div className="num">2<span className="unit">h 21m</span></div><div className="lbl">Avg. daily time on social (GWI, 2024)</div></div>
+          <div className="cell"><div className="num">80<span className="unit">%</span></div><div className="lbl">Expect brands to engage meaningfully (Sprout Social)</div></div>
+          <div className="cell"><div className="num">73<span className="unit">%</span></div><div className="lbl">Marketers say social is effective (HubSpot, 2024)</div></div>
         </div>
       </section>
 
@@ -277,15 +298,38 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="quote-sec">
-        <div className="quote-inner">
-          <div className="ph dark has-img">
-            <Image src="https://images.unsplash.com/photo-1552058544-f2b08422138a?w=1400&q=75&auto=format" alt="Client portrait" fill sizes="(max-width:820px) 100vw, 40vw" style={{ objectFit: 'cover' }} />
-          </div>
+      <section className="framework">
+        <div className="framework-head">
           <div>
-            <p className="mono-label" style={{ color: 'rgba(255,255,255,.4)' }}>Client story · Geekly, Bendigo VIC</p>
-            <blockquote>&ldquo;Pulse turned our shopfront into a <em>conversation.</em> We went from posting when we remembered to being the most <em>recognised</em> repair shop in the region.&rdquo;</blockquote>
-            <cite><b>Geekly Computers &amp; Mobile Repair</b>Bendigo VIC</cite>
+            <p className="mono-label">The framework</p>
+            <h2 className="section-display">People buy from <em>people.</em></h2>
+          </div>
+          <p>The brands that win on social aren&apos;t the ones that post the most — they&apos;re the ones that feel like a person, not a press release. Every Pulse strategy runs on four pillars: <b>know, like, trust, convert</b> — in that order.</p>
+        </div>
+        <div className="framework-grid">
+          <div className="framework-card">
+            <div className="pillar-tag"><span className="roman">i.</span><b>Know</b></div>
+            <h3>Origin &amp; <em>mission</em></h3>
+            <p>Why the business exists. The story, the founder, the moment it all started. The thing no competitor can copy.</p>
+            <div className="feed-pct">Feed mix · <b>10–15%</b></div>
+          </div>
+          <div className="framework-card">
+            <div className="pillar-tag"><span className="roman">ii.</span><b>Like</b></div>
+            <h3>Day-to-day &amp; <em>personality</em></h3>
+            <p>The face, the voice, the texture of working with you. The bulk of the feed — and the reason people stay.</p>
+            <div className="feed-pct">Feed mix · <b>40–50%</b></div>
+          </div>
+          <div className="framework-card">
+            <div className="pillar-tag"><span className="roman">iii.</span><b>Trust</b></div>
+            <h3>Value &amp; <em>expertise</em></h3>
+            <p>Free knowledge, honest opinions, real results. Proof you know what you&apos;re doing — given away generously.</p>
+            <div className="feed-pct">Feed mix · <b>25–35%</b></div>
+          </div>
+          <div className="framework-card">
+            <div className="pillar-tag"><span className="roman">iv.</span><b>Convert</b></div>
+            <h3>Strategic <em>selling</em></h3>
+            <p>Offers, testimonials, clear calls to action — but never more than a fifth of the feed. We earn the right to ask before we ask.</p>
+            <div className="feed-pct">Feed mix · <b>10–20%</b></div>
           </div>
         </div>
       </section>
@@ -300,8 +344,8 @@ export default function HomePage() {
         </div>
         <div className="proc-grid">
           <div className="proc-step">
-            <div className="n">i.</div><h3>Tune in</h3>
-            <p>We audit your current presence, map your audience, and set the measurable goals we&apos;ll all be held to.</p>
+            <div className="n">i.</div><h3>Story Session</h3>
+            <p>A 60-minute deep-dive into your origin, voice and audience — paired with an audit of where you are now. Everything we make flows from this conversation.</p>
             <div className="mono-label">Week 1 – 2</div>
           </div>
           <div className="proc-step">
