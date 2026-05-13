@@ -2,12 +2,12 @@ import type { Metadata } from 'next'
 import ContactClient from './ContactClient'
 
 export const metadata: Metadata = {
-  title: 'Contact · Talk to a Bendigo Social Media Agency',
-  description: 'Get in touch with Pulse Social Media, a Bendigo social media management agency. Book a discovery call or run a free social media audit — we reply within 1–2 business days.',
+  title: 'Contact · Let’s work out if we’re a fit · Pulse Social Media',
+  description: 'Tell us what you need and we’ll point you in the right direction — social media management, photography, one-off projects, or a chat. We reply within one business day.',
   alternates: { canonical: '/contact' },
   openGraph: {
     title: 'Contact Pulse Social Media · Bendigo',
-    description: 'Book a discovery call with a Bendigo social media management agency, or run a free social media audit.',
+    description: 'Tell us what you need and we’ll point you in the right direction — even if that’s not us.',
     url: '/contact',
   },
 }
