@@ -113,7 +113,12 @@ export async function POST(req: NextRequest) {
     console.error('Failed to fetch channel services:', e)
   }
 
-  const photoUrl: string | null = media?.photo || null
+  // Accept a single photo (media.photo) or a carousel (media.photos[]); normalise to an array.
+  const photoUrls: string[] = Array.isArray(media?.photos)
+    ? media.photos.filter((u: unknown): u is string => typeof u === 'string' && u.length > 0)
+    : media?.photo
+      ? [media.photo]
+      : []
   const videoUrl: string | null = media?.video || null
   const videoThumb: string | null = media?.videoThumbnail || null
 
@@ -151,13 +156,13 @@ export async function POST(req: NextRequest) {
         input.metadata = metadata
       }
 
-      // Reels require a video; stories accept either; regular posts use images
-      if (effectiveType === 'reel' && videoUrl) {
-        input.assets = { videos: [{ url: videoUrl, ...(videoThumb ? { thumbnail: videoThumb } : {}) }] }
-      } else if (effectiveType === 'story' && videoUrl) {
-        input.assets = { videos: [{ url: videoUrl, ...(videoThumb ? { thumbnail: videoThumb } : {}) }] }
-      } else if (photoUrl) {
-        input.assets = { images: [{ url: photoUrl }] }
+      // Buffer's `assets` is an ordered list where each entry specifies exactly one
+      // of image/video/document/link. Reels require a video; stories accept either;
+      // regular posts use one image per carousel slide.
+      if ((effectiveType === 'reel' || effectiveType === 'story') && videoUrl) {
+        input.assets = [{ video: { url: videoUrl, ...(videoThumb ? { thumbnailUrl: videoThumb } : {}) } }]
+      } else if (photoUrls.length) {
+        input.assets = photoUrls.map(url => ({ image: { url } }))
       }
 
       // Retry once on rate limit

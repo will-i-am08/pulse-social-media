@@ -59,11 +59,12 @@ export default function QueuePage() {
       return
     }
     setSendingId(post.id)
+    const photos = post.image_urls?.length ? post.image_urls : (post.image_url ? [post.image_url] : [])
     try {
       const res = await fetch('/api/buffer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profileIds, text: post.caption, media: post.image_url ? { photo: post.image_url } : undefined }),
+        body: JSON.stringify({ profileIds, text: post.caption, media: photos.length ? { photos } : undefined }),
       })
       const data = await res.json()
       if (data.success) {

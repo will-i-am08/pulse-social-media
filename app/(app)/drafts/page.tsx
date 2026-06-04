@@ -52,11 +52,12 @@ export default function DraftsPage() {
       const brand = brands.find(b => b.id === post.brand_profile_id)
       const profileIds = brand?.buffer_profile_ids || []
       if (!profileIds.length) continue
+      const photos = post.image_urls?.length ? post.image_urls : (post.image_url ? [post.image_url] : [])
       try {
         const res = await fetch('/api/buffer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profileIds, text: post.caption, media: post.image_url ? { photo: post.image_url } : undefined }),
+          body: JSON.stringify({ profileIds, text: post.caption, media: photos.length ? { photos } : undefined }),
         })
         const data = await res.json()
         if (data.success) {

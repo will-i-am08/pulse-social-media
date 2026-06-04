@@ -34,11 +34,12 @@ export default function ApprovalsPage() {
     savePosts(posts.map(p => p.id === post.id ? { ...p, status: 'approved' } : p))
     // Auto-send if possible
     if (profileIds.length > 0) {
+      const photos = post.image_urls?.length ? post.image_urls : (post.image_url ? [post.image_url] : [])
       try {
         const res = await fetch('/api/buffer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profileIds, text: post.caption, media: post.image_url ? { photo: post.image_url } : undefined }),
+          body: JSON.stringify({ profileIds, text: post.caption, media: photos.length ? { photos } : undefined }),
         })
         const data = await res.json()
         if (data.success) {

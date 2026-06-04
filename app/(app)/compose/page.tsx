@@ -437,16 +437,18 @@ export default function CreatePostPage() {
     try {
       // Only crop/downscale images for regular Posts. Stories/Reels are 9:16 native
       // and videos can't go through the canvas cropping helpers.
-      let photoUrl: string | null = postType === 'reel' ? null : (images[0] || null)
-      if (photoUrl && aspectRatio && postType === 'post') {
-        toast.loading('Cropping image to format…', { id: 'crop' })
-        photoUrl = await cropToRatio(photoUrl, aspectRatio, uploadImage)
+      let photoUrls: string[] = postType === 'reel' ? [] : [...images]
+      if (photoUrls.length && postType === 'post') {
+        toast.loading(photoUrls.length > 1 ? 'Cropping images to format…' : 'Cropping image to format…', { id: 'crop' })
+        photoUrls = await Promise.all(photoUrls.map(async (url) => {
+          const cropped = aspectRatio ? await cropToRatio(url, aspectRatio, uploadImage) : url
+          return downscaleIfNeeded(cropped, uploadImage)
+        }))
         toast.dismiss('crop')
       }
-      if (photoUrl && postType === 'post') photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
 
-      const mediaPayload: Record<string, string> = {}
-      if (photoUrl) mediaPayload.photo = photoUrl
+      const mediaPayload: { photos?: string[]; video?: string } = {}
+      if (photoUrls.length) mediaPayload.photos = photoUrls
       if (videoUrl && (postType === 'story' || postType === 'reel')) mediaPayload.video = videoUrl
 
       const customSchedule = scheduledAt ? new Date(scheduledAt).toISOString() : null
@@ -770,14 +772,16 @@ export default function CreatePostPage() {
       if (sent + (lastError ? 1 : 0) > 0) await new Promise(r => setTimeout(r, 3000))
       try {
         // Only crop/downscale images for regular Posts. Stories/Reels are 9:16 and videos can't use canvas helpers.
-        let photoUrl: string | null = bulkPostType === 'reel' ? null : (post.image_url || null)
-        if (photoUrl && bulkAspectRatio && bulkPostType === 'post') {
-          photoUrl = await cropToRatio(photoUrl, bulkAspectRatio, uploadImage)
+        let photoUrls: string[] = bulkPostType === 'reel' ? [] : [...(post.image_urls || [])]
+        if (photoUrls.length && bulkPostType === 'post') {
+          photoUrls = await Promise.all(photoUrls.map(async (url) => {
+            const cropped = bulkAspectRatio ? await cropToRatio(url, bulkAspectRatio, uploadImage) : url
+            return downscaleIfNeeded(cropped, uploadImage)
+          }))
         }
-        if (photoUrl && bulkPostType === 'post') photoUrl = await downscaleIfNeeded(photoUrl, uploadImage)
 
-        const mediaPayload: Record<string, string> = {}
-        if (photoUrl) mediaPayload.photo = photoUrl
+        const mediaPayload: { photos?: string[]; video?: string } = {}
+        if (photoUrls.length) mediaPayload.photos = photoUrls
         if (post.video_url && (bulkPostType === 'story' || bulkPostType === 'reel')) mediaPayload.video = post.video_url
 
         const res = await fetch('/api/buffer', {
