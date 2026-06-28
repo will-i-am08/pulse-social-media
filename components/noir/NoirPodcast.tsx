@@ -3,15 +3,6 @@
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 
-const THEMES = [
-  ['EP · 01', 'The first foothold', 'The earliest, scrappiest stretch, before there was a path, a name, or anyone watching.'],
-  ['EP · 02', 'Poor light', 'The doubt and the dead ends. The part of the climb nobody posts a photo of.'],
-  ['EP · 03', 'What held', 'The handholds that actually took weight: the moves that worked, and why.'],
-  ['EP · 04', 'The weight', 'Honest talk about money, margins, and the maths that keeps a founder up at altitude.'],
-  ['EP · 05', 'Rope team', 'First hires, hard conversations, and learning to trust other people on the line.'],
-  ['EP · 06', 'The view', 'The summit moments, small and large, that made the whole ascent worth the weight.'],
-]
-
 const AUDIENCE = [
   ['01', 'Founders and small-business owners'],
   ['02', 'Side-hustlers eyeing the leap to full-time'],
@@ -121,21 +112,6 @@ export default function NoirPodcast() {
         <h2 className="cormorant" style={{ fontWeight: 600, fontSize: 'clamp(34px,4.8vw,52px)', lineHeight: 1.08, letterSpacing: '0.01em', margin: '0 0 28px', color: '#ECE6D8' }}>We speak quietly, and earn the crescendo.</h2>
         <p style={{ fontSize: 18, lineHeight: 1.72, color: 'rgba(194,178,154,0.92)', fontWeight: 400, margin: '0 0 18px' }}>Recorded in the half-light after the hard part of the day, the show sits down with founders, makers, and quiet operators to talk about the long ascent. Not the highlight reel, but the real grade of it: the doubt, the footholds found in the dark, the decisions made when no one was watching.</p>
         <p style={{ fontSize: 18, lineHeight: 1.72, color: 'rgba(194,178,154,0.92)', fontWeight: 400, margin: 0 }}>Three words anchor every conversation: <span className="cormorant" style={{ fontStyle: 'italic', fontSize: 20, color: '#F2B066' }}>grounded, searching, warm.</span> The mountain is the constant; the light is what changes.</p>
-      </div>
-
-      {/* episode themes */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1180, margin: '0 auto', padding: '94px 40px 0' }}>
-        <div className="grid-collapse" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-          {THEMES.map(([kicker, title, desc]) => (
-            <div key={kicker} style={{ borderRadius: 16, background: 'linear-gradient(165deg,rgba(43,49,71,0.5),rgba(22,28,44,0.5))', border: '1px solid rgba(236,230,216,0.08)', padding: 30, minHeight: 200, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div className="mono" style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#D9A86A' }}>{kicker}</div>
-              <div>
-                <div className="cormorant" style={{ fontWeight: 600, fontSize: 27, letterSpacing: '0.01em', lineHeight: 1.05, color: '#ECE6D8' }}>{title}</div>
-                <p style={{ fontSize: 14.5, color: 'rgba(194,178,154,0.82)', lineHeight: 1.6, margin: '11px 0 0', fontWeight: 400 }}>{desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {/* who it's for */}
