@@ -5,18 +5,18 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const FAQS = [
-  ['How much does it cost?', "Most clients invest between $2k and $10k per month depending on scope. You'll get an exact number on your free call, no surprises, and no lock-in contracts."],
+  ['How much does it cost?', "Every plan is scoped to what you actually need, so there's no one-size price. You'll get an exact, no-surprises number on your free call — and no lock-in contracts."],
   ['How fast will I see results?', 'Content goes live within two weeks. Most clients see meaningful engagement lifts inside 30 days, and real revenue impact from ads inside 60 to 90.'],
   ['Do I need to be on camera?', 'Nope. We work with whatever you’ve got. That said, founders who show up on camera tend to win fastest, and we make it completely painless.'],
-  ['What if it doesn’t work?', 'Then we keep working for free. Our 90-day guarantee means we don’t stop until we hit the targets we set together. The risk sits with us, not you.'],
+  ['What if it doesn’t work?', 'We set clear targets with you up front and report against them honestly. If something isn’t landing, we change it — fast. No lock-in contracts, so you’re never stuck.'],
   ['Which platforms do you cover?', 'Instagram, TikTok, Facebook, YouTube Shorts, and LinkedIn. We focus your effort on the few places your customers actually spend their time.'],
 ]
 
 const WORK = [
-  { tag: 'Reel', name: 'Bloom Café', views: '2.1M views', offset: false },
-  { tag: 'TikTok', name: 'Northside Auto', views: '680k views', offset: true },
-  { tag: 'Reel', name: 'Lumen Skin', views: '1.4M views', offset: false },
-  { tag: 'Shorts', name: 'Verde Fitness', views: '920k views', offset: true },
+  { offset: false },
+  { offset: true },
+  { offset: false },
+  { offset: true },
 ]
 
 function PlaceholderTile() {
@@ -138,7 +138,7 @@ export default function NoirHome() {
                 <div style={{ width: 0, height: 0, borderTop: '16px solid transparent', borderBottom: '16px solid transparent', borderLeft: '26px solid #04140d', marginLeft: 6 }} />
               </div>
               <div className="sora" style={{ marginTop: 22, fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', color: '#fff' }}>Watch how we grow local businesses</div>
-              <div style={{ marginTop: 8, fontSize: 14, color: 'rgba(244,245,247,0.72)', fontWeight: 500 }}>A 2-minute look inside our process</div>
+              <div style={{ marginTop: 10, display: 'inline-block', padding: '6px 14px', borderRadius: 999, border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(5,5,6,0.4)', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(244,245,247,0.8)' }}>Coming soon</div>
             </div>
           </div>
         </div>
@@ -158,17 +158,15 @@ export default function NoirHome() {
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div className="kicker" style={{ marginBottom: 14 }}>The work</div>
           <h2 className="sora" style={{ fontWeight: 800, fontSize: 48, letterSpacing: '-0.03em', margin: 0 }}>Work that&apos;s impossible to scroll past.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.6)', maxWidth: 520, margin: '16px auto 0', fontWeight: 500 }}>A few recent pieces we&apos;ve shot, edited, and shipped for local brands, and what they did.</p>
+          <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.6)', maxWidth: 520, margin: '16px auto 0', fontWeight: 500 }}>Fresh work we&apos;re shooting, editing and shipping for local brands — landing in this space soon.</p>
         </div>
         <div className="work-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
-          {WORK.map(w => (
-            <div key={w.name} style={{ position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.07)', aspectRatio: '9/16', boxShadow: '0 24px 60px rgba(0,0,0,0.45)', marginTop: w.offset ? 28 : 0 }}>
+          {WORK.map((w, i) => (
+            <div key={i} style={{ position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.07)', aspectRatio: '9/16', boxShadow: '0 24px 60px rgba(0,0,0,0.45)', marginTop: w.offset ? 28 : 0 }}>
               <PlaceholderTile />
               <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(5,5,6,0.05) 38%,rgba(5,5,6,0.86) 100%)', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2, padding: '6px 11px', borderRadius: 999, background: 'rgba(5,5,6,0.5)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.14)', fontSize: 11, fontWeight: 700, color: '#fff' }}>{w.tag}</div>
-              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 2, padding: 16 }}>
-                <div className="sora" style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em', color: '#fff' }}>{w.name}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, fontSize: 13, fontWeight: 700, color: '#F97316' }}><span style={{ fontSize: 10 }}>▶</span> {w.views}</div>
+              <div style={{ position: 'absolute', inset: 0, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="sora" style={{ padding: '8px 16px', borderRadius: 999, background: 'rgba(5,5,6,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.16)', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#fff' }}>Coming soon</div>
               </div>
             </div>
           ))}
@@ -190,23 +188,11 @@ export default function NoirHome() {
               <div className="kicker" style={{ marginBottom: 16 }}>Why founders trust us</div>
               <h2 className="sora" style={{ fontWeight: 800, fontSize: 38, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 20px' }}>We give small businesses the firepower big brands take for granted.</h2>
               <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.68)', fontWeight: 500, margin: '0 0 16px' }}>Pulse was built on one belief: you shouldn&apos;t need a Fortune-500 budget to win attention. We&apos;ve spent years reverse-engineering what makes content spread and ads convert, and we run that exact playbook for every client.</p>
-              <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.68)', fontWeight: 500, margin: 0 }}>No juniors. No guesswork. No hiding behind vanity metrics. Just the work that moves your numbers, with a guarantee to back it.</p>
+              <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.68)', fontWeight: 500, margin: 0 }}>No juniors. No guesswork. No hiding behind vanity metrics. Just the work that moves your numbers.</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 26 }}>
                 <div className="sora" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.01em' }}>— The Pulse team</div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ===== GUARANTEE — PLACEHOLDER: confirm 90-day terms before launch ===== */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1000, margin: '100px auto 0', padding: '0 40px' }}>
-        <div style={{ borderRadius: 28, padding: 1, background: 'linear-gradient(120deg,rgba(249,115,22,0.6),rgba(249,115,22,0.05))', boxShadow: '0 30px 90px rgba(249,115,22,0.12)' }}>
-          <div style={{ borderRadius: 27, background: 'rgba(8,12,10,0.85)', backdropFilter: 'blur(20px)', padding: 48, textAlign: 'center' }}>
-            <div style={{ fontSize: 50, marginBottom: 10 }}>🛡️</div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#F97316', marginBottom: 14 }}>Our 90-day &ldquo;impossible to ignore&rdquo; guarantee</div>
-            <div className="sora" style={{ fontSize: 34, fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.15, maxWidth: 680, margin: '0 auto' }}>Measurable growth in 90 days, or we work for free until you get it.</div>
-            <p style={{ fontSize: 17, color: 'rgba(244,245,247,0.64)', margin: '18px auto 0', fontWeight: 500, maxWidth: 600, lineHeight: 1.55 }}>We only win when you win. If we miss the targets we set together, we keep going at no cost until we hit them. No lock-in. Cancel anytime. The risk is entirely on us.</p>
           </div>
         </div>
       </div>
