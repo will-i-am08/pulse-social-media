@@ -69,6 +69,26 @@
   .pulse-noir .noir-hero-h1{font-size:clamp(34px,11vw,46px) !important}
 }
 
+/* legal / policy prose */
+.pulse-noir .noir-legal{max-width:760px}
+.pulse-noir .noir-legal h2{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.02em;margin:46px 0 14px;color:#F4F5F7}
+.pulse-noir .noir-legal h2 em{font-style:normal;color:var(--accent)}
+.pulse-noir .noir-legal h3{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;margin:22px 0 10px;color:#F4F5F7}
+.pulse-noir .noir-legal p{font-size:16px;line-height:1.7;color:rgba(244,245,247,0.72);margin:0 0 16px;font-weight:500}
+.pulse-noir .noir-legal ul{margin:0 0 18px;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.pulse-noir .noir-legal li{font-size:16px;line-height:1.6;color:rgba(244,245,247,0.72);font-weight:500}
+.pulse-noir .noir-legal strong{color:#F4F5F7;font-weight:700}
+.pulse-noir .noir-legal a{color:var(--accent);text-decoration:underline}
+.pulse-noir .noir-legal a:hover{opacity:.85}
+.pulse-noir .noir-legal .note{margin:24px 0;padding:20px 22px;border-radius:14px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.22)}
+.pulse-noir .noir-legal .note b{display:block;font-family:'Sora',sans-serif;color:var(--accent);font-size:12px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+.pulse-noir .noir-legal .note{font-size:15px;line-height:1.6;color:rgba(244,245,247,0.82);font-weight:500}
+.pulse-noir .noir-legal table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px}
+.pulse-noir .noir-legal th{text-align:left;font-weight:700;color:#F4F5F7;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.14)}
+.pulse-noir .noir-legal td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06);color:rgba(244,245,247,0.7);vertical-align:top}
+.pulse-noir .noir-legal td.cat{color:var(--accent);font-weight:600}
+.pulse-noir .noir-legal code{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:5px;color:#fed7aa}
+
 /* nav: collapse to hamburger under 860px */
 .pulse-noir .noir-burger{display:none}
 .pulse-noir .noir-mobile-menu{display:none}
