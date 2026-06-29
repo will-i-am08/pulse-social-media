@@ -1,5 +1,5 @@
-import { Metadata } from 'next'
-import LegalShell from '@/components/marketing/LegalShell'
+import type { Metadata } from 'next'
+import NoirLegal from '@/components/noir/NoirLegal'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
@@ -7,28 +7,13 @@ export const metadata: Metadata = {
   alternates: { canonical: '/privacy' },
 }
 
-const NAV = [
-  { id: 'who', label: 'Who we are' },
-  { id: 'what', label: 'What we collect' },
-  { id: 'why', label: 'Why we collect it' },
-  { id: 'share', label: 'Who we share with' },
-  { id: 'cookies', label: 'Cookies' },
-  { id: 'retention', label: 'Retention' },
-  { id: 'rights', label: 'Your rights' },
-  { id: 'intl', label: 'International' },
-  { id: 'kids', label: 'Kids' },
-  { id: 'changes', label: 'Changes' },
-  { id: 'contact', label: 'Contact' },
-]
-
 export default function PrivacyPage() {
   return (
-    <LegalShell
+    <NoirLegal
       eyebrow="Legal · Policy"
-      title={<>Privacy<br /><em>policy.</em></>}
+      title={<>Privacy <em>policy.</em></>}
       intro="We collect the least we can. We store it for the shortest time we can. We never sell it. This page explains the specifics — without the legalese fog."
-      updated="12 April 2026"
-      nav={NAV}
+      updated="29 June 2026"
     >
       <h2 id="who">Who <em>we are</em></h2>
       <p>&ldquo;Pulse&rdquo; refers to <strong>Pulse Social Media</strong> (ABN 24 459 717 280), operating in Bendigo, Victoria, Australia. &ldquo;We&rdquo;, &ldquo;us&rdquo;, &ldquo;our&rdquo; all refer to the same entity.</p>
@@ -59,6 +44,7 @@ export default function PrivacyPage() {
         <li><strong>Notion</strong> — project docs and engines</li>
         <li><strong>Supabase</strong> — product database and auth</li>
         <li><strong>Netlify</strong> — hosting and build infrastructure</li>
+        <li><strong>Resend</strong> — transactional and confirmation emails</li>
         <li><strong>Stripe</strong> — invoicing and card payments</li>
         <li><strong>Anthropic &amp; OpenAI</strong> — model providers for CaptionCraft, with zero-retention settings</li>
       </ul>
@@ -97,6 +83,6 @@ export default function PrivacyPage() {
       <h2 id="contact">Contact <em>us</em></h2>
       <p>Privacy questions, access requests, or complaints: <a href="mailto:hello@pulsesocialmedia.com.au">hello@pulsesocialmedia.com.au</a>. Pulse Social Media is based in Bendigo, Victoria, Australia.</p>
       <div className="note"><b>TL;DR</b>Your data stays small, stays ours (not anyone else&apos;s), and goes away when you ask it to. Email hello@pulsesocialmedia.com.au for anything.</div>
-    </LegalShell>
+    </NoirLegal>
   )
 }

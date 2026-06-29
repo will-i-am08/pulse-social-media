@@ -1,5 +1,5 @@
-import { Metadata } from 'next'
-import LegalShell from '@/components/marketing/LegalShell'
+import type { Metadata } from 'next'
+import NoirLegal from '@/components/noir/NoirLegal'
 
 export const metadata: Metadata = {
   title: 'Terms of Service',
@@ -7,28 +7,13 @@ export const metadata: Metadata = {
   alternates: { canonical: '/terms' },
 }
 
-const NAV = [
-  { id: 'accept', label: 'Accepting these terms' },
-  { id: 'account', label: 'Accounts' },
-  { id: 'use', label: 'Acceptable use' },
-  { id: 'ip', label: 'IP & ownership' },
-  { id: 'ai', label: 'AI-generated content' },
-  { id: 'billing', label: 'Billing' },
-  { id: 'cancel', label: 'Cancellation' },
-  { id: 'warranty', label: 'Warranty' },
-  { id: 'liability', label: 'Liability' },
-  { id: 'law', label: 'Governing law' },
-  { id: 'changes', label: 'Changes' },
-]
-
 export default function TermsPage() {
   return (
-    <LegalShell
+    <NoirLegal
       eyebrow="Legal · Terms"
-      title={<>Terms of<br /><em>service.</em></>}
+      title={<>Terms of <em>service.</em></>}
       intro="The rules of the road for using pulsesocialmedia.com.au and CaptionCraft. Short, plain, and written so you can actually read them."
-      updated="12 April 2026"
-      nav={NAV}
+      updated="29 June 2026"
     >
       <h2 id="accept">Accepting these <em>terms</em></h2>
       <p>By using pulsesocialmedia.com.au, CaptionCraft, or engaging Pulse Social Media (ABN 24 459 717 280) for services, you&apos;re agreeing to these terms. If you&apos;re doing so on behalf of a company, you&apos;re confirming you have the authority to bind that company.</p>
@@ -87,6 +72,6 @@ export default function TermsPage() {
       <p>We may update these terms. Material changes get 30 days&apos; notice by email. Continued use after that counts as acceptance.</p>
 
       <div className="note"><b>Questions?</b><a href="mailto:hello@pulsesocialmedia.com.au">hello@pulsesocialmedia.com.au</a> — a real human, not a ticket queue.</div>
-    </LegalShell>
+    </NoirLegal>
   )
 }
