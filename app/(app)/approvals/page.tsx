@@ -30,8 +30,10 @@ export default function ApprovalsPage() {
     setActingId(post.id)
     const brand = brands.find(b => b.id === post.brand_profile_id)
     const profileIds = brand?.buffer_profile_ids || []
-    // Mark approved first
-    savePosts(posts.map(p => p.id === post.id ? { ...p, status: 'approved' } : p))
+    // Mark approved first — keep the updated array so the post-send save
+    // builds on it rather than a stale snapshot that would revert this change
+    const approved = posts.map(p => p.id === post.id ? { ...p, status: 'approved' as const } : p)
+    savePosts(approved)
     // Auto-send if possible
     if (profileIds.length > 0) {
       const photos = post.image_urls?.length ? post.image_urls : (post.image_url ? [post.image_url] : [])
@@ -43,7 +45,10 @@ export default function ApprovalsPage() {
         })
         const data = await res.json()
         if (data.success) {
-          savePosts(posts.map(p => p.id === post.id ? { ...p, status: 'published' } : p))
+          const now = new Date().toISOString()
+          savePosts(approved.map(p => p.id === post.id
+            ? { ...p, status: 'published' as const, published_at: now, buffer_sent: true, buffer_sent_at: now }
+            : p))
           toast.success('Approved and added to Buffer queue')
           setActingId(null)
           return

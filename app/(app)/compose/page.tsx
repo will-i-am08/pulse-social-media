@@ -361,7 +361,9 @@ export default function CreatePostPage() {
       const content = images.length > 0
         ? buildImageContent(images[0], engineOutput.userPrompt)
         : engineOutput.userPrompt
-      const result = await callClaude(engineOutput.systemPrompt, content, 768)
+      // Stream the caption into the editor as it generates
+      const result = await callClaude(engineOutput.systemPrompt, content, 768, 'claude-sonnet-4-6',
+        textSoFar => setCaption(textSoFar))
       if (result) {
         setCaption(cleanCaption(result))
         setQualityChecked([false, false, false])

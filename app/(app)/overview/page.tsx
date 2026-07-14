@@ -136,7 +136,7 @@ export default function OverviewPage() {
       {/* Getting started */}
       {brands.length === 0 && (
         <div className="card p-6 mb-6 border-dashed border-2 border-[rgba(255,84,115,0.3)] text-center">
-          <p className="text-lg font-semibold text-[#e6e1e1] mb-2">Welcome to CaptionCraft!</p>
+          <p className="text-lg font-semibold text-[#e6e1e1] mb-2">Welcome to Pulse!</p>
           <p className="text-[#e1bec0] text-sm mb-4">Start by creating a brand profile, then create your first post.</p>
           <div className="flex gap-3 justify-center">
             <Link href="/brands" className="btn btn-p">Create Brand</Link>

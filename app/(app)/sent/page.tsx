@@ -115,7 +115,7 @@ export default function SentPage() {
       {confirmDelete && (
         <ConfirmDialog
           title="Delete Post"
-          description="This will permanently delete this post from CaptionCraft. It won't remove anything from Buffer or the published platform."
+          description="This will permanently delete this post from Pulse. It won't remove anything from Buffer or the published platform."
           onConfirm={() => { deletePost(confirmDelete!); setConfirmDelete(null) }}
           onClose={() => setConfirmDelete(null)}
         />
