@@ -5,14 +5,15 @@ import { useEffect, useState, type FormEvent } from 'react'
 const PDF_URL = '/Pulse_Content_Playbook.pdf'
 
 const CHAPTERS = [
-  ['01', 'Set up your studio for free', 'Turn the phone in your pocket into a content machine, lighting, framing, and sound included.'],
-  ['02', 'The 3-second hook formula', 'How to stop the scroll before anyone decides they’re not interested.'],
-  ['03', 'Talk to one person', 'The voice shift that makes a video feel made for the viewer, not the masses.'],
-  ['04', 'Steal the b-roll shortcut', 'The handful of shots that make any business look polished and intentional.'],
-  ['05', 'Captions that get read', 'Structure your on-screen text so people watch to the end with the sound off.'],
-  ['06', 'A week of content in an hour', 'The batching system that kills the daily scramble for good.'],
-  ['07', 'Post at the right time', 'When to publish on each platform so the algorithm actually does its job.'],
-  ['08', 'Turn views into customers', 'The call-to-action playbook that converts attention into booked work.'],
+  ['01', 'Win customers who are ready to buy', 'Pin down exactly who you’re selling to, so every post lands with people ready to spend.'],
+  ['02', 'Get recognised in a single scroll', 'A brand voice so consistent people know it’s you before they read your name.'],
+  ['03', 'Never wonder what to post again', 'The three content buckets — educate, entertain, sell — that end the blank-page problem for good.'],
+  ['04', 'Stop the scroll in the first 3 seconds', 'Hooks and captions that earn attention before the thumb wins.'],
+  ['05', 'Shoot like a pro on just a phone', 'Light, sound, framing and depth — the tricks that make phone footage look like a paid shoot.'],
+  ['06', 'Create weeks of content in one afternoon', 'The batching system that kills the daily scramble for good.'],
+  ['07', 'Grow every week without posting every day', 'The posting rhythm that compounds, no daily grind required.'],
+  ['08', 'Turn views into paying customers', 'The call-to-action playbook that converts attention into booked work.'],
+  ['★', 'Bonus: Turn happy customers into your best salespeople', 'Build proof on autopilot — reviews, before-and-afters and testimonials that do the selling for you.'],
 ]
 
 export default function NoirPlaybook() {
@@ -62,7 +63,7 @@ export default function NoirPlaybook() {
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#F97316', boxShadow: '0 0 8px #F97316' }} />
             Free playbook
           </div>
-          <h1 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(38px,4vw,56px)', lineHeight: 1.04, letterSpacing: '-0.035em', margin: 0 }}>8 ways to make your business look stupidly good on social, <span style={{ color: '#F97316' }}>without hiring a videographer.</span></h1>
+          <h1 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(38px,4vw,56px)', lineHeight: 1.04, letterSpacing: '-0.035em', margin: 0 }}>8 steps to make your business look stupidly good on social, <span style={{ color: '#F97316' }}>without hiring a videographer.</span></h1>
           <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.72)', fontWeight: 500, margin: '22px 0 0', maxWidth: 480 }}>Download your <span style={{ color: '#F4F5F7', fontWeight: 700 }}>free</span> copy of the playbook: the exact 8-step system we use to make our clients&apos; content look stupidly good, all shot on a phone.</p>
           <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.72)', fontWeight: 500, margin: '14px 0 0', maxWidth: 480 }}>Everything you need to post content that gets seen, looks the part, and actually brings in customers. No agency, no expensive gear, no fluff.</p>
 
@@ -91,7 +92,7 @@ export default function NoirPlaybook() {
               <div style={{ position: 'absolute', left: 0, right: 0, top: '82%', height: 4, background: '#F97316', opacity: 0.9 }} />
               <div style={{ color: '#F97316', fontWeight: 800, fontSize: 'clamp(11px,1vw,15px)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '8%' }}>The Free Playbook</div>
               <div className="sora" style={{ fontWeight: 800, fontSize: 'clamp(150px,18vw,260px)', lineHeight: 0.8, color: '#F97316', textShadow: '0 0 64px rgba(249,115,22,0.45)', marginBottom: '4%' }}>8</div>
-              <div className="sora" style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: 'clamp(20px,2.8vw,38px)', lineHeight: 1.04, color: '#fff', letterSpacing: '-0.01em' }}>Ways to Look<br />Stupidly Good<br />on Social</div>
+              <div className="sora" style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: 'clamp(20px,2.8vw,38px)', lineHeight: 1.04, color: '#fff', letterSpacing: '-0.01em' }}>Steps to Look<br />Stupidly Good<br />on Social Media</div>
               <div style={{ marginTop: 'auto', color: 'rgba(244,245,247,0.5)', fontSize: 'clamp(10px,0.9vw,14px)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>By Pulse Social Media</div>
             </div>
           </div>
@@ -102,11 +103,11 @@ export default function NoirPlaybook() {
       <div style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '120px 40px 0' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div className="kicker" style={{ marginBottom: 14 }}>What&apos;s inside</div>
-          <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(32px,3.5vw,48px)', letterSpacing: '-0.03em', margin: 0 }}>8 chapters. Zero fluff.</h2>
+          <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(32px,3.5vw,48px)', letterSpacing: '-0.03em', margin: 0 }}>8 steps. Zero fluff.</h2>
         </div>
         <div className="grid-collapse" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 14 }}>
           {CHAPTERS.map(([num, title, desc]) => (
-            <div key={num} style={{ display: 'flex', gap: 18, padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div key={num} style={{ display: 'flex', gap: 18, padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', ...(num === '★' ? { gridColumn: '1 / -1' } : {}) }}>
               <div className="sora" style={{ flex: 'none', width: 40, height: 40, borderRadius: 11, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#F97316', fontWeight: 800, fontSize: 16 }}>{num}</div>
               <div>
                 <div className="sora" style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.01em' }}>{title}</div>

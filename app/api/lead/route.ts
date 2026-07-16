@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   if (type === 'playbook') {
     const pdf = `${SITE_URL}/Pulse_Content_Playbook.pdf`
     subject = `Your free playbook is here, ${first} 📈`
-    text = `Hi ${first},\n\nHere's your copy of "8 Ways to Look Stupidly Good on Social": ${pdf}\n\nWork through it one chapter at a time — even chapter one will sharpen your very next post. And if you'd rather we just ran the whole system for you, reply to this email and we'll set up a quick call.\n\nWill & the Pulse Social Media team`
+    text = `Hi ${first},\n\nHere's your copy of "8 Steps to Look Stupidly Good on Social Media": ${pdf}\n\nWork through it one step at a time — even step one will sharpen your very next post. And if you'd rather we just ran the whole system for you, reply to this email and we'll set up a quick call.\n\nWill & the Pulse Social Media team`
     html = playbookHtml(escapeHtml(first), pdf)
   } else {
     subject = `You're on the trail — Notes from the Climb`
@@ -102,8 +102,8 @@ function shell(headerBg: string, headerText: string, brand: string, body: string
 function playbookHtml(first: string, pdf: string) {
   const body = `
     <p style="margin:0 0 16px;line-height:1.7;">Hi ${first},</p>
-    <p style="margin:0 0 16px;line-height:1.7;">Here's your free copy of <strong>8 Ways to Look Stupidly Good on Social</strong> — the exact system we use to make our clients' content look the part, all shot on a phone.</p>
-    <p style="margin:0 0 28px;line-height:1.7;">Work through it one chapter at a time. Even chapter one will sharpen your very next post.</p>
+    <p style="margin:0 0 16px;line-height:1.7;">Here's your free copy of <strong>8 Steps to Look Stupidly Good on Social Media</strong> — the exact system we use to make our clients' content look the part, all shot on a phone.</p>
+    <p style="margin:0 0 28px;line-height:1.7;">Work through it one step at a time. Even step one will sharpen your very next post.</p>
     <table cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:#F97316;">
       <a href="${pdf}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#1a0800;text-decoration:none;">↓ Download the playbook</a>
     </td></tr></table>
