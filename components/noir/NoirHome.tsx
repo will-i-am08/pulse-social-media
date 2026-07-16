@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, type FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -34,9 +33,10 @@ function PlaceholderTile() {
 }
 
 export default function NoirHome() {
-  const router = useRouter()
   const [openFaq, setOpenFaq] = useState(0)
   const [heroEmail, setHeroEmail] = useState('')
+  const [heroSent, setHeroSent] = useState(false)
+  const [heroError, setHeroError] = useState(false)
   const [ctaStatus, setCtaStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
   const [compact, setCompact] = useState(false)
 
@@ -52,13 +52,17 @@ export default function NoirHome() {
     e.preventDefault()
     const value = heroEmail.trim()
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-    if (valid) {
-      // Capture the lead (Netlify) and email the playbook straight away, then carry them through.
-      const fd = new URLSearchParams({ 'form-name': 'playbook', email: value })
-      fetch('/__forms.html', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: fd.toString() }).catch(() => {})
-      fetch('/api/lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'playbook', email: value }) }).catch(() => {})
+    if (!valid) {
+      setHeroError(true)
+      return
     }
-    router.push(`/playbook${valid ? `?email=${encodeURIComponent(value)}` : ''}`)
+    setHeroError(false)
+    // Capture the enquiry (Netlify) and email it through so we can follow up.
+    const note = 'Enquiry from the home page hero (email only, no name given) — reply to this address to get in touch.'
+    const fd = new URLSearchParams({ 'form-name': 'contact', name: 'there', email: value, intent: 'Website enquiry', message: note })
+    fetch('/__forms.html', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: fd.toString() }).catch(() => {})
+    fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'there', email: value, intent: 'Website enquiry', message: note }) }).catch(() => {})
+    setHeroSent(true)
   }
 
   async function onCtaSubmit(e: FormEvent<HTMLFormElement>) {
@@ -118,19 +122,27 @@ export default function NoirHome() {
             Growing a small business is hard. We make getting found, followed, and booked a whole lot easier, and a lot less stressful.
           </p>
 
-          <form onSubmit={onHeroSubmit} className="m-stack" style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 680, margin: '38px auto 0', background: 'rgba(255,255,255,0.96)', borderRadius: 999, padding: '7px 7px 7px 22px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', animation: 'riseUp 0.9s ease 0.42s both' }}>
-            <span className="m-hide-560" style={{ fontSize: 22 }}>👋</span>
-            <input
-              value={heroEmail}
-              onChange={e => setHeroEmail(e.target.value)}
-              type="email"
-              placeholder={compact ? 'Your email for the free playbook…' : "Enter your email and we'll send you our free playbook…"}
-              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 16, color: '#16181c', padding: '14px 12px', minWidth: 0 }}
-            />
-            <button type="submit" style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 8, padding: '16px 30px', borderRadius: 999, background: '#F97316', color: '#1a0800', fontWeight: 800, fontSize: 16, cursor: 'pointer', whiteSpace: 'nowrap', border: 0 }}>
-              Send it <span style={{ fontSize: 18 }}>→</span>
-            </button>
-          </form>
+          {!heroSent ? (
+            <form onSubmit={onHeroSubmit} className="m-stack" style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 680, margin: '38px auto 0', background: 'rgba(255,255,255,0.96)', borderRadius: 999, padding: '7px 7px 7px 22px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', animation: 'riseUp 0.9s ease 0.42s both' }}>
+              <span className="m-hide-560" style={{ fontSize: 22 }}>👋</span>
+              <input
+                value={heroEmail}
+                onChange={e => { setHeroEmail(e.target.value); setHeroError(false) }}
+                type="email"
+                placeholder={compact ? 'Your email — we’ll get in touch…' : "Enter your email and we'll get in touch within a day…"}
+                style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 16, color: '#16181c', padding: '14px 12px', minWidth: 0 }}
+              />
+              <button type="submit" style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 8, padding: '16px 30px', borderRadius: 999, background: '#F97316', color: '#1a0800', fontWeight: 800, fontSize: 16, cursor: 'pointer', whiteSpace: 'nowrap', border: 0 }}>
+                Get in touch <span style={{ fontSize: 18 }}>→</span>
+              </button>
+            </form>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, maxWidth: 680, margin: '38px auto 0', borderRadius: 999, padding: '18px 28px', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.35)', animation: 'riseUp 0.5s ease both' }}>
+              <span style={{ flex: 'none', width: 26, height: 26, borderRadius: '50%', background: '#F97316', color: '#1a0800', fontWeight: 900, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</span>
+              <span style={{ fontSize: 15.5, fontWeight: 600, color: '#fed7aa' }}>Got it — we&apos;ll be in touch within one business day.</span>
+            </div>
+          )}
+          {heroError && <div style={{ marginTop: 12, fontSize: 13.5, fontWeight: 600, color: '#fca5a5' }}>Please enter a valid email address.</div>}
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, flexWrap: 'wrap', marginTop: 22, fontSize: 13.5, color: 'rgba(244,245,247,0.62)', fontWeight: 500, animation: 'riseUp 0.9s ease 0.5s both' }}>
             <span>*No gimmicks, just content that actually sells.</span>
