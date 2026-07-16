@@ -1,78 +1,42 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { rateLimit, clientIp, escapeHtml } from '@/lib/rate-limit'
 
 const FROM_EMAIL = process.env.FROM_EMAIL ?? 'hello@pulsesocialmedia.com.au'
 const OWNER_EMAIL = process.env.OWNER_EMAIL ?? 'william@pulsesocialmedia.com.au'
 
-export async function POST(req: NextRequest) {
-  const { name, email, intent, message } = await req.json()
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  if (!email || !name) {
-    return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
+export async function POST(req: NextRequest) {
+  if (!rateLimit(`contact:${clientIp(req)}`, 3, 10 * 60_000)) {
+    return NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
   }
 
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-  const RESEND_API_KEY = process.env.RESEND_API_KEY
+  const body = await req.json().catch(() => ({}))
+  const name = typeof body.name === 'string' ? body.name.trim().slice(0, 120) : ''
+  const email = typeof body.email === 'string' ? body.email.trim().slice(0, 254) : ''
+  const intent = typeof body.intent === 'string' ? body.intent.trim().slice(0, 120) : ''
+  const message = typeof body.message === 'string' ? body.message.trim().slice(0, 2000) : ''
 
-  if (!ANTHROPIC_API_KEY || !RESEND_API_KEY) {
-    console.error('Missing ANTHROPIC_API_KEY or RESEND_API_KEY')
+  if (!name || !EMAIL_RE.test(email)) {
+    return NextResponse.json({ error: 'Name and a valid email are required' }, { status: 400 })
+  }
+
+  const RESEND_API_KEY = process.env.RESEND_API_KEY
+  if (!RESEND_API_KEY) {
+    console.error('Missing RESEND_API_KEY')
     return NextResponse.json({ error: 'Email service not configured' }, { status: 500 })
   }
 
-  // ── 1. Generate personalised reply via Claude ─────────────────────────────
-  const prompt = `You are a friendly, professional assistant for Pulse Social Media — an AI-powered social media agency based in Australia. A potential client has just submitted a contact form enquiry.
+  // Templated confirmation — never compose outbound email from user-supplied
+  // content via AI (prompt-injection risk on a public endpoint).
+  const first = name.split(' ')[0]
+  const about = intent || 'our services'
+  const replyText = `Hi ${first},\n\nThank you so much for reaching out! We've received your enquiry about ${about} and Will will be in touch within one business day to chat further.\n\nFor anything urgent, feel free to email Will directly at ${OWNER_EMAIL}.\n\nLooking forward to connecting!\n\nWill & the Pulse Social Media team`
 
-Your job is to write a warm, personable, and professional email reply to them. The tone should be confident but approachable — like a message from a real person, not a template. Keep it concise (150–200 words). Do not use bullet points or headers — just flowing, conversational paragraphs.
-
-The reply should:
-1. Greet them by first name
-2. Acknowledge what they're interested in (their intent) and briefly touch on their specific message
-3. Let them know Will (the founder) will be in touch within one business day to set up a quick call
-4. Give Will's direct email (${OWNER_EMAIL}) for anything urgent
-5. Close warmly, signed off as "Will & the Pulse Social Media team"
-
-Here are the enquiry details:
-- Name: ${name}
-- Interested in: ${intent ?? 'our services'}
-- Their message: ${message ?? '(no message provided)'}
-
-Write ONLY the email body text — no subject line, no markdown formatting. Start directly with the greeting.`
-
-  let replyText = ''
-  try {
-    const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    })
-
-    if (claudeRes.ok) {
-      const claudeData = await claudeRes.json()
-      replyText = claudeData.content?.[0]?.text ?? ''
-    } else {
-      console.error('Claude API error:', await claudeRes.text())
-    }
-  } catch (e) {
-    console.error('Claude fetch error:', e)
-  }
-
-  // Fall back to a simple reply if Claude fails
-  if (!replyText) {
-    replyText = `Hi ${name.split(' ')[0]},\n\nThank you so much for reaching out! We've received your enquiry about ${intent ?? 'our services'} and Will will be in touch within one business day to chat further.\n\nFor anything urgent, feel free to email Will directly at ${OWNER_EMAIL}.\n\nLooking forward to connecting!\n\nWill & the Pulse Social Media team`
-  }
-
-  // ── 2. Build branded HTML email ────────────────────────────────────────────
   const replyHtml = replyText
     .split('\n\n')
     .filter(Boolean)
-    .map(p => `<p style="margin:0 0 16px 0;line-height:1.7;color:#1a1a1a;">${p.replace(/\n/g, '<br>')}</p>`)
+    .map(p => `<p style="margin:0 0 16px 0;line-height:1.7;color:#1a1a1a;">${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
     .join('')
 
   const emailHtml = `<!DOCTYPE html>
@@ -106,7 +70,6 @@ Write ONLY the email body text — no subject line, no markdown formatting. Star
 </body>
 </html>`
 
-  // ── 3. Send via Resend ────────────────────────────────────────────────────
   try {
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -118,7 +81,7 @@ Write ONLY the email body text — no subject line, no markdown formatting. Star
         from: `Pulse Social Media <${FROM_EMAIL}>`,
         to: [email],
         reply_to: OWNER_EMAIL,
-        subject: `Thanks for reaching out, ${name.split(' ')[0]} — we'll be in touch soon`,
+        subject: `Thanks for reaching out, ${first} — we'll be in touch soon`,
         html: emailHtml,
         text: replyText,
       }),
@@ -132,6 +95,37 @@ Write ONLY the email body text — no subject line, no markdown formatting. Star
   } catch (e) {
     console.error('Resend fetch error:', e)
     return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
+  }
+
+  // Notify the owner of the new enquiry (best effort — the lead's confirmation
+  // already went out, so a failure here shouldn't fail the request).
+  try {
+    const detailRows = [
+      ['Name', name],
+      ['Email', email],
+      ['Interested in', intent || '(not specified)'],
+      ['Message', message || '(no message)'],
+    ]
+      .map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;font-weight:600;vertical-align:top;white-space:nowrap;">${k}</td><td style="padding:6px 0;">${escapeHtml(v).replace(/\n/g, '<br>')}</td></tr>`)
+      .join('')
+
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: `Pulse Social Media <${FROM_EMAIL}>`,
+        to: [OWNER_EMAIL],
+        reply_to: email,
+        subject: `New enquiry: ${name}${intent ? ` — ${intent}` : ''}`,
+        html: `<table style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:14px;color:#1a1a1a;">${detailRows}</table>`,
+        text: detailRows ? `New enquiry\n\nName: ${name}\nEmail: ${email}\nInterested in: ${intent || '(not specified)'}\n\n${message || '(no message)'}` : '',
+      }),
+    })
+  } catch (e) {
+    console.error('Owner notification error:', e)
   }
 
   return NextResponse.json({ ok: true })

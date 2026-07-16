@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -25,6 +26,8 @@ interface AppCard {
   icon: React.ElementType
   gradient: string
   badge?: string
+  /** Internal agency tooling — hidden from client-role users */
+  internal?: boolean
 }
 
 const APPS: AppCard[] = [
@@ -38,6 +41,7 @@ const APPS: AppCard[] = [
   },
   {
     id: 'geo',
+    internal: true,
     name: 'SEO Command Center',
     description: 'Full SEO toolkit: on-page analysis, keyword research, technical audits, AI visibility monitoring, schema and llms.txt management.',
     href: '/geo',
@@ -46,6 +50,7 @@ const APPS: AppCard[] = [
   },
   {
     id: 'brand-research',
+    internal: true,
     name: 'Brand Research',
     description: 'Central brand hub: profiles, AI research reports, brand voice guidelines and competitor analysis. Shared across all apps.',
     href: '/brand-research',
@@ -54,6 +59,7 @@ const APPS: AppCard[] = [
   },
   {
     id: 'blog-engine',
+    internal: true,
     name: 'Blog Engine',
     description: 'AI-powered multi-brand blog creation, idea generation, SEO-optimised content.',
     href: '/blog-engine',
@@ -70,6 +76,7 @@ const APPS: AppCard[] = [
   },
   {
     id: 'creative',
+    internal: true,
     name: 'Creative Studio',
     description: 'Photo library, canvas editor, AI image generation and brand asset management. Synced across all apps.',
     href: '/creative-studio',
@@ -78,6 +85,7 @@ const APPS: AppCard[] = [
   },
   {
     id: 'automations',
+    internal: true,
     name: 'Automations',
     description: 'Multi-step workflow automation: schedule blog posts, run SEO audits, chain AI tasks together.',
     href: '/automations',
@@ -88,6 +96,18 @@ const APPS: AppCard[] = [
 
 export default function AppsPage() {
   const router = useRouter()
+  const [isClientRole, setIsClientRole] = useState(true) // assume least access until the role loads
+
+  useEffect(() => {
+    const sb = createClient()
+    sb.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { data: profile } = await sb.from('profiles').select('role').eq('id', user.id).single()
+      setIsClientRole(profile?.role === 'client')
+    })
+  }, [])
+
+  const visibleApps = APPS.filter(app => !app.internal || !isClientRole)
 
   async function handleSignOut() {
     const sb = createClient()
@@ -131,7 +151,7 @@ export default function AppsPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5">
-          {APPS.map(app => {
+          {visibleApps.map(app => {
             const Icon = app.icon
             const isAvailable = !!app.href
 

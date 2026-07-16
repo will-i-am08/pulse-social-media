@@ -1,15 +1,25 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { rateLimit, clientIp, escapeHtml } from '@/lib/rate-limit'
 
 const FROM_EMAIL = process.env.FROM_EMAIL ?? 'hello@pulsesocialmedia.com.au'
 const OWNER_EMAIL = process.env.OWNER_EMAIL ?? 'william@pulsesocialmedia.com.au'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://pulsesocialmedia.com.au'
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 type LeadType = 'playbook' | 'waitlist'
 
 export async function POST(req: NextRequest) {
-  const { type, name, email } = (await req.json()) as { type: LeadType; name?: string; email?: string }
+  if (!rateLimit(`lead:${clientIp(req)}`, 5, 10 * 60_000)) {
+    return NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
+  }
 
-  if (!email || (type !== 'playbook' && type !== 'waitlist')) {
+  const body = await req.json().catch(() => ({}))
+  const type = body.type as LeadType
+  const email = typeof body.email === 'string' ? body.email.trim().slice(0, 254) : ''
+  const name = typeof body.name === 'string' ? body.name.trim().slice(0, 120) : ''
+
+  if (!EMAIL_RE.test(email) || (type !== 'playbook' && type !== 'waitlist')) {
     return NextResponse.json({ error: 'A valid email and lead type are required' }, { status: 400 })
   }
 
@@ -19,7 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Email service not configured' }, { status: 500 })
   }
 
-  const first = (name?.trim().split(' ')[0]) || 'there'
+  const first = name.split(' ')[0] || 'there'
 
   let subject: string
   let text: string
@@ -29,11 +39,11 @@ export async function POST(req: NextRequest) {
     const pdf = `${SITE_URL}/Pulse_Content_Playbook.pdf`
     subject = `Your free playbook is here, ${first} 📈`
     text = `Hi ${first},\n\nHere's your copy of "8 Steps to Look Stupidly Good on Social Media": ${pdf}\n\nWork through it one step at a time — even step one will sharpen your very next post. And if you'd rather we just ran the whole system for you, reply to this email and we'll set up a quick call.\n\nWill & the Pulse Social Media team`
-    html = playbookHtml(first, pdf)
+    html = playbookHtml(escapeHtml(first), pdf)
   } else {
     subject = `You're on the trail — Notes from the Climb`
     text = `Hi ${first},\n\nYou're on the waitlist for Notes from the Climb, a Pulse Original podcast about the long ascent.\n\nWe'll send you the first climb the day it goes live, plus the occasional note from the trail while we build the show.\n\nSee you at first light,\nThe Pulse team`
-    html = waitlistHtml(first)
+    html = waitlistHtml(escapeHtml(first))
   }
 
   try {
@@ -93,7 +103,7 @@ function playbookHtml(first: string, pdf: string) {
   const body = `
     <p style="margin:0 0 16px;line-height:1.7;">Hi ${first},</p>
     <p style="margin:0 0 16px;line-height:1.7;">Here's your free copy of <strong>8 Steps to Look Stupidly Good on Social Media</strong> — the exact system we use to make our clients' content look the part, all shot on a phone.</p>
-    <p style="margin:0 0 28px;line-height:1.7;">Work through it one chapter at a time. Even chapter one will sharpen your very next post.</p>
+    <p style="margin:0 0 28px;line-height:1.7;">Work through it one step at a time. Even step one will sharpen your very next post.</p>
     <table cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:#F97316;">
       <a href="${pdf}" style="display:inline-block;padding:15px 30px;font-size:16px;font-weight:800;color:#1a0800;text-decoration:none;">↓ Download the playbook</a>
     </td></tr></table>

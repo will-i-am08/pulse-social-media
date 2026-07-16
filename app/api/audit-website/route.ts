@@ -1,4 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { lookup } from 'node:dns/promises'
+import { isIP } from 'node:net'
+import { rateLimit, clientIp } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -6,6 +9,7 @@ export const maxDuration = 30
 const FETCH_TIMEOUT_MS = 9_000
 const MAX_HTML_BYTES = 400_000
 const MAX_TEXT_CHARS = 8_000
+const MAX_REDIRECTS = 3
 
 function normaliseUrl(raw: string): string | null {
   const trimmed = raw.trim()
@@ -14,9 +18,46 @@ function normaliseUrl(raw: string): string | null {
   try {
     const u = new URL(withProtocol)
     if (u.protocol !== 'http:' && u.protocol !== 'https:') return null
+    if (u.port && u.port !== '80' && u.port !== '443') return null
     return u.toString()
   } catch {
     return null
+  }
+}
+
+/** True for loopback, link-local, private-range, and other non-public addresses. */
+function isPrivateIp(ip: string): boolean {
+  if (isIP(ip) === 6) {
+    const v6 = ip.toLowerCase()
+    // loopback, unspecified, link-local, unique-local, and v4-mapped forms
+    if (v6 === '::1' || v6 === '::') return true
+    if (v6.startsWith('fe80') || v6.startsWith('fc') || v6.startsWith('fd')) return true
+    const v4Mapped = v6.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/)
+    if (v4Mapped) return isPrivateIp(v4Mapped[1])
+    return false
+  }
+  const parts = ip.split('.').map(Number)
+  if (parts.length !== 4 || parts.some(n => Number.isNaN(n))) return true
+  const [a, b] = parts
+  if (a === 10 || a === 127 || a === 0) return true
+  if (a === 172 && b >= 16 && b <= 31) return true
+  if (a === 192 && b === 168) return true
+  if (a === 169 && b === 254) return true // link-local / cloud metadata
+  if (a === 100 && b >= 64 && b <= 127) return true // CGNAT
+  if (a >= 224) return true // multicast / reserved
+  return false
+}
+
+/** Resolve the hostname and refuse anything that lands on a private address. */
+async function assertPublicHost(url: URL): Promise<boolean> {
+  const host = url.hostname
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal') || host.endsWith('.local')) return false
+  if (isIP(host)) return !isPrivateIp(host)
+  try {
+    const addrs = await lookup(host, { all: true })
+    return addrs.length > 0 && addrs.every(a => !isPrivateIp(a.address))
+  } catch {
+    return false
   }
 }
 
@@ -41,16 +82,31 @@ async function fetchSite(url: string): Promise<{ text: string; title: string } |
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
   try {
-    const res = await fetch(url, {
-      signal: controller.signal,
-      redirect: 'follow',
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (compatible; PulseAuditBot/1.0; +https://pulsesocialmedia.com.au)',
-        Accept: 'text/html,application/xhtml+xml',
-      },
-    })
-    if (!res.ok) return null
+    // Follow redirects manually so every hop is re-validated against private ranges
+    let current = new URL(url)
+    let res: Response | null = null
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      if (!(await assertPublicHost(current))) return null
+      res = await fetch(current.toString(), {
+        signal: controller.signal,
+        redirect: 'manual',
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (compatible; PulseAuditBot/1.0; +https://pulsesocialmedia.com.au)',
+          Accept: 'text/html,application/xhtml+xml',
+        },
+      })
+      if (res.status >= 300 && res.status < 400) {
+        const location = res.headers.get('location')
+        if (!location) return null
+        const next = new URL(location, current)
+        if (next.protocol !== 'http:' && next.protocol !== 'https:') return null
+        current = next
+        continue
+      }
+      break
+    }
+    if (!res || !res.ok) return null
     const contentType = res.headers.get('content-type') ?? ''
     if (!contentType.includes('html')) return null
 
@@ -85,16 +141,15 @@ async function fetchSite(url: string): Promise<{ text: string; title: string } |
 }
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(`audit:${clientIp(req)}`, 5, 10 * 60_000)) {
+    return NextResponse.json({ error: 'Too many requests — try again shortly' }, { status: 429 })
+  }
+
   const { url, bizName, industry, score, answers } = await req.json().catch(() => ({}))
 
   const normalised = typeof url === 'string' ? normaliseUrl(url) : null
   if (!normalised) {
     return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
-  }
-
-  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-  if (!ANTHROPIC_API_KEY) {
-    return NextResponse.json({ error: 'AI not configured' }, { status: 500 })
   }
 
   const site = await fetchSite(normalised)
@@ -106,6 +161,11 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
+  if (!ANTHROPIC_API_KEY) {
+    return NextResponse.json({ error: 'AI not configured' }, { status: 500 })
+  }
+
   const auditSummary = answers && typeof answers === 'object'
     ? Object.entries(answers).map(([k, v]) => `- ${k}: ${v}`).join('\n')
     : '(no audit answers provided)'
@@ -115,8 +175,8 @@ export async function POST(req: NextRequest) {
 You've been given the text content of the business's website. Use it to understand what they actually sell, their voice, their audience, and what makes them distinctive. Then write recommendations tailored to THEIR business — not generic social media tips.
 
 BUSINESS CONTEXT
-- Name: ${bizName || '(not provided)'}
-- Industry: ${industry || '(not provided)'}
+- Name: ${typeof bizName === 'string' ? bizName.slice(0, 120) : '(not provided)'}
+- Industry: ${typeof industry === 'string' ? industry.slice(0, 120) : '(not provided)'}
 - Page title: ${site.title || '(none)'}
 - Overall audit score (out of 100): ${typeof score === 'number' ? score : 'n/a'}
 

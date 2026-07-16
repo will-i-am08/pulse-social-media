@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useReducer,
+  useRef,
   type ReactNode,
 } from 'react'
 import { createClient } from '@/lib/supabase/client'
@@ -207,31 +208,81 @@ export function WorkspaceProvider({
     return () => window.removeEventListener('workspace:brands-updated', handler)
   }, [load])
 
-  async function syncTable(table: string, rows: unknown[]) {
-    if (!workspaceId) return
+  // Latest state snapshot for computing save diffs (read before React re-renders)
+  const latestRef = useRef(state)
+  latestRef.current = state
+
+  // Per-table promise chain so successive saves never interleave their writes
+  const syncChain = useRef<Record<string, Promise<void>>>({})
+
+  /** Patch one slice of the localStorage cache instead of discarding it */
+  function patchCache(key: string, value: unknown) {
     try {
-      localStorage.removeItem(cacheKey)
-      await sb.from(table).delete().eq('workspace_id', workspaceId)
-      if (rows.length) {
-        const toInsert = rows.map((r: unknown) => {
-          const row = r as Record<string, unknown>
-          const base: Record<string, unknown> = { id: row.id, workspace_id: workspaceId, data: r }
-          if (table === 'posts') {
-            base.brand_profile_id = row.brand_profile_id || null
-            base.client_visible = row.client_visible || false
-          }
-          return base
+      const cached = localStorage.getItem(cacheKey)
+      if (!cached) return
+      const parsed = JSON.parse(cached)
+      parsed[key] = value
+      localStorage.setItem(cacheKey, JSON.stringify(parsed))
+    } catch { /* best effort — quota or parse failure just skips the cache */ }
+  }
+
+  /**
+   * Diff-based sync: upsert added/changed rows, delete removed ones.
+   * Never rewrites the whole table, and a failure can't wipe existing data.
+   */
+  function syncTable(table: 'posts' | 'photos' | 'clients' | 'folders', rows: unknown[]) {
+    if (!workspaceId) return
+    const prev = (latestRef.current[table] ?? []) as { id: string }[]
+
+    const run = async () => {
+      try {
+        const prevById = new Map(prev.map(r => [r.id, r]))
+        const newIds = new Set(rows.map(r => (r as { id: string }).id))
+
+        const changed = rows.filter(r => {
+          const p = prevById.get((r as { id: string }).id)
+          if (!p) return true
+          if (p === r) return false
+          return JSON.stringify(p) !== JSON.stringify(r)
         })
-        await sb.from(table).insert(toInsert)
+        const removedIds = prev.filter(p => !newIds.has(p.id)).map(p => p.id)
+
+        if (changed.length) {
+          const toUpsert = changed.map((r: unknown) => {
+            const row = r as Record<string, unknown>
+            const base: Record<string, unknown> = { id: row.id, workspace_id: workspaceId, data: r }
+            if (table === 'posts') {
+              base.brand_profile_id = row.brand_profile_id || null
+              base.client_visible = row.client_visible || false
+            }
+            return base
+          })
+          const { error } = await sb.from(table).upsert(toUpsert)
+          if (error) throw error
+        }
+
+        if (removedIds.length) {
+          const { error } = await sb
+            .from(table)
+            .delete()
+            .eq('workspace_id', workspaceId)
+            .in('id', removedIds)
+          if (error) throw error
+        }
+
+        patchCache(table, rows)
+      } catch (e) {
+        console.error(`Sync error [${table}]:`, e)
+        toast.error(`Failed to save ${table}`)
       }
-    } catch (e) {
-      console.error(`Sync error [${table}]:`, e)
-      toast.error(`Failed to save ${table}`)
     }
+
+    syncChain.current[table] = (syncChain.current[table] ?? Promise.resolve()).then(run)
   }
 
   const saveBrands = useCallback((v: Brand[]) => {
     dispatch({ type: 'SET_BRANDS', payload: v })
+    patchCache('brands', v)
     // Sync to unified workspace_brands via API
     // Diff: upsert changed brands, delete removed ones
     const prev = state.brands
@@ -302,6 +353,7 @@ export function WorkspaceProvider({
   const saveSettings = useCallback((v: Partial<Settings>) => {
     dispatch({ type: 'SET_SETTINGS', payload: v })
     const updated = { ...state.settings, ...v }
+    patchCache('settings', updated)
     sb.from('settings')
       .upsert({ workspace_id: workspaceId, data: updated })
       .then(({ error }) => { if (error) { console.error('Settings sync error:', error.message); toast.error('Failed to save settings') } })
