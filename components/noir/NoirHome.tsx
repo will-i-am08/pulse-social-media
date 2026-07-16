@@ -13,6 +13,8 @@ const FAQS = [
   ['Which platforms do you cover?', 'Instagram, TikTok, Facebook, YouTube Shorts, and LinkedIn. We focus your effort on the few places your customers actually spend their time.'],
 ]
 
+const SHOW_VIDEO = false
+
 const WORK = [
   { offset: false, src: '/noir/work/work-coffee.jpg', alt: 'Latte art shot for a local café client' },
   { offset: true, src: '/noir/work/work-pasta.jpg', alt: 'Fresh pasta being rolled for a hospitality client shoot' },
@@ -137,7 +139,8 @@ export default function NoirHome() {
         </div>
       </div>
 
-      {/* ===== VIDEO BLOCK ===== */}
+      {/* ===== VIDEO BLOCK ===== hidden until the showreel exists — flip SHOW_VIDEO to bring it back */}
+      {SHOW_VIDEO && (
       <div className="m-pad" style={{ position: 'relative', zIndex: 6, maxWidth: 1100, margin: '-52px auto 0', padding: '0 40px' }}>
         <div style={{ position: 'relative', borderRadius: 28, padding: 1, background: 'linear-gradient(160deg,rgba(255,255,255,0.24),rgba(255,255,255,0.02))', boxShadow: '0 50px 130px rgba(0,0,0,0.7)' }}>
           <div style={{ position: 'relative', borderRadius: 27, overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.06)', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -153,6 +156,7 @@ export default function NoirHome() {
           </div>
         </div>
       </div>
+      )}
 
       {/* ===== PROBLEM AGITATION ===== */}
       <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '0 auto', padding: '110px 40px 0', textAlign: 'center' }}>
