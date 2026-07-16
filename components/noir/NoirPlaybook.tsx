@@ -57,7 +57,7 @@ export default function NoirPlaybook() {
       </div>
 
       {/* hero */}
-      <div className="grid-collapse" style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '80px 40px 0', display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 56, alignItems: 'center' }}>
+      <div className="grid-collapse pb-hero" style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '80px 40px 0', display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 56, alignItems: 'center' }}>
         <div style={{ animation: 'riseUpClean 0.8s ease both' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, padding: '8px 16px', borderRadius: 999, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', fontSize: 13, fontWeight: 700, color: '#fed7aa', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 24 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#F97316', boxShadow: '0 0 8px #F97316' }} />
@@ -85,8 +85,8 @@ export default function NoirPlaybook() {
         </div>
 
         {/* 3D ebook */}
-        <div style={{ display: 'flex', justifyContent: 'center', perspective: 1600, transform: 'translateY(-40px)' }}>
-          <div style={{ position: 'relative', width: 'clamp(340px,36vw,500px)', aspectRatio: '530/740', transformStyle: 'preserve-3d', borderRadius: '3px 12px 12px 3px', boxShadow: '46px 60px 100px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04)', animation: 'bookFloat 6s ease-in-out infinite' }}>
+        <div className="pb-book" style={{ display: 'flex', justifyContent: 'center', perspective: 1600, transform: 'translateY(-40px)' }}>
+          <div style={{ position: 'relative', width: 'min(clamp(340px,36vw,500px), calc(100vw - 84px))', aspectRatio: '530/740', transformStyle: 'preserve-3d', borderRadius: '3px 12px 12px 3px', boxShadow: '46px 60px 100px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.04)', animation: 'bookFloat 6s ease-in-out infinite' }}>
             <div style={{ position: 'absolute', inset: 0, borderRadius: '3px 9px 9px 3px', overflow: 'hidden', background: 'linear-gradient(150deg,#15151c 0%,#0c0c12 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '14% 10%' }}>
               <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 18, background: 'linear-gradient(90deg,rgba(0,0,0,0.55),rgba(255,255,255,0.05) 60%,transparent)' }} />
               <div style={{ position: 'absolute', left: 0, right: 0, top: '82%', height: 4, background: '#F97316', opacity: 0.9 }} />
@@ -100,7 +100,7 @@ export default function NoirPlaybook() {
       </div>
 
       {/* what's inside */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '120px 40px 0' }}>
+      <div className="pb-chapters" style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '120px 40px 0' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div className="kicker" style={{ marginBottom: 14 }}>What&apos;s inside</div>
           <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(32px,3.5vw,48px)', letterSpacing: '-0.03em', margin: 0 }}>8 steps. Zero fluff.</h2>
@@ -119,9 +119,9 @@ export default function NoirPlaybook() {
       </div>
 
       {/* final CTA */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1000, margin: '110px auto 0', padding: '0 40px 90px' }}>
+      <div className="pb-cta" style={{ position: 'relative', zIndex: 5, maxWidth: 1000, margin: '110px auto 0', padding: '0 40px 90px' }}>
         <div style={{ borderRadius: 28, padding: 1, background: 'linear-gradient(160deg,rgba(249,115,22,0.4),rgba(255,255,255,0.02))', boxShadow: '0 40px 120px rgba(0,0,0,0.55)' }}>
-          <div style={{ borderRadius: 27, background: 'rgba(13,15,17,0.74)', backdropFilter: 'blur(26px) saturate(160%)', border: '1px solid rgba(255,255,255,0.06)', padding: 56, textAlign: 'center' }}>
+          <div className="pb-cta-card" style={{ borderRadius: 27, background: 'rgba(13,15,17,0.74)', backdropFilter: 'blur(26px) saturate(160%)', border: '1px solid rgba(255,255,255,0.06)', padding: 56, textAlign: 'center' }}>
             <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(30px,3.4vw,42px)', lineHeight: 1.08, letterSpacing: '-0.03em', margin: '0 auto', maxWidth: 560 }}>Get the playbook. Start looking the part.</h2>
             <p style={{ fontSize: 17, color: 'rgba(244,245,247,0.64)', lineHeight: 1.55, margin: '18px auto 32px', fontWeight: 500, maxWidth: 440 }}>It&apos;s free, it&apos;s instant, and it&apos;s the exact system we charge clients for. Grab it before we wise up.</p>
             <button onClick={scrollTop} className="btn-orange" style={{ padding: '17px 32px', fontSize: 17 }}>Send me my free copy <span>→</span></button>

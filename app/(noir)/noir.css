@@ -69,6 +69,15 @@
   .pulse-noir .noir-hero-h1{font-size:clamp(34px,11vw,46px) !important}
 }
 
+/* playbook page mobile */
+@media (max-width: 860px){
+  .pulse-noir .pb-hero{padding:56px 22px 0 !important;gap:44px !important}
+  .pulse-noir .pb-book{transform:none !important;padding-bottom:24px}
+  .pulse-noir .pb-chapters{padding:80px 22px 0 !important}
+  .pulse-noir .pb-cta{margin-top:80px !important;padding:0 22px 70px !important}
+  .pulse-noir .pb-cta-card{padding:36px 24px !important}
+}
+
 /* legal / policy prose */
 .pulse-noir .noir-legal{max-width:760px}
 .pulse-noir .noir-legal h2{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.02em;margin:46px 0 14px;color:#F4F5F7}
