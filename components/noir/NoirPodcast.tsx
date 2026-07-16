@@ -43,7 +43,7 @@ export default function NoirPodcast() {
   return (
     <>
       {/* ===== HERO ===== */}
-      <div data-anchor="waitlist" style={{ position: 'relative', zIndex: 5, width: '100%', minHeight: '92vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', textAlign: 'center', padding: '74px 40px 0', overflow: 'hidden', background: 'radial-gradient(120% 90% at 50% 86%,rgba(84,64,61,0.55) 0%,rgba(35,37,57,0) 52%),linear-gradient(180deg,#0A0C18 0%,#0C0F1E 30%,#161B30 68%,#232539 100%)' }}>
+      <div data-anchor="waitlist" className="m-pad" style={{ position: 'relative', zIndex: 5, width: '100%', minHeight: '92vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', textAlign: 'center', padding: '74px 40px 0', overflow: 'hidden', background: 'radial-gradient(120% 90% at 50% 86%,rgba(84,64,61,0.55) 0%,rgba(35,37,57,0) 52%),linear-gradient(180deg,#0A0C18 0%,#0C0F1E 30%,#161B30 68%,#232539 100%)' }}>
         {/* stars */}
         {[[70, '18%', 2, 4, 0], [130, '74%', 2, 5.5, 1], [96, '46%', 1.5, 6, 0.5], [170, '30%', 1.5, 4.8, 2], [84, '88%', 1.5, 5, 1.4]].map(([top, left, size, dur, delay], i) => (
           <div key={i} style={{ position: 'absolute', top: top as number, left: left as string, width: size as number, height: size as number, borderRadius: '50%', background: '#CDD6EE', animation: `climbTwinkle ${dur}s ease-in-out ${delay}s infinite` }} />
@@ -52,7 +52,7 @@ export default function NoirPodcast() {
         <div style={{ position: 'absolute', bottom: 130, left: '50%', width: 640, height: 640, borderRadius: '50%', background: 'radial-gradient(circle,rgba(242,176,102,0.42) 0%,rgba(232,143,77,0.18) 38%,rgba(232,143,77,0) 68%)', filter: 'blur(6px)', animation: 'sunGlow 9s ease-in-out infinite', pointerEvents: 'none', transform: 'translateX(-50%)' }} />
 
         <div style={{ position: 'relative', zIndex: 3, maxWidth: 900 }}>
-          <div className="mono" style={{ fontSize: 11.5, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#D9A86A', marginBottom: 30 }}>A&nbsp;Pulse&nbsp;Original&nbsp;Podcast&nbsp;·&nbsp;Season&nbsp;One</div>
+          <div className="mono" style={{ fontSize: 11.5, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#D9A86A', marginBottom: 30 }}>A Pulse Original Podcast · Season One</div>
           <svg viewBox="0 0 140 112" style={{ width: 74, height: 59, display: 'block', margin: '0 auto 26px', overflow: 'visible' }}>
             <defs><radialGradient id="climbSunHero" cx="50%" cy="42%" r="60%"><stop offset="0%" stopColor="#F7CF95" /><stop offset="55%" stopColor="#F2B066" /><stop offset="100%" stopColor="#E88F4D" /></radialGradient></defs>
             <circle cx="70" cy="50" r="26" fill="url(#climbSunHero)" />
@@ -76,7 +76,7 @@ export default function NoirPodcast() {
       </div>
 
       {/* waitlist capture */}
-      <div style={{ position: 'relative', zIndex: 6, maxWidth: 600, margin: '-44px auto 0', padding: '0 40px' }}>
+      <div className="m-pad" style={{ position: 'relative', zIndex: 6, maxWidth: 600, margin: '-44px auto 0', padding: '0 40px' }}>
         {!joined ? (
           <form onSubmit={join} style={{ borderRadius: 18, background: 'rgba(43,49,71,0.66)', backdropFilter: 'blur(18px) saturate(150%)', border: '1px solid rgba(217,168,106,0.34)', boxShadow: '0 30px 80px rgba(8,10,20,0.6)', padding: 28 }}>
             <div className="mono" style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#D9A86A', textAlign: 'center', marginBottom: 14 }}>Join the waitlist</div>
@@ -101,13 +101,13 @@ export default function NoirPodcast() {
       </div>
 
       {/* essence quote */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 900, margin: '0 auto', padding: '128px 40px 0', textAlign: 'center' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 900, margin: '0 auto', padding: '128px 40px 0', textAlign: 'center' }}>
         <div style={{ width: 48, height: 1, background: '#D9A86A', margin: '0 auto 34px' }} />
         <blockquote className="cormorant" style={{ fontStyle: 'italic', fontWeight: 500, fontSize: 'clamp(30px,4.6vw,50px)', lineHeight: 1.24, letterSpacing: '0.01em', color: '#ECE6D8', margin: 0 }}>Every summit is just a series of small, deliberate steps taken in poor light.</blockquote>
       </div>
 
       {/* what it is */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 780, margin: '0 auto', padding: '118px 40px 0', textAlign: 'center' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 780, margin: '0 auto', padding: '118px 40px 0', textAlign: 'center' }}>
         <div className="mono" style={{ fontSize: 11.5, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#D9A86A', marginBottom: 24 }}>What it is</div>
         <h2 className="cormorant" style={{ fontWeight: 600, fontSize: 'clamp(34px,4.8vw,52px)', lineHeight: 1.08, letterSpacing: '0.01em', margin: '0 0 28px', color: '#ECE6D8' }}>We speak quietly, and earn the crescendo.</h2>
         <p style={{ fontSize: 18, lineHeight: 1.72, color: 'rgba(194,178,154,0.92)', fontWeight: 400, margin: '0 0 18px' }}>Recorded in the half-light after the hard part of the day, the show sits down with founders, makers, and quiet operators to talk about the long ascent. Not the highlight reel, but the real grade of it: the doubt, the footholds found in the dark, the decisions made when no one was watching.</p>
@@ -115,8 +115,8 @@ export default function NoirPodcast() {
       </div>
 
       {/* who it's for */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1180, margin: '0 auto', padding: '108px 40px 0' }}>
-        <div className="grid-collapse" style={{ borderRadius: 22, background: 'linear-gradient(160deg,rgba(43,49,71,0.55),rgba(16,18,33,0.55))', border: '1px solid rgba(236,230,216,0.08)', padding: 54, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 54, alignItems: 'center' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 1180, margin: '0 auto', padding: '108px 40px 0' }}>
+        <div className="grid-collapse m-card" style={{ borderRadius: 22, background: 'linear-gradient(160deg,rgba(43,49,71,0.55),rgba(16,18,33,0.55))', border: '1px solid rgba(236,230,216,0.08)', padding: 54, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 54, alignItems: 'center' }}>
           <div>
             <div className="mono" style={{ fontSize: 11.5, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#D9A86A', marginBottom: 20 }}>Who it&apos;s for</div>
             <h2 className="cormorant" style={{ fontWeight: 600, fontSize: 'clamp(30px,4vw,42px)', lineHeight: 1.1, letterSpacing: '0.01em', margin: '0 0 18px', color: '#ECE6D8' }}>If you&apos;re still climbing, this one&apos;s for you.</h2>
@@ -134,7 +134,7 @@ export default function NoirPodcast() {
       </div>
 
       {/* where to listen */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1180, margin: '0 auto', padding: '108px 40px 0', textAlign: 'center' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 1180, margin: '0 auto', padding: '108px 40px 0', textAlign: 'center' }}>
         <div className="mono" style={{ fontSize: 11.5, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#D9A86A', marginBottom: 22 }}>Arriving soon</div>
         <h2 className="cormorant" style={{ fontWeight: 600, fontSize: 'clamp(30px,4vw,44px)', lineHeight: 1.1, margin: '0 0 36px', color: '#ECE6D8' }}>Wherever you already listen.</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12 }}>
@@ -148,8 +148,8 @@ export default function NoirPodcast() {
       </div>
 
       {/* be a guest */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1180, margin: '108px auto 0', padding: '0 40px' }}>
-        <div style={{ borderRadius: 22, background: 'linear-gradient(160deg,rgba(84,64,61,0.4),rgba(22,28,44,0.55))', border: '1px solid rgba(217,168,106,0.24)', padding: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 44, flexWrap: 'wrap' }}>
+      <div className="m-pad m-mt" style={{ position: 'relative', zIndex: 5, maxWidth: 1180, margin: '108px auto 0', padding: '0 40px' }}>
+        <div className="m-card" style={{ borderRadius: 22, background: 'linear-gradient(160deg,rgba(84,64,61,0.4),rgba(22,28,44,0.55))', border: '1px solid rgba(217,168,106,0.24)', padding: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 44, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 300 }}>
             <div className="mono" style={{ fontSize: 11.5, fontWeight: 500, letterSpacing: '0.4em', textTransform: 'uppercase', color: '#D9A86A', marginBottom: 16 }}>Bring your story</div>
             <h2 className="cormorant" style={{ fontWeight: 600, fontSize: 'clamp(30px,3.8vw,40px)', lineHeight: 1.08, letterSpacing: '0.01em', margin: '0 0 12px', color: '#ECE6D8' }}>Climbed something worth talking about?</h2>
@@ -160,7 +160,7 @@ export default function NoirPodcast() {
       </div>
 
       {/* waitlist band */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 920, margin: '108px auto 0', padding: '0 40px 110px', textAlign: 'center' }}>
+      <div className="m-pad m-mt" style={{ position: 'relative', zIndex: 5, maxWidth: 920, margin: '108px auto 0', padding: '0 40px 110px', textAlign: 'center' }}>
         <div style={{ width: 48, height: 1, background: '#D9A86A', margin: '0 auto 30px' }} />
         <h2 className="cormorant" style={{ fontWeight: 600, fontSize: 'clamp(34px,5vw,56px)', lineHeight: 1.06, letterSpacing: '0.01em', margin: '0 auto', maxWidth: 640, color: '#ECE6D8' }}>Be there at first light.</h2>
         <p style={{ fontSize: 17.5, color: 'rgba(194,178,154,0.9)', lineHeight: 1.65, margin: '20px auto 30px', fontWeight: 400, maxWidth: 520 }}>Join the waitlist and we&apos;ll send you the first climb the day it goes live, plus the occasional note from the trail while we build the show.</p>

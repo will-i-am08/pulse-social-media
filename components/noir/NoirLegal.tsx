@@ -20,9 +20,9 @@ export default function NoirLegal({
         <div className="glow-grid" />
       </div>
 
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 820, margin: '0 auto', padding: '96px 40px 90px' }}>
+      <div className="m-pad" style={{ position: 'relative', zIndex: 5, maxWidth: 820, margin: '0 auto', padding: '96px 40px 90px' }}>
         <div className="kicker" style={{ fontSize: 13, marginBottom: 18 }}>{eyebrow}</div>
-        <h1 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(44px,6vw,76px)', lineHeight: 1.0, letterSpacing: '-0.04em', margin: 0 }}>{title}</h1>
+        <h1 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(36px,9vw,76px)', lineHeight: 1.0, letterSpacing: '-0.04em', margin: 0 }}>{title}</h1>
         <p style={{ fontSize: 19, lineHeight: 1.6, color: 'rgba(244,245,247,0.72)', fontWeight: 500, margin: '24px 0 0', maxWidth: 620 }}>{intro}</p>
         <div className="mono" style={{ marginTop: 22, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(244,245,247,0.45)', fontFamily: "'JetBrains Mono', monospace" }}>Last updated · {updated}</div>
 
