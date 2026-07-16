@@ -64,14 +64,14 @@ export default function NoirContact() {
       </div>
 
       {/* hero */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 760, margin: '0 auto', padding: '96px 40px 0', textAlign: 'center' }}>
+      <div className="m-pad" style={{ position: 'relative', zIndex: 5, maxWidth: 760, margin: '0 auto', padding: '96px 40px 0', textAlign: 'center' }}>
         <div className="kicker" style={{ fontSize: 13, marginBottom: 18 }}>Get in touch</div>
-        <h1 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(48px,6.5vw,84px)', lineHeight: 1.0, letterSpacing: '-0.04em', margin: 0 }}>Let&apos;s work out<br />if we&apos;re a fit.</h1>
+        <h1 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(38px,10vw,84px)', lineHeight: 1.0, letterSpacing: '-0.04em', margin: 0 }}>Let&apos;s work out<br />if we&apos;re a fit.</h1>
         <p style={{ fontSize: 20, lineHeight: 1.6, color: 'rgba(244,245,247,0.72)', maxWidth: 520, margin: '26px auto 0', fontWeight: 500 }}>Tell us what you need and we&apos;ll point you in the right direction, even if that&apos;s not us.</p>
       </div>
 
       {/* selector + form */}
-      <div className="grid-collapse" style={{ position: 'relative', zIndex: 5, maxWidth: 1100, margin: '70px auto 0', padding: '0 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 44, alignItems: 'start' }}>
+      <div className="grid-collapse m-pad" style={{ position: 'relative', zIndex: 5, maxWidth: 1100, margin: '70px auto 0', padding: '0 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 44, alignItems: 'start' }}>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(244,245,247,0.5)', marginBottom: 18 }}>What are you after?</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -94,7 +94,7 @@ export default function NoirContact() {
           </div>
 
           <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', borderRadius: 18, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <span style={{ fontSize: 13.5, fontWeight: 600, color: 'rgba(244,245,247,0.5)' }}>Email</span>
               <a href="mailto:hello@pulsesocialmedia.com.au" style={{ fontSize: 14, fontWeight: 700, color: '#F97316' }}>hello@pulsesocialmedia.com.au</a>
             </div>
@@ -111,7 +111,7 @@ export default function NoirContact() {
 
         {/* form */}
         <div style={{ borderRadius: 24, padding: 1, background: 'linear-gradient(160deg,rgba(255,255,255,0.18),rgba(255,255,255,0.02))', boxShadow: '0 40px 100px rgba(0,0,0,0.5)' }}>
-          <div style={{ borderRadius: 23, background: 'rgba(13,15,17,0.72)', backdropFilter: 'blur(22px)', border: '1px solid rgba(255,255,255,0.05)', padding: 38 }}>
+          <div className="m-card" style={{ borderRadius: 23, background: 'rgba(13,15,17,0.72)', backdropFilter: 'blur(22px)', border: '1px solid rgba(255,255,255,0.05)', padding: 38 }}>
             {status === 'success' ? (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
                 <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#F97316', color: '#1a0800', fontSize: 28, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>✓</div>
@@ -136,10 +136,10 @@ export default function NoirContact() {
       </div>
 
       {/* FAQ */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '0 auto', padding: '110px 40px 0' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '0 auto', padding: '110px 40px 0' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div className="kicker" style={{ fontSize: 13, marginBottom: 14 }}>Before you reach out</div>
-          <h2 className="sora" style={{ fontWeight: 800, fontSize: 46, letterSpacing: '-0.03em', margin: 0 }}>People always ask.</h2>
+          <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(30px,7vw,46px)', letterSpacing: '-0.03em', margin: 0 }}>People always ask.</h2>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {FAQS.map(([q, a], i) => {
@@ -158,8 +158,8 @@ export default function NoirContact() {
       </div>
 
       {/* book a call */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '60px auto 0', padding: '0 40px 90px' }}>
-        <div className="grid-collapse" style={{ borderRadius: 24, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 40, flexWrap: 'wrap' }}>
+      <div className="m-pad" style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '60px auto 0', padding: '0 40px 90px' }}>
+        <div className="m-card" style={{ borderRadius: 24, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: 44, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 40, flexWrap: 'wrap' }}>
           <div>
             <div className="kicker" style={{ fontSize: 13, marginBottom: 12 }}>Prefer a call?</div>
             <div className="sora" style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>Book a 20-minute slot.</div>

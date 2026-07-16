@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -35,6 +35,15 @@ export default function NoirHome() {
   const [openFaq, setOpenFaq] = useState(0)
   const [heroEmail, setHeroEmail] = useState('')
   const [ctaStatus, setCtaStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle')
+  const [compact, setCompact] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 560px)')
+    const update = () => setCompact(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
 
   function onHeroSubmit(e: FormEvent) {
     e.preventDefault()
@@ -87,7 +96,7 @@ export default function NoirHome() {
       </div>
 
       {/* ===== HERO ===== */}
-      <div style={{ position: 'relative', zIndex: 5, width: '100%', minHeight: '84vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '64px 40px 96px', overflow: 'hidden' }}>
+      <div className="m-pad" style={{ position: 'relative', zIndex: 5, width: '100%', minHeight: '84vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '64px 40px 96px', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: '#080a0b' }} />
         <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(5,5,6,0.74) 0%,rgba(5,5,6,0.5) 42%,rgba(5,5,6,0.9) 82%,rgba(5,5,6,1) 100%)', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', zIndex: 1, top: '6%', left: '50%', transform: 'translateX(-50%)', width: 760, height: 440, borderRadius: '50%', background: 'radial-gradient(circle,rgba(249,115,22,0.16),rgba(249,115,22,0) 65%)', filter: 'blur(20px)', animation: 'pulseFloat 14s ease-in-out infinite', pointerEvents: 'none' }} />
@@ -106,14 +115,14 @@ export default function NoirHome() {
             Growing a small business is hard. We make getting found, followed, and booked a whole lot easier, and a lot less stressful.
           </p>
 
-          <form onSubmit={onHeroSubmit} style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 680, margin: '38px auto 0', background: 'rgba(255,255,255,0.96)', borderRadius: 999, padding: '7px 7px 7px 22px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', animation: 'riseUp 0.9s ease 0.42s both' }}>
-            <span style={{ fontSize: 22 }}>👋</span>
+          <form onSubmit={onHeroSubmit} className="m-stack" style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 680, margin: '38px auto 0', background: 'rgba(255,255,255,0.96)', borderRadius: 999, padding: '7px 7px 7px 22px', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', animation: 'riseUp 0.9s ease 0.42s both' }}>
+            <span className="m-hide-560" style={{ fontSize: 22 }}>👋</span>
             <input
               value={heroEmail}
               onChange={e => setHeroEmail(e.target.value)}
               type="email"
-              placeholder="Enter your email and we'll send you our free playbook…"
-              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 16, color: '#16181c', padding: '14px 4px', minWidth: 0 }}
+              placeholder={compact ? 'Your email for the free playbook…' : "Enter your email and we'll send you our free playbook…"}
+              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 16, color: '#16181c', padding: '14px 12px', minWidth: 0 }}
             />
             <button type="submit" style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 8, padding: '16px 30px', borderRadius: 999, background: '#F97316', color: '#1a0800', fontWeight: 800, fontSize: 16, cursor: 'pointer', whiteSpace: 'nowrap', border: 0 }}>
               Send it <span style={{ fontSize: 18 }}>→</span>
@@ -128,7 +137,7 @@ export default function NoirHome() {
       </div>
 
       {/* ===== VIDEO BLOCK ===== */}
-      <div style={{ position: 'relative', zIndex: 6, maxWidth: 1100, margin: '-52px auto 0', padding: '0 40px' }}>
+      <div className="m-pad" style={{ position: 'relative', zIndex: 6, maxWidth: 1100, margin: '-52px auto 0', padding: '0 40px' }}>
         <div style={{ position: 'relative', borderRadius: 28, padding: 1, background: 'linear-gradient(160deg,rgba(255,255,255,0.24),rgba(255,255,255,0.02))', boxShadow: '0 50px 130px rgba(0,0,0,0.7)' }}>
           <div style={{ position: 'relative', borderRadius: 27, overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.06)', aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <PlaceholderTile />
@@ -145,19 +154,19 @@ export default function NoirHome() {
       </div>
 
       {/* ===== PROBLEM AGITATION ===== */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '0 auto', padding: '110px 40px 0', textAlign: 'center' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '0 auto', padding: '110px 40px 0', textAlign: 'center' }}>
         <div className="kicker" style={{ marginBottom: 18 }}>Read this if you&apos;re invisible online</div>
-        <h2 className="sora" style={{ fontWeight: 800, fontSize: 46, letterSpacing: '-0.03em', lineHeight: 1.08, margin: '0 0 28px' }}>Let&apos;s be honest about why you&apos;re really here.</h2>
+        <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(30px,7vw,46px)', letterSpacing: '-0.03em', lineHeight: 1.08, margin: '0 0 28px' }}>Let&apos;s be honest about why you&apos;re really here.</h2>
         <p style={{ fontSize: 20, lineHeight: 1.6, color: 'rgba(244,245,247,0.72)', fontWeight: 500, margin: '0 0 20px' }}>You&apos;re great at what you do. But online? Your competitors, who, let&apos;s face it, <span style={{ color: '#F97316', fontWeight: 700 }}>aren&apos;t even as good as you</span>, are the ones getting found, getting followed, and getting the customers.</p>
         <p style={{ fontSize: 20, lineHeight: 1.6, color: 'rgba(244,245,247,0.72)', fontWeight: 500, margin: '0 0 20px' }}>Meanwhile you post when you remember to, watch it flatline, and quietly wonder if any of it actually works. It&apos;s <span style={{ color: '#F4F5F7', fontWeight: 700 }}>not your fault.</span> Running a business and running a content machine are two full-time jobs.</p>
         <p style={{ fontSize: 20, lineHeight: 1.6, color: 'rgba(244,245,247,0.72)', fontWeight: 500, margin: 0 }}>That&apos;s the one we take off your plate, completely. You run your business. We make you <span style={{ color: '#F97316', fontWeight: 700 }}>impossible to ignore.</span></p>
       </div>
 
       {/* ===== WORK GRID ===== */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '110px 40px 0' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '110px 40px 0' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div className="kicker" style={{ marginBottom: 14 }}>The work</div>
-          <h2 className="sora" style={{ fontWeight: 800, fontSize: 48, letterSpacing: '-0.03em', margin: 0 }}>Work that&apos;s impossible to scroll past.</h2>
+          <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(30px,7.5vw,48px)', letterSpacing: '-0.03em', margin: 0 }}>Work that&apos;s impossible to scroll past.</h2>
           <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.6)', maxWidth: 520, margin: '16px auto 0', fontWeight: 500 }}>Fresh work we&apos;re shooting, editing and shipping for local brands — landing in this space soon.</p>
         </div>
         <div className="work-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
@@ -178,15 +187,15 @@ export default function NoirHome() {
       </div>
 
       {/* ===== FOUNDER AUTHORITY ===== */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '110px 40px 0' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '110px 40px 0' }}>
         <div style={{ borderRadius: 28, padding: 1, background: 'linear-gradient(160deg,rgba(255,255,255,0.18),rgba(255,255,255,0.02))' }}>
-          <div className="grid-collapse" style={{ borderRadius: 27, background: 'rgba(13,15,17,0.7)', backdropFilter: 'blur(22px)', border: '1px solid rgba(255,255,255,0.06)', padding: 44, display: 'grid', gridTemplateColumns: '300px 1fr', gap: 44, alignItems: 'center' }}>
-            <div style={{ width: '100%', height: 340, borderRadius: 20, position: 'relative', overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="grid-collapse m-card" style={{ borderRadius: 27, background: 'rgba(13,15,17,0.7)', backdropFilter: 'blur(22px)', border: '1px solid rgba(255,255,255,0.06)', padding: 44, display: 'grid', gridTemplateColumns: '300px 1fr', gap: 44, alignItems: 'center' }}>
+            <div style={{ width: '100%', height: 340, maxHeight: '58vw', borderRadius: 20, position: 'relative', overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.07)' }}>
               <PlaceholderTile />
             </div>
             <div>
               <div className="kicker" style={{ marginBottom: 16 }}>Why founders trust us</div>
-              <h2 className="sora" style={{ fontWeight: 800, fontSize: 38, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 20px' }}>We give small businesses the firepower big brands take for granted.</h2>
+              <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(26px,6vw,38px)', letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 20px' }}>We give small businesses the firepower big brands take for granted.</h2>
               <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.68)', fontWeight: 500, margin: '0 0 16px' }}>Pulse was built on one belief: you shouldn&apos;t need a Fortune-500 budget to win attention. We&apos;ve spent years reverse-engineering what makes content spread and ads convert, and we run that exact playbook for every client.</p>
               <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.68)', fontWeight: 500, margin: 0 }}>No juniors. No guesswork. No hiding behind vanity metrics. Just the work that moves your numbers.</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 26 }}>
@@ -198,10 +207,10 @@ export default function NoirHome() {
       </div>
 
       {/* ===== FAQ ===== */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '0 auto', padding: '110px 40px 0' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 880, margin: '0 auto', padding: '110px 40px 0' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div className="kicker" style={{ marginBottom: 14 }}>Before you book</div>
-          <h2 className="sora" style={{ fontWeight: 800, fontSize: 48, letterSpacing: '-0.03em', margin: 0 }}>Questions you&apos;re probably asking.</h2>
+          <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(30px,7.5vw,48px)', letterSpacing: '-0.03em', margin: 0 }}>Questions you&apos;re probably asking.</h2>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {FAQS.map(([q, a], i) => {
@@ -220,15 +229,15 @@ export default function NoirHome() {
       </div>
 
       {/* ===== FINAL CTA ===== */}
-      <div style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '110px 40px 90px' }}>
+      <div className="m-pad m-sect" style={{ position: 'relative', zIndex: 5, maxWidth: 1240, margin: '0 auto', padding: '110px 40px 90px' }}>
         <div style={{ borderRadius: 30, padding: 1, background: 'linear-gradient(160deg,rgba(249,115,22,0.4),rgba(255,255,255,0.02))', boxShadow: '0 40px 120px rgba(0,0,0,0.55)' }}>
-          <div className="grid-collapse" style={{ borderRadius: 29, background: 'rgba(13,15,17,0.74)', backdropFilter: 'blur(26px) saturate(160%)', border: '1px solid rgba(255,255,255,0.06)', padding: 56, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 50, alignItems: 'center' }}>
+          <div className="grid-collapse m-card" style={{ borderRadius: 29, background: 'rgba(13,15,17,0.74)', backdropFilter: 'blur(26px) saturate(160%)', border: '1px solid rgba(255,255,255,0.06)', padding: 56, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 50, alignItems: 'center' }}>
             <div>
               {/* PLACEHOLDER: scarcity claim — confirm before launch */}
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 14px', borderRadius: 999, background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.3)', fontSize: 13, fontWeight: 700, color: '#fed7aa', marginBottom: 20 }}>⚡ Only 5 spots left this month</div>
-              <h2 className="sora" style={{ fontWeight: 800, fontSize: 46, lineHeight: 1.05, letterSpacing: '-0.03em', margin: 0 }}>Ready to become impossible to ignore?</h2>
+              <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(30px,7vw,46px)', lineHeight: 1.05, letterSpacing: '-0.03em', margin: 0 }}>Ready to become impossible to ignore?</h2>
               <p style={{ fontSize: 17, color: 'rgba(244,245,247,0.64)', lineHeight: 1.55, margin: '18px 0 0', fontWeight: 500, maxWidth: 400 }}>Book a free 30-minute strategy call. We&apos;ll build you a custom growth plan on the spot, yours to keep whether you hire us or not.</p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 28, fontSize: 14.5, color: 'rgba(244,245,247,0.55)', fontWeight: 600 }}>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 18, marginTop: 28, fontSize: 14.5, color: 'rgba(244,245,247,0.55)', fontWeight: 600 }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><span style={{ color: '#F97316' }}>✓</span> Free &amp; no obligation</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}><span style={{ color: '#F97316' }}>✓</span> 30 minutes</span>
               </div>

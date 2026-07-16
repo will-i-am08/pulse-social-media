@@ -65,7 +65,6 @@
   .pulse-noir .work-grid > *{margin-top:0 !important}
 }
 @media (max-width: 560px){
-  .pulse-noir .work-grid{grid-template-columns:1fr !important}
   .pulse-noir .noir-hero-h1{font-size:clamp(34px,11vw,46px) !important}
 }
 
@@ -76,6 +75,22 @@
   .pulse-noir .pb-chapters{padding:80px 22px 0 !important}
   .pulse-noir .pb-cta{margin-top:80px !important;padding:0 22px 70px !important}
   .pulse-noir .pb-cta-card{padding:36px 24px !important}
+}
+
+/* shared mobile refinements */
+@media (max-width: 860px){
+  .pulse-noir .m-pad{padding-left:22px !important;padding-right:22px !important}
+  .pulse-noir .m-sect{padding-top:76px !important}
+  .pulse-noir .m-mt{margin-top:76px !important}
+  .pulse-noir .m-card{padding:28px 22px !important}
+  .pulse-noir .m-card.grid-collapse{gap:22px !important}
+  .pulse-noir .m-p0t{padding-top:0 !important}
+  .pulse-noir .noir-legal table{display:block;overflow-x:auto;white-space:nowrap}
+}
+@media (max-width: 560px){
+  .pulse-noir .m-stack{flex-direction:column !important;align-items:stretch !important;border-radius:22px !important;padding:10px !important}
+  .pulse-noir .m-stack button{justify-content:center}
+  .pulse-noir .m-hide-560{display:none !important}
 }
 
 /* legal / policy prose */
