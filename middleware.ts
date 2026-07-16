@@ -57,20 +57,16 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session
-  const { data: { user } } = await supabase.auth.getUser()
+  // Verify the session JWT locally (WebCrypto + cached JWKS) instead of a
+  // network round-trip to Supabase Auth on every request. Falls back to a
+  // server check only for legacy HS256-signed projects, and getClaims()
+  // still auto-refreshes expired sessions (cookies written via setAll above).
+  // Route handlers and RLS remain the real enforcement layer.
+  const { data } = await supabase.auth.getClaims()
+  const user = data?.claims ?? null
 
   const { pathname } = request.nextUrl
   const isAppRoute = APP_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'))
-
-  // Gate /login to desktop app only (identified by PulseDesktop user-agent)
-  const userAgent = request.headers.get('user-agent') ?? ''
-  const isLocalhost = request.nextUrl.hostname === 'localhost'
-  if (pathname === '/login' && !userAgent.includes('PulseDesktop') && !isLocalhost) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/'
-    return NextResponse.redirect(url)
-  }
 
   // Unauthenticated → redirect to /login
   if (!user && isAppRoute) {
