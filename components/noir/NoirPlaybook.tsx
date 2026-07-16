@@ -92,7 +92,7 @@ export default function NoirPlaybook() {
               <div style={{ color: '#F97316', fontWeight: 800, fontSize: 'clamp(11px,1vw,15px)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: '8%' }}>The Free Playbook</div>
               <div className="sora" style={{ fontWeight: 800, fontSize: 'clamp(150px,18vw,260px)', lineHeight: 0.8, color: '#F97316', textShadow: '0 0 64px rgba(249,115,22,0.45)', marginBottom: '4%' }}>8</div>
               <div className="sora" style={{ fontWeight: 800, textTransform: 'uppercase', fontSize: 'clamp(20px,2.8vw,38px)', lineHeight: 1.04, color: '#fff', letterSpacing: '-0.01em' }}>Ways to Look<br />Stupidly Good<br />on Social</div>
-              <div style={{ marginTop: 'auto', color: 'rgba(244,245,247,0.5)', fontSize: 'clamp(10px,0.9vw,14px)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>By Pulse Social</div>
+              <div style={{ marginTop: 'auto', color: 'rgba(244,245,247,0.5)', fontSize: 'clamp(10px,0.9vw,14px)', letterSpacing: '0.18em', textTransform: 'uppercase' }}>By Pulse Social Media</div>
             </div>
           </div>
         </div>
