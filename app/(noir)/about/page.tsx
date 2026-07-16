@@ -41,7 +41,7 @@ export default function AboutPage() {
       {/* studio photo placeholder */}
       <div className="m-pad" style={{ position: 'relative', zIndex: 5, maxWidth: 1100, margin: '64px auto 0', padding: '0 40px' }}>
         <div style={{ position: 'relative', borderRadius: 28, overflow: 'hidden', aspectRatio: '21/9', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <Image src="/noir/work/work-car-front.jpg" alt="Automotive shoot at golden hour — client work by Pulse Social Media" fill sizes="(max-width: 1100px) 100vw, 1020px" style={{ objectFit: 'cover' }} />
+          <Image src="/noir/work/work-venue.jpg" alt="Workshop space set up for a client event shoot" fill sizes="(max-width: 1100px) 100vw, 1020px" style={{ objectFit: 'cover', objectPosition: 'center 65%' }} />
         </div>
       </div>
 
