@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default function AboutPage() {
       {/* studio photo placeholder */}
       <div className="m-pad" style={{ position: 'relative', zIndex: 5, maxWidth: 1100, margin: '64px auto 0', padding: '0 40px' }}>
         <div style={{ position: 'relative', borderRadius: 28, overflow: 'hidden', aspectRatio: '21/9', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(-45deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 11px), linear-gradient(135deg,#15181a,#0a0c0d)' }} />
+          <Image src="/noir/work/work-car-front.jpg" alt="Automotive shoot at golden hour — client work by Pulse Social Media" fill sizes="(max-width: 1100px) 100vw, 1020px" style={{ objectFit: 'cover' }} />
         </div>
       </div>
 

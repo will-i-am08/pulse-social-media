@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 
 const FAQS = [
@@ -13,10 +14,10 @@ const FAQS = [
 ]
 
 const WORK = [
-  { offset: false },
-  { offset: true },
-  { offset: false },
-  { offset: true },
+  { offset: false, src: '/noir/work/work-coffee.jpg', alt: 'Latte art shot for a local café client' },
+  { offset: true, src: '/noir/work/work-pasta.jpg', alt: 'Fresh pasta being rolled for a hospitality client shoot' },
+  { offset: false, src: '/noir/work/work-car-street.jpg', alt: 'Automotive shoot on a tree-lined street at golden hour' },
+  { offset: true, src: '/noir/work/work-phone-repair.jpg', alt: 'Behind the counter at a phone repair shop shoot' },
 ]
 
 function PlaceholderTile() {
@@ -167,16 +168,13 @@ export default function NoirHome() {
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div className="kicker" style={{ marginBottom: 14 }}>The work</div>
           <h2 className="sora" style={{ fontWeight: 800, fontSize: 'clamp(30px,7.5vw,48px)', letterSpacing: '-0.03em', margin: 0 }}>Work that&apos;s impossible to scroll past.</h2>
-          <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.6)', maxWidth: 520, margin: '16px auto 0', fontWeight: 500 }}>Fresh work we&apos;re shooting, editing and shipping for local brands — landing in this space soon.</p>
+          <p style={{ fontSize: 17, lineHeight: 1.6, color: 'rgba(244,245,247,0.6)', maxWidth: 520, margin: '16px auto 0', fontWeight: 500 }}>Real shoots for real local businesses — cafés, kitchens, cars and repair benches, all captured in-house.</p>
         </div>
         <div className="work-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
           {WORK.map((w, i) => (
             <div key={i} style={{ position: 'relative', borderRadius: 18, overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.07)', aspectRatio: '9/16', boxShadow: '0 24px 60px rgba(0,0,0,0.45)', marginTop: w.offset ? 28 : 0 }}>
-              <PlaceholderTile />
-              <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(5,5,6,0.05) 38%,rgba(5,5,6,0.86) 100%)', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', inset: 0, zIndex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div className="sora" style={{ padding: '8px 16px', borderRadius: 999, background: 'rgba(5,5,6,0.55)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.16)', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#fff' }}>Coming soon</div>
-              </div>
+              <Image src={w.src} alt={w.alt} fill sizes="(max-width: 860px) 50vw, 25vw" style={{ objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', inset: 0, zIndex: 1, background: 'linear-gradient(180deg,rgba(5,5,6,0) 55%,rgba(5,5,6,0.55) 100%)', pointerEvents: 'none' }} />
             </div>
           ))}
         </div>
@@ -191,7 +189,7 @@ export default function NoirHome() {
         <div style={{ borderRadius: 28, padding: 1, background: 'linear-gradient(160deg,rgba(255,255,255,0.18),rgba(255,255,255,0.02))' }}>
           <div className="grid-collapse m-card" style={{ borderRadius: 27, background: 'rgba(13,15,17,0.7)', backdropFilter: 'blur(22px)', border: '1px solid rgba(255,255,255,0.06)', padding: 44, display: 'grid', gridTemplateColumns: '300px 1fr', gap: 44, alignItems: 'center' }}>
             <div style={{ width: '100%', height: 340, maxHeight: '58vw', borderRadius: 20, position: 'relative', overflow: 'hidden', background: '#0a0c0d', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <PlaceholderTile />
+              <Image src="/noir/work/work-ipad-bench.jpg" alt="Hands-on device repair content shot for a client" fill sizes="(max-width: 860px) 90vw, 300px" style={{ objectFit: 'cover' }} />
             </div>
             <div>
               <div className="kicker" style={{ marginBottom: 16 }}>Why founders trust us</div>
